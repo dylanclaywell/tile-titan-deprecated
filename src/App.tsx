@@ -4,7 +4,12 @@ import TilesetViewer from './components/TilesetViewer'
 import TilemapEditor from './components/TilemapEditor'
 
 function App() {
-  return <TilemapEditor />
+  return (
+    <>
+      <TilemapEditor />
+      <TilesetViewer />
+    </>
+  )
 }
 
 export default App
