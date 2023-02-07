@@ -1,0 +1,43 @@
+import { v4 as generateId } from 'uuid'
+import z from 'zod'
+
+import { openDatabase } from './index'
+
+const Tileset = z.object({
+  id: z.string(),
+  blob: z.union([z.string(), z.undefined()]),
+})
+
+export type TilesetType = z.infer<typeof Tileset>
+
+export async function getTilesets() {
+  const database = await openDatabase('tilesets')
+
+  const tilesets = database
+    .transaction('tilesets', 'readonly')
+    .objectStore('tilesets')
+
+  return new Promise<TilesetType[]>((resolve, reject) => {
+    const request = tilesets.getAll()
+
+    request.onsuccess = (event) => {
+      const result = Tileset.array().parse((event.target as any)?.result)
+      resolve(result)
+    }
+
+    request.onerror = (event) => {
+      reject(event)
+    }
+  })
+}
+
+export async function addTileset(
+  blob: string | ArrayBuffer | null | undefined
+) {
+  const database = await openDatabase('tilesets')
+
+  const tileset = database
+    .transaction('tilesets', 'readwrite')
+    .objectStore('tilesets')
+  tileset.add({ id: generateId(), blob })
+}
