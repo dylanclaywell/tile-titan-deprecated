@@ -1,7 +1,8 @@
-import React from 'react'
+import React, { useContext, useEffect } from 'react'
 import z from 'zod'
 
 import TextField from './TextField'
+import { ToolContext } from '../contexts/ToolContext'
 
 const FormElement = z.instanceof(HTMLFormElement)
 const FormData = z.object({
@@ -38,6 +39,8 @@ const initialTilemap: TilemapType = {
 }
 
 export default function TilemapEditor() {
+  const [cursorRef, setCursorRef] = React.useState<HTMLDivElement | null>(null)
+  const [toolState, { updateTileCanvas }] = useContext(ToolContext)
   const [tilemap, setTilemap] = React.useState<TilemapType>(initialTilemap)
   const [errors, setErrors] = React.useState<z.ZodIssue[]>()
 
@@ -50,12 +53,65 @@ export default function TilemapEditor() {
     return error?.message ?? ''
   }
 
-  console.log(tilemap)
+  useEffect(
+    function registerTileTool() {
+      function onMouseMove(e: MouseEvent) {
+        if (toolState.tool.type !== 'tile') return
+
+        const { clientX, clientY } = e
+
+        if (e.target instanceof HTMLDivElement) {
+          const isHoveringTilemapEditor =
+            e.target.id === 'tilemap-editor' ||
+            e.target.parentElement?.id === 'tilemap-grid'
+
+          if (!cursorRef) return
+
+          if (isHoveringTilemapEditor) {
+            cursorRef.classList.remove('hidden')
+            cursorRef.style.top = `${clientY - tilemap.tileHeight / 2}px`
+            cursorRef.style.left = `${clientX - tilemap.tileWidth / 2}px`
+          } else {
+            cursorRef.classList.add('hidden')
+          }
+        }
+      }
+
+      document.addEventListener('mousemove', onMouseMove)
+
+      return () => {
+        document.removeEventListener('mousemove', onMouseMove)
+      }
+    },
+    [tilemap, cursorRef]
+  )
 
   return (
     <div>
-      <div className="flex justify-center items-center bg-slate-200">
+      <div
+        id="tilemap-editor"
+        className="flex justify-center items-center bg-slate-200"
+      >
         <div
+          className="p-4 absolute pointer-events-none bg-sky-900 bg-opacity-50"
+          ref={(el) => setCursorRef(el)}
+          style={{
+            width: tilemap.tileWidth,
+            height: tilemap.tileHeight,
+          }}
+        >
+          <img
+            className="absolute top-0 left-0"
+            style={{
+              width: tilemap.tileWidth,
+              height: tilemap.tileHeight,
+            }}
+            src={toolState.tool.tileCanvas.toDataURL()}
+          />
+        </div>
+
+        <div
+          id="tilemap-grid"
           className="grid border-l border-b border-black"
           style={{
             gridTemplateColumns: `repeat(${tilemap.width}, ${tilemap.tileWidth}px)`,

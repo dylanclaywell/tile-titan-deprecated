@@ -1,15 +1,15 @@
-import React, { useEffect } from 'react'
-import html2canvas from 'html2canvas'
+import React, { useContext, useState, useEffect } from 'react'
 
 import { TilesetUploader } from './TilesetUploader'
 import { TilesetType, getTilesets } from '../indexedDB/tileset'
+import { ToolContext } from '../contexts/ToolContext'
 
 export default function TilesetViewer() {
-  const [tilesets, setTilesets] = React.useState<TilesetType[]>([])
-  const [imageIsLoaded, setImageIsLoaded] = React.useState(false)
-  const [cursorRef, setCursorRef] = React.useState<HTMLDivElement | null>(null)
-  const [imageRef, setImageRef] = React.useState<HTMLImageElement | null>(null)
-  const [canvas, setCanvas] = React.useState<HTMLCanvasElement | null>(null)
+  const [tilesets, setTilesets] = useState<TilesetType[]>([])
+  const [imageIsLoaded, setImageIsLoaded] = useState(false)
+  const [cursorRef, setCursorRef] = useState<HTMLDivElement | null>(null)
+  const [imageRef, setImageRef] = useState<HTMLImageElement | null>(null)
+  const [, { updateTileCanvas }] = useContext(ToolContext)
 
   async function refreshTilesets() {
     setTilesets(await getTilesets())
@@ -39,13 +39,15 @@ export default function TilesetViewer() {
     const coords = e.target.coords
     const [x1, y1, x2, y2] = coords.split(',').map((n) => parseInt(n))
 
-    const image = await html2canvas(imageRef, {
-      x: x1,
-      y: y1,
-      width: x2 - x1,
-      height: y2 - y1,
-    })
-    setCanvas(image)
+    const width = x2 - x1
+    const height = y2 - y1
+
+    const canvas = document.createElement('canvas')
+    canvas.width = width
+    canvas.height = height
+    const context = canvas.getContext('2d')
+    context?.drawImage(imageRef, x1, y1, width, height, 0, 0, width, height)
+    updateTileCanvas(canvas)
   }
 
   const imageWidth = imageIsLoaded && imageRef ? imageRef.width : 0
@@ -79,11 +81,6 @@ export default function TilesetViewer() {
 
   return (
     <div>
-      {canvas && (
-        <div className="p-4">
-          <img className="w-8 h-8" src={canvas.toDataURL()} />
-        </div>
-      )}
       {tilesets.map((tileset) => (
         <div key={tileset.id} className="relative">
           <img
