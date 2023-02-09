@@ -1,56 +1,102 @@
 import React, { createContext, useState } from 'react'
 
+export type ToolType = 'tile' | 'eraser' | 'grid'
+
 export type Tool = {
-  type: 'tile'
-  tileCanvas: HTMLCanvasElement
+  type: ToolType
+  canvas: HTMLCanvasElement
 }
 
 export type State = {
   tool: Tool
+  showGrid: boolean
 }
 
 export type Actions = {
-  updateTileCanvas: (tileCanvas: HTMLCanvasElement) => void
+  updateCanvas: (tileCanvas: HTMLCanvasElement) => void
+  handleToolClick: (type: ToolType) => void
 }
 
 const tileCanvas = document.createElement('canvas')
 tileCanvas.width = 32
 tileCanvas.height = 32
 
-export const ToolContext = createContext<[State, Actions]>([
-  {
-    tool: {
-      type: 'tile',
-      tileCanvas,
-    },
+const initialState: State = {
+  tool: {
+    type: 'tile',
+    canvas: tileCanvas,
   },
+  showGrid: true,
+}
+
+export const ToolContext = createContext<[State, Actions]>([
+  initialState,
   {
-    updateTileCanvas: () => undefined,
+    updateCanvas: () => undefined,
+    handleToolClick: () => undefined,
   },
 ])
 
 export function ToolProvider({ children }: { children: React.ReactNode }) {
-  const [state, setState] = useState<State>({
-    tool: {
-      type: 'tile',
-      tileCanvas,
-    },
-  })
+  const [state, setState] = useState<State>(initialState)
 
-  function updateTileCanvas(tileCanvas: HTMLCanvasElement) {
+  function updateCanvas(canvas: HTMLCanvasElement) {
     if (state.tool.type !== 'tile') return
 
     setState({
       ...state,
       tool: {
         ...state.tool,
-        tileCanvas,
+        canvas,
       },
     })
   }
 
+  function toggleGrid() {
+    setState({
+      ...state,
+      showGrid: !state.showGrid,
+    })
+  }
+
+  function handleToolClick(type: ToolType) {
+    switch (type) {
+      case 'tile':
+        {
+          const tool: Tool = {
+            ...state.tool,
+            type,
+          }
+          setState({
+            ...state,
+            tool,
+          })
+        }
+        break
+      case 'eraser':
+        {
+          const tool: Tool = {
+            ...state.tool,
+            type,
+          }
+          const canvas = tool.canvas
+          const context = canvas.getContext('2d')
+          context?.clearRect(0, 0, canvas.width, canvas.height)
+          setState({
+            ...state,
+            tool,
+          })
+        }
+        break
+      case 'grid':
+        toggleGrid()
+        break
+    }
+  }
+
   const actions = {
-    updateTileCanvas,
+    updateCanvas,
+    handleToolClick,
   }
 
   return (

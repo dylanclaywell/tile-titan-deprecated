@@ -1,13 +1,13 @@
 import React from 'react'
 
 import TilesetViewer from './components/TilesetViewer'
-import TilemapEditor from './components/TilemapEditor'
+import { TilemapEditorView } from './components/TilemapEditorView'
 import { ToolProvider } from './contexts/ToolContext'
 
 function App() {
   return (
     <ToolProvider>
-      <TilemapEditor />
+      <TilemapEditorView />
       <TilesetViewer />
     </ToolProvider>
   )

@@ -9,7 +9,7 @@ export default function TilesetViewer() {
   const [imageIsLoaded, setImageIsLoaded] = useState(false)
   const [cursorRef, setCursorRef] = useState<HTMLDivElement | null>(null)
   const [imageRef, setImageRef] = useState<HTMLImageElement | null>(null)
-  const [, { updateTileCanvas }] = useContext(ToolContext)
+  const [, { updateCanvas: updateToolCanvas }] = useContext(ToolContext)
 
   async function refreshTilesets() {
     setTilesets(await getTilesets())
@@ -47,7 +47,7 @@ export default function TilesetViewer() {
     canvas.height = height
     const context = canvas.getContext('2d')
     context?.drawImage(imageRef, x1, y1, width, height, 0, 0, width, height)
-    updateTileCanvas(canvas)
+    updateToolCanvas(canvas)
   }
 
   const imageWidth = imageIsLoaded && imageRef ? imageRef.width : 0
