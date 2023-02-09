@@ -27,10 +27,11 @@ export function TilemapEditorCursor({ tilemap, anchor }: Props) {
           if (!cursorRef || !anchor) return
 
           const offsetY = anchor.offsetTop
+          const offsetY2 = anchor.parentElement?.offsetTop ?? 0
           const offsetX = anchor.offsetLeft
 
-          const top = 32 * Math.floor((clientY - offsetY) / 32) + 0.5
-          const left = 32 * Math.floor((clientX - offsetX) / 32) + 0.5
+          const top = 32 * Math.floor((clientY - offsetY - offsetY2) / 32) + 0.5
+          const left = 32 * Math.floor((clientX - offsetX) / 32) - 0.5
 
           if (isHoveringTilemapEditor) {
             cursorRef.classList.remove('hidden')
@@ -55,7 +56,7 @@ export function TilemapEditorCursor({ tilemap, anchor }: Props) {
 
   return (
     <div
-      className="p-4 absolute pointer-events-none bg-sky-900 bg-opacity-50"
+      className="p-4 absolute pointer-events-none bg-sky-900 bg-opacity-75 opacity-75"
       ref={(el) => setCursorRef(el)}
       style={{
         width: tilemap.tileWidth,

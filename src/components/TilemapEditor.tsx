@@ -70,15 +70,14 @@ export function TilemapEditor({ tilemap }: Props) {
 
   return (
     <div
-      ref={(el) => setRef(el)}
       id="tilemap-editor"
-      className="items-center bg-slate-200 relative"
+      className="items-center flex justify-center bg-slate-200 relative"
     >
-      <TilemapEditorCursor anchor={ref} tilemap={tilemap} />
       <div
+        ref={(el) => setRef(el)}
         id="tilemap-grid"
         className={clsx(
-          'grid border-l border-b border-black border-opacity-10',
+          'grid border-l border-b border-black border-opacity-10 relative',
           {
             'border-r border-t': !toolState.showGrid,
           }
@@ -88,6 +87,7 @@ export function TilemapEditor({ tilemap }: Props) {
           gridTemplateRows: `repeat(${tilemap.height}, ${tilemap.tileHeight}px)`,
         }}
       >
+        <TilemapEditorCursor anchor={ref} tilemap={tilemap} />
         {tilemap.data.map((row) => {
           return row.map((tile, i) => {
             return (
