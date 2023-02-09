@@ -1,8 +1,13 @@
 import React, { useContext, useState, useEffect } from 'react'
 
 import { TilesetUploader } from './TilesetUploader'
-import { TilesetType, getTilesets } from '../indexedDB/tileset'
+import {
+  TilesetType,
+  changeTilesetName,
+  getTilesets,
+} from '../indexedDB/tileset'
 import { ToolContext } from '../contexts/ToolContext'
+import TextField from './TextField'
 
 export function TilesetView() {
   const [tilesets, setTilesets] = useState<TilesetType[]>([])
@@ -82,23 +87,33 @@ export function TilesetView() {
   return (
     <div className="overflow-scroll basis-[30vw] border-gray-400">
       {tilesets.map((tileset) => (
-        <div key={tileset.id} className="relative">
-          <img
-            ref={(el) => setImageRef(el)}
-            className="max-w-none"
-            src={tileset.blob}
-            alt="tileset"
-            useMap={`#testmap`}
-            onLoad={() => {
-              setImageIsLoaded(true)
+        <>
+          <TextField
+            label="Name"
+            value={tileset.name}
+            onChange={(e) => {
+              changeTilesetName(tileset.id, e.target.value)
+              refreshTilesets()
             }}
           />
-          <div
-            ref={(el) => setCursorRef(el)}
-            className="absolute bg-blue-600 z-50 w-8 h-8 pointer-events-none opacity-50"
-          />
-          {map}
-        </div>
+          <div key={tileset.id} className="relative">
+            <img
+              ref={(el) => setImageRef(el)}
+              className="max-w-none"
+              src={tileset.blob}
+              alt="tileset"
+              useMap={`#testmap`}
+              onLoad={() => {
+                setImageIsLoaded(true)
+              }}
+            />
+            <div
+              ref={(el) => setCursorRef(el)}
+              className="absolute bg-blue-600 z-50 w-8 h-8 pointer-events-none opacity-50"
+            />
+            {map}
+          </div>
+        </>
       ))}
       <TilesetUploader refreshTilesets={refreshTilesets} />
     </div>

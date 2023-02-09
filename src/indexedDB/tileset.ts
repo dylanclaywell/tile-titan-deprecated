@@ -5,6 +5,7 @@ import { openDatabase } from './index'
 
 const Tileset = z.object({
   id: z.string(),
+  name: z.string(),
   blob: z.union([z.string(), z.undefined()]),
 })
 
@@ -36,8 +37,27 @@ export async function addTileset(
 ) {
   const database = await openDatabase('tilesets')
 
+  const newTileset = Tileset.parse({
+    name: 'New Tileset',
+    blob,
+    id: generateId(),
+  })
+
   const tileset = database
     .transaction('tilesets', 'readwrite')
     .objectStore('tilesets')
-  tileset.add({ id: generateId(), blob })
+  tileset.add(newTileset)
+}
+
+export async function changeTilesetName(id: string, name: string) {
+  const database = await openDatabase('tilesets')
+
+  const tileset = database
+    .transaction('tilesets', 'readwrite')
+    .objectStore('tilesets')
+  tileset.get(id).onsuccess = (event) => {
+    const existingTileset = Tileset.parse((event.target as any)?.result)
+    existingTileset.name = name
+    tileset.put(existingTileset)
+  }
 }

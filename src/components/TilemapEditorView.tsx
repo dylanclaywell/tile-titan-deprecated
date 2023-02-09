@@ -25,6 +25,22 @@ export function TilemapEditorView() {
     <div className="basis-[70vw] h-screen">
       <Tools>
         <ToolSection>
+          <Tool
+            name="Save"
+            onClick={() => {
+              const file = new Blob([JSON.stringify(tilemap, null, 2)], {
+                type: 'application/json',
+              })
+              const url = URL.createObjectURL(file)
+              const a = document.createElement('a')
+              a.href = url
+              a.download = 'tilemap.json'
+              a.click()
+            }}
+            icon="floppy-disk"
+          />
+        </ToolSection>
+        <ToolSection>
           <Tool name="Tile" type="tile" icon="image" />
           <Tool name="Erase" type="eraser" icon="eraser" />
         </ToolSection>
