@@ -4,7 +4,7 @@ import { TilesetUploader } from './TilesetUploader'
 import { TilesetType, getTilesets } from '../indexedDB/tileset'
 import { ToolContext } from '../contexts/ToolContext'
 
-export default function TilesetViewer() {
+export function TilesetView() {
   const [tilesets, setTilesets] = useState<TilesetType[]>([])
   const [imageIsLoaded, setImageIsLoaded] = useState(false)
   const [cursorRef, setCursorRef] = useState<HTMLDivElement | null>(null)
@@ -80,7 +80,7 @@ export default function TilesetViewer() {
     ) : null
 
   return (
-    <div>
+    <div className="overflow-scroll basis-[30vw] border-gray-400">
       {tilesets.map((tileset) => (
         <div key={tileset.id} className="relative">
           <img

@@ -71,7 +71,7 @@ export function TilemapEditor({ tilemap }: Props) {
   return (
     <div
       id="tilemap-editor"
-      className="items-center flex justify-center bg-slate-200 relative"
+      className="items-center flex justify-center bg-gray-300 relative h-[calc(100%-3.5rem-1px)]"
     >
       <div
         ref={(el) => setRef(el)}
@@ -103,7 +103,7 @@ export function TilemapEditor({ tilemap }: Props) {
                   height: tilemap.tileHeight,
                 }}
               >
-                <img className="pointer-events-none outline-none" />
+                <img className="pointer-events-none outline-none select-none" />
               </div>
             )
           })

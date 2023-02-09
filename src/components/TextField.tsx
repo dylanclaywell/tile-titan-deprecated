@@ -22,7 +22,7 @@ export default function TextField({
     <div className="flex flex-col">
       <label
         className={clsx(
-          'relative inline-block rounded-md p-4 border-gray-400 border-solid border',
+          'relative inline-block rounded-md p-4 border-gray-400 border-solid border cursor-text',
           {
             ['border-red-500']: hasError,
           }

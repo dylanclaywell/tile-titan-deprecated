@@ -1,17 +1,11 @@
 import React from 'react'
-import { Tool } from './Tool'
-import { ToolSection } from './ToolSection'
 
-export function Tools() {
+export interface Props {
+  children: React.ReactNode
+}
+
+export function Tools({ children }: Props) {
   return (
-    <div className="flex p-2 divide-x">
-      <ToolSection>
-        <Tool type="tile" icon="image" />
-        <Tool type="eraser" icon="eraser" />
-      </ToolSection>
-      <ToolSection>
-        <Tool type="grid" icon="border-all" />
-      </ToolSection>
-    </div>
+    <div className="flex p-2 divide-x border-b border-gray-400">{children}</div>
   )
 }
