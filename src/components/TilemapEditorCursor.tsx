@@ -26,11 +26,9 @@ export function TilemapEditorCursor({ tilemap, anchor }: Props) {
 
           if (!cursorRef || !anchor) return
 
-          const offsetY = anchor.offsetTop
-          const offsetY2 = anchor.parentElement?.offsetTop ?? 0
-          const offsetX = anchor.offsetLeft
+          const { x: offsetX, y: offsetY } = anchor.getBoundingClientRect()
 
-          const top = 32 * Math.floor((clientY - offsetY - offsetY2) / 32) + 0.5
+          const top = 32 * Math.floor((clientY - offsetY) / 32) + 0.5
           const left = 32 * Math.floor((clientX - offsetX) / 32) - 0.5
 
           if (isHoveringTilemapEditor) {
