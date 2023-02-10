@@ -69,6 +69,8 @@ export function TilemapEditor({ tilemap, onTileClick }: Props) {
             const cursorX = Math.floor((cursorRef?.offsetLeft ?? 0) / 32)
             const cursorY = Math.floor((cursorRef?.offsetTop ?? 0) / 32)
 
+            if (cursorX <= 0 || cursorY <= 0) return
+
             onTileClick({
               tileX: cursorX,
               tileY: cursorY,
