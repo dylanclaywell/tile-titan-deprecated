@@ -5,16 +5,26 @@ export type ToolType = 'tile' | 'eraser' | 'grid'
 export type Tool = {
   type: ToolType
   canvas: HTMLCanvasElement
+  tilesetX?: number
+  tilesetY?: number
+  tilesetName?: string
 }
 
 export type State = {
   tool: Tool
+  cursorRef: HTMLDivElement | null
   showGrid: boolean
 }
 
 export type Actions = {
-  updateCanvas: (tileCanvas: HTMLCanvasElement) => void
+  updateCanvas: (args: {
+    canvas: HTMLCanvasElement
+    tilesetX: number
+    tilesetY: number
+    tilesetName: string
+  }) => void
   handleToolClick: (type: ToolType) => void
+  setCursorRef: (cursorRef: HTMLDivElement | null) => void
 }
 
 const tileCanvas = document.createElement('canvas')
@@ -26,6 +36,7 @@ const initialState: State = {
     type: 'tile',
     canvas: tileCanvas,
   },
+  cursorRef: null,
   showGrid: true,
 }
 
@@ -34,13 +45,25 @@ export const ToolContext = createContext<[State, Actions]>([
   {
     updateCanvas: () => undefined,
     handleToolClick: () => undefined,
+    setCursorRef: () => undefined,
   },
 ])
 
 export function ToolProvider({ children }: { children: React.ReactNode }) {
+  const [cursorRef, setCursorRef] = useState<HTMLDivElement | null>(null)
   const [state, setState] = useState<State>(initialState)
 
-  function updateCanvas(canvas: HTMLCanvasElement) {
+  function updateCanvas({
+    canvas,
+    tilesetX,
+    tilesetY,
+    tilesetName,
+  }: {
+    canvas: HTMLCanvasElement
+    tilesetX: number
+    tilesetY: number
+    tilesetName: string
+  }) {
     if (state.tool.type !== 'tile') return
 
     setState({
@@ -48,6 +71,9 @@ export function ToolProvider({ children }: { children: React.ReactNode }) {
       tool: {
         ...state.tool,
         canvas,
+        tilesetX,
+        tilesetY,
+        tilesetName,
       },
     })
   }
@@ -97,10 +123,11 @@ export function ToolProvider({ children }: { children: React.ReactNode }) {
   const actions = {
     updateCanvas,
     handleToolClick,
+    setCursorRef,
   }
 
   return (
-    <ToolContext.Provider value={[state, actions]}>
+    <ToolContext.Provider value={[{ ...state, cursorRef }, actions]}>
       {children}
     </ToolContext.Provider>
   )

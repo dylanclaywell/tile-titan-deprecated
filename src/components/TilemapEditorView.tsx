@@ -21,6 +21,30 @@ export function TilemapEditorView() {
   const [showSettings, setShowSettings] = React.useState(false)
   const [tilemap, setTilemap] = React.useState<TilemapType>(initialTilemap)
 
+  function updateTile({
+    tileX,
+    tileY,
+    tilesetX,
+    tilesetY,
+    tilesetName,
+  }: {
+    tileX: number
+    tileY: number
+    tilesetX: number
+    tilesetY: number
+    tilesetName: string
+  }) {
+    setTilemap((tilemap) => {
+      const newTilemap = { ...tilemap }
+      newTilemap.data[tileY][tileX] = {
+        tilesetName,
+        tilesetX,
+        tilesetY,
+      }
+      return newTilemap
+    })
+  }
+
   return (
     <div className="basis-[70vw] h-screen">
       <Tools>
@@ -57,7 +81,7 @@ export function TilemapEditorView() {
           />
         </ToolSection>
       </Tools>
-      <TilemapEditor tilemap={tilemap} />
+      <TilemapEditor tilemap={tilemap} onTileClick={updateTile} />
       <TilemapEditorSettings
         isOpen={showSettings}
         updateTilemap={setTilemap}

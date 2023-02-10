@@ -9,14 +9,11 @@ export interface Props {
 }
 
 export function TilemapEditorCursor({ tilemap, anchor }: Props) {
-  const [toolState] = useContext(ToolContext)
-  const [cursorRef, setCursorRef] = React.useState<HTMLDivElement | null>(null)
+  const [{ cursorRef, tool }, { setCursorRef }] = useContext(ToolContext)
 
   useEffect(
     function registerTileTool() {
       function onMouseMove(e: MouseEvent) {
-        if (toolState.tool.type !== 'tile') return
-
         const { clientX, clientY } = e
 
         if (e.target instanceof HTMLDivElement) {
@@ -50,7 +47,7 @@ export function TilemapEditorCursor({ tilemap, anchor }: Props) {
     [tilemap, cursorRef]
   )
 
-  const currentTool = toolState.tool
+  const currentTool = tool
 
   return (
     <div

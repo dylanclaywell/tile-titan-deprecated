@@ -43,6 +43,9 @@ export function TilesetView() {
 
     const coords = e.target.coords
     const [x1, y1, x2, y2] = coords.split(',').map((n) => parseInt(n))
+    const tilesetX = x1 / 32
+    const tilesetY = y1 / 32
+    const tilesetName = e.target?.dataset?.['tilesetName'] ?? 'unknown'
 
     const width = x2 - x1
     const height = y2 - y1
@@ -52,7 +55,7 @@ export function TilesetView() {
     canvas.height = height
     const context = canvas.getContext('2d')
     context?.drawImage(imageRef, x1, y1, width, height, 0, 0, width, height)
-    updateToolCanvas(canvas)
+    updateToolCanvas({ canvas, tilesetX, tilesetY, tilesetName })
   }
 
   const imageWidth = imageIsLoaded && imageRef ? imageRef.width : 0
@@ -77,6 +80,8 @@ export function TilesetView() {
                 coords={`${j * 32},${i * 32},${j * 32 + 32},${i * 32 + 32}`}
                 href="#"
                 alt="tile"
+                // TODO fix this
+                data-tileset-name={tilesets[0].name}
               />
             )
           })
