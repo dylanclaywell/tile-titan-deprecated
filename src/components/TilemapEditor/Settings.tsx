@@ -1,9 +1,9 @@
 import React, { useState } from 'react'
 import z from 'zod'
 
-import TextField from './TextField'
-import { Tilemap, TilemapType } from '../types/tilemap'
-import { generateMap } from '../utils/generateMap'
+import TextField from '../TextField'
+import { Tilemap, TilemapType } from '../../types/tilemap'
+import { generateMap } from '../../utils/generateMap'
 
 const FormElement = z.instanceof(HTMLFormElement)
 const FormData = z.object({

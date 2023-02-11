@@ -1,9 +1,11 @@
 import React, { useContext, useEffect } from 'react'
 import clsx from 'clsx'
 
-import { TilemapType } from '../types/tilemap'
-import { EditorContext } from '../contexts/ToolContext'
-import { TilemapEditorCursor } from './TilemapEditorCursor'
+import { TilemapType } from '../../types/tilemap'
+import { EditorContext } from '../../contexts/ToolContext'
+import { TilemapEditorCursor } from './Cursor'
+import { clamp } from '../../utils/clamp'
+import { Tile } from './Tile'
 
 export interface Props {
   tilemap: TilemapType
@@ -20,29 +22,64 @@ export function TilemapEditor({ tilemap, onTileClick }: Props) {
   const [ref, setRef] = React.useState<HTMLDivElement | null>(null)
   const [{ tool, showGrid, cursorRef, zoomLevel }, { setZoomLevel }] =
     useContext(EditorContext)
-  const [mouseIsDown, setMouseIsDown] = React.useState(false)
+  const [leftMouseButtonIsDown, setLeftMouseButtonIsDown] =
+    React.useState(false)
+  const [middleMouseButtonIsDown, setMiddleMouseButtonIsDown] =
+    React.useState(false)
 
   useEffect(
     function registerEventListeners() {
-      function handleMouseDown() {
-        setMouseIsDown(true)
+      console.log('BLAH')
+      let prevX = 0
+      let prevY = 0
+
+      function handleMouseDown(e: MouseEvent) {
+        if (e.button === 0) {
+          setLeftMouseButtonIsDown(true)
+        } else if (e.button === 1) {
+          prevX = e.x
+          prevY = e.y
+          setMiddleMouseButtonIsDown(true)
+        }
       }
 
-      function handleMouseUp() {
-        setMouseIsDown(false)
+      function handleMouseUp(e: MouseEvent) {
+        if (e.button === 0) {
+          setLeftMouseButtonIsDown(false)
+        } else if (e.button === 1) {
+          setMiddleMouseButtonIsDown(false)
+        }
       }
 
       function handleMouseMove(e: MouseEvent) {
         if (
-          mouseIsDown &&
+          leftMouseButtonIsDown &&
           e.target instanceof HTMLDivElement &&
           e.target.dataset.type === 'tile'
         ) {
-          handleMouseClick(e)
+          handleLeftMouseButtonClick(e)
+        }
+
+        if (middleMouseButtonIsDown) {
+          if (ref) {
+            const top = Number(ref.style.top?.split('px')?.[0] || ref.offsetTop)
+            const left = Number(
+              ref.style.left?.split('px')?.[0] || ref.offsetLeft
+            )
+
+            const deltaX = -clamp(prevX - e.x, -10, 10)
+            const deltaY = -clamp(prevY - e.y, -10, 10)
+
+            ref.style.left = `${left + deltaX}px`
+            ref.style.top = `${top + deltaY}px`
+
+            prevX = e.x
+            prevY = e.y
+          }
         }
       }
 
-      function handleMouseClick(e: MouseEvent) {
+      function handleLeftMouseButtonClick(e: MouseEvent) {
         if (
           e.target instanceof HTMLDivElement &&
           e.target.dataset.type === 'tile'
@@ -103,21 +140,28 @@ export function TilemapEditor({ tilemap, onTileClick }: Props) {
         }
       }
 
-      document.addEventListener('click', handleMouseClick)
+      document.addEventListener('click', handleLeftMouseButtonClick)
       document.addEventListener('mousedown', handleMouseDown)
       document.addEventListener('mouseup', handleMouseUp)
       document.addEventListener('mousemove', handleMouseMove)
       document.addEventListener('wheel', handleMouseWheel)
 
       return () => {
-        document.removeEventListener('click', handleMouseClick)
+        document.removeEventListener('click', handleLeftMouseButtonClick)
         document.removeEventListener('mousedown', handleMouseDown)
         document.removeEventListener('mouseup', handleMouseUp)
         document.removeEventListener('mousemove', handleMouseMove)
         document.removeEventListener('wheel', handleMouseWheel)
       }
     },
-    [mouseIsDown, tool, cursorRef, onTileClick, zoomLevel]
+    [
+      leftMouseButtonIsDown,
+      middleMouseButtonIsDown,
+      tool,
+      cursorRef,
+      onTileClick,
+      zoomLevel,
+    ]
   )
 
   return (
@@ -129,7 +173,7 @@ export function TilemapEditor({ tilemap, onTileClick }: Props) {
         ref={(el) => setRef(el)}
         id="tilemap-grid"
         className={clsx(
-          'grid border-l border-b border-black border-opacity-10 relative',
+          'grid border-l border-b border-black border-opacity-10 absolute',
           {
             'border-r border-t': !showGrid,
           }
@@ -144,22 +188,14 @@ export function TilemapEditor({ tilemap, onTileClick }: Props) {
         {tilemap.data.map((row, y) => {
           return row.map((tile, x) => {
             return (
-              <div
-                key={`tile-${x}`}
-                data-type="tile"
-                data-x={x}
-                data-y={y}
-                className={clsx({
-                  'border-t border-r border-black border-opacity-10 select-none':
-                    showGrid,
-                })}
-                style={{
-                  width: tilemap.tileWidth,
-                  height: tilemap.tileHeight,
-                }}
-              >
-                <img className="pointer-events-none outline-none select-none" />
-              </div>
+              <Tile
+                key={`${x}-${y}`}
+                x={x}
+                y={y}
+                tileWidth={tilemap.tileWidth}
+                tileHeight={tilemap.tileHeight}
+                showGrid={showGrid}
+              />
             )
           })
         })}

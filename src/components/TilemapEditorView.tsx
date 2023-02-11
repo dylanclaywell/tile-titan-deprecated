@@ -5,7 +5,7 @@ import { TilemapEditor } from './TilemapEditor'
 import { Tools } from './Tools/Tools'
 import { ToolSection } from './Tools/ToolSection'
 import { Tool } from './Tools/Tool'
-import { TilemapEditorSettings } from './TilemapEditorSettings'
+import { TilemapEditorSettings } from './TilemapEditor/Settings'
 import { generateMap } from '../utils/generateMap'
 
 const initialTilemap: TilemapType = {

@@ -1,7 +1,7 @@
 import React, { useEffect, useContext } from 'react'
 
-import { EditorContext } from '../contexts/ToolContext'
-import { TilemapType } from '../types/tilemap'
+import { EditorContext } from '../../contexts/ToolContext'
+import { TilemapType } from '../../types/tilemap'
 
 export interface Props {
   tilemap: TilemapType
