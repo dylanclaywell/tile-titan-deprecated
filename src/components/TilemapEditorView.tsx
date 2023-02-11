@@ -46,7 +46,7 @@ export function TilemapEditorView() {
   }
 
   return (
-    <div className="basis-[70vw] h-screen">
+    <div className="basis-[70vw] h-screen overflow-hidden">
       <Tools>
         <ToolSection>
           <Tool

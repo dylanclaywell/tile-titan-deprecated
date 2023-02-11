@@ -13,6 +13,7 @@ export type Tool = {
 export type State = {
   tool: Tool
   cursorRef: HTMLDivElement | null
+  zoomLevel: number
   showGrid: boolean
 }
 
@@ -25,6 +26,7 @@ export type Actions = {
   }) => void
   handleToolClick: (type: ToolType) => void
   setCursorRef: (cursorRef: HTMLDivElement | null) => void
+  setZoomLevel: (level: number) => void
 }
 
 const tileCanvas = document.createElement('canvas')
@@ -36,20 +38,22 @@ const initialState: State = {
     type: 'tile',
     canvas: tileCanvas,
   },
+  zoomLevel: 1,
   cursorRef: null,
   showGrid: true,
 }
 
-export const ToolContext = createContext<[State, Actions]>([
+export const EditorContext = createContext<[State, Actions]>([
   initialState,
   {
     updateCanvas: () => undefined,
     handleToolClick: () => undefined,
     setCursorRef: () => undefined,
+    setZoomLevel: () => undefined,
   },
 ])
 
-export function ToolProvider({ children }: { children: React.ReactNode }) {
+export function EditorProvider({ children }: { children: React.ReactNode }) {
   const [cursorRef, setCursorRef] = useState<HTMLDivElement | null>(null)
   const [state, setState] = useState<State>(initialState)
 
@@ -120,15 +124,23 @@ export function ToolProvider({ children }: { children: React.ReactNode }) {
     }
   }
 
+  function setZoomLevel(level: number) {
+    setState({
+      ...state,
+      zoomLevel: level,
+    })
+  }
+
   const actions = {
     updateCanvas,
     handleToolClick,
     setCursorRef,
+    setZoomLevel,
   }
 
   return (
-    <ToolContext.Provider value={[{ ...state, cursorRef }, actions]}>
+    <EditorContext.Provider value={[{ ...state, cursorRef }, actions]}>
       {children}
-    </ToolContext.Provider>
+    </EditorContext.Provider>
   )
 }

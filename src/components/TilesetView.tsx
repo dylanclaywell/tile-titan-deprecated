@@ -6,7 +6,7 @@ import {
   changeTilesetName,
   getTilesets,
 } from '../indexedDB/tileset'
-import { ToolContext } from '../contexts/ToolContext'
+import { EditorContext } from '../contexts/ToolContext'
 import TextField from './TextField'
 
 export function TilesetView() {
@@ -14,7 +14,7 @@ export function TilesetView() {
   const [imageIsLoaded, setImageIsLoaded] = useState(false)
   const [cursorRef, setCursorRef] = useState<HTMLDivElement | null>(null)
   const [imageRef, setImageRef] = useState<HTMLImageElement | null>(null)
-  const [, { updateCanvas: updateToolCanvas }] = useContext(ToolContext)
+  const [, { updateCanvas: updateToolCanvas }] = useContext(EditorContext)
 
   async function refreshTilesets() {
     setTilesets(await getTilesets())
@@ -90,9 +90,9 @@ export function TilesetView() {
     ) : null
 
   return (
-    <div className="overflow-scroll basis-[30vw] border-gray-400">
-      {tilesets.map((tileset) => (
-        <>
+    <div className="overflow-scroll basis-[30vw] border-gray-400 shrink-0">
+      {tilesets.map((tileset, i) => (
+        <div key={`${tileset.name}-${i}`}>
           <TextField
             label="Name"
             value={tileset.name}
@@ -118,7 +118,7 @@ export function TilesetView() {
             />
             {map}
           </div>
-        </>
+        </div>
       ))}
       <TilesetUploader refreshTilesets={refreshTilesets} />
     </div>

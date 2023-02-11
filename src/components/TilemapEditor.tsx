@@ -2,7 +2,7 @@ import React, { useContext, useEffect } from 'react'
 import clsx from 'clsx'
 
 import { TilemapType } from '../types/tilemap'
-import { ToolContext } from '../contexts/ToolContext'
+import { EditorContext } from '../contexts/ToolContext'
 import { TilemapEditorCursor } from './TilemapEditorCursor'
 
 export interface Props {
@@ -18,7 +18,8 @@ export interface Props {
 
 export function TilemapEditor({ tilemap, onTileClick }: Props) {
   const [ref, setRef] = React.useState<HTMLDivElement | null>(null)
-  const [{ tool, showGrid, cursorRef }] = useContext(ToolContext)
+  const [{ tool, showGrid, cursorRef, zoomLevel }, { setZoomLevel }] =
+    useContext(EditorContext)
   const [mouseIsDown, setMouseIsDown] = React.useState(false)
 
   useEffect(
@@ -46,14 +47,22 @@ export function TilemapEditor({ tilemap, onTileClick }: Props) {
           e.target instanceof HTMLDivElement &&
           e.target.dataset.type === 'tile'
         ) {
+          const img = e.target.querySelector('img')
+
+          if (!img) return
+
+          const cursorX = Math.floor((cursorRef?.offsetLeft ?? 0) / 32)
+          const cursorY = Math.floor((cursorRef?.offsetTop ?? 0) / 32)
+
+          if (
+            cursorX < 0 ||
+            cursorX > tilemap.width ||
+            cursorY < 0 ||
+            cursorY > tilemap.height
+          )
+            return
+
           if (tool.type === 'tile') {
-            const img = e.target.querySelector('img')
-
-            if (!img) return
-
-            const cursorX = Math.floor((cursorRef?.offsetLeft ?? 0) / 32)
-            const cursorY = Math.floor((cursorRef?.offsetTop ?? 0) / 32)
-
             onTileClick({
               tileX: cursorX,
               tileY: cursorY,
@@ -64,13 +73,6 @@ export function TilemapEditor({ tilemap, onTileClick }: Props) {
 
             img.src = tool.canvas.toDataURL()
           } else if (tool.type === 'eraser') {
-            const img = e.target.querySelector('img')
-
-            const cursorX = Math.floor((cursorRef?.offsetLeft ?? 0) / 32)
-            const cursorY = Math.floor((cursorRef?.offsetTop ?? 0) / 32)
-
-            if (cursorX <= 0 || cursorY <= 0) return
-
             onTileClick({
               tileX: cursorX,
               tileY: cursorY,
@@ -79,9 +81,24 @@ export function TilemapEditor({ tilemap, onTileClick }: Props) {
               tilesetName: '',
             })
 
-            if (!img) return
-
             img.src = ''
+          }
+        }
+      }
+
+      function handleMouseWheel(e: WheelEvent) {
+        if (
+          e.target instanceof HTMLDivElement &&
+          (e.target?.id === 'tilemap-editor' ||
+            e.target?.id === 'tilemap-grid' ||
+            e.target.dataset?.['type'] === 'tile')
+        ) {
+          const delta = e.deltaY
+
+          if (delta > 0) {
+            setZoomLevel(zoomLevel - 0.1 * zoomLevel)
+          } else if (delta < 0) {
+            setZoomLevel(zoomLevel + 0.1 * zoomLevel)
           }
         }
       }
@@ -90,15 +107,17 @@ export function TilemapEditor({ tilemap, onTileClick }: Props) {
       document.addEventListener('mousedown', handleMouseDown)
       document.addEventListener('mouseup', handleMouseUp)
       document.addEventListener('mousemove', handleMouseMove)
+      document.addEventListener('wheel', handleMouseWheel)
 
       return () => {
         document.removeEventListener('click', handleMouseClick)
         document.removeEventListener('mousedown', handleMouseDown)
         document.removeEventListener('mouseup', handleMouseUp)
         document.removeEventListener('mousemove', handleMouseMove)
+        document.removeEventListener('wheel', handleMouseWheel)
       }
     },
-    [mouseIsDown, tool, cursorRef, onTileClick]
+    [mouseIsDown, tool, cursorRef, onTileClick, zoomLevel]
   )
 
   return (
@@ -118,6 +137,7 @@ export function TilemapEditor({ tilemap, onTileClick }: Props) {
         style={{
           gridTemplateColumns: `repeat(${tilemap.width}, ${tilemap.tileWidth}px)`,
           gridTemplateRows: `repeat(${tilemap.height}, ${tilemap.tileHeight}px)`,
+          zoom: zoomLevel,
         }}
       >
         <TilemapEditorCursor anchor={ref} tilemap={tilemap} />

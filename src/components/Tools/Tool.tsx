@@ -1,7 +1,7 @@
 import React, { useContext } from 'react'
 import clsx from 'clsx'
 
-import { ToolContext, ToolType } from '../../contexts/ToolContext'
+import { EditorContext, ToolType } from '../../contexts/ToolContext'
 
 type BaseProps = {
   name: string
@@ -17,7 +17,7 @@ export type Props =
     })
 
 export function Tool({ name, icon, ...rest }: Props) {
-  const [toolState, { handleToolClick: setTool }] = useContext(ToolContext)
+  const [toolState, { handleToolClick: setTool }] = useContext(EditorContext)
 
   return (
     <button

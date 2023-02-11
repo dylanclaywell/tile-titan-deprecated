@@ -1,6 +1,6 @@
 import React, { useEffect, useContext } from 'react'
 
-import { ToolContext } from '../contexts/ToolContext'
+import { EditorContext } from '../contexts/ToolContext'
 import { TilemapType } from '../types/tilemap'
 
 export interface Props {
@@ -9,7 +9,8 @@ export interface Props {
 }
 
 export function TilemapEditorCursor({ tilemap, anchor }: Props) {
-  const [{ cursorRef, tool }, { setCursorRef }] = useContext(ToolContext)
+  const [{ cursorRef, tool, zoomLevel }, { setCursorRef }] =
+    useContext(EditorContext)
 
   useEffect(
     function registerTileTool() {
@@ -25,8 +26,14 @@ export function TilemapEditorCursor({ tilemap, anchor }: Props) {
 
           const { x: offsetX, y: offsetY } = anchor.getBoundingClientRect()
 
-          const top = 32 * Math.floor((clientY - offsetY) / 32) + 0.5
-          const left = 32 * Math.floor((clientX - offsetX) / 32) - 0.5
+          const tileSize = 32
+
+          const top =
+            tileSize * Math.floor((clientY / zoomLevel - offsetY) / tileSize) +
+            0.5
+          const left =
+            tileSize * Math.floor((clientX / zoomLevel - offsetX) / tileSize) -
+            0.5
 
           if (isHoveringTilemapEditor) {
             cursorRef.classList.remove('hidden')
@@ -44,7 +51,7 @@ export function TilemapEditorCursor({ tilemap, anchor }: Props) {
         document.removeEventListener('mousemove', onMouseMove)
       }
     },
-    [tilemap, cursorRef]
+    [tilemap, cursorRef, zoomLevel]
   )
 
   const currentTool = tool
