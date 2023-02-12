@@ -1,11 +1,11 @@
-import React, { useEffect, useContext } from 'react'
+import React, { useEffect, useContext, MutableRefObject } from 'react'
 
 import { EditorContext } from '../../contexts/ToolContext'
 import { TilemapType } from '../../types/tilemap'
 
 export interface Props {
   tilemap: TilemapType
-  anchor: HTMLElement | null
+  anchor: (HTMLElement | null) | MutableRefObject<HTMLDivElement | null>
 }
 
 export function TilemapEditorCursor({ tilemap, anchor }: Props) {
@@ -24,7 +24,10 @@ export function TilemapEditorCursor({ tilemap, anchor }: Props) {
 
           if (!cursorRef.current || !anchor) return
 
-          const { x: offsetX, y: offsetY } = anchor.getBoundingClientRect()
+          const { x: offsetX, y: offsetY } =
+            'current' in anchor
+              ? anchor.current?.getBoundingClientRect() ?? { x: 0, y: 0 }
+              : anchor.getBoundingClientRect()
 
           const tileSize = 32
 
@@ -51,7 +54,7 @@ export function TilemapEditorCursor({ tilemap, anchor }: Props) {
         document.removeEventListener('mousemove', onMouseMove)
       }
     },
-    [tilemap, zoomLevel]
+    [zoomLevel]
   )
 
   const currentTool = tool

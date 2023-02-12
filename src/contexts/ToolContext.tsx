@@ -59,11 +59,6 @@ export function EditorProvider({ children }: { children: React.ReactNode }) {
 
   function setCursorRef(ref: HTMLDivElement | null) {
     cursorRef.current = ref
-
-    // setState({
-    //   ...state,
-    //   cursorRef,
-    // })
   }
 
   function updateCanvas({

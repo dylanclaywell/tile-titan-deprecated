@@ -19,7 +19,7 @@ export interface Props {
 }
 
 export function TilemapEditor({ tilemap, onTileClick }: Props) {
-  const [ref, setRef] = React.useState<HTMLDivElement | null>(null)
+  const gridRef = useRef<HTMLDivElement | null>(null)
   const [{ tool, showGrid, cursorRef, zoomLevel }, { setZoomLevel }] =
     useContext(EditorContext)
   const [mouseState, setMouseState] = useState({
@@ -35,7 +35,6 @@ export function TilemapEditor({ tilemap, onTileClick }: Props) {
 
   useEffect(
     function registerEventListeners() {
-      console.log('registering event listeners')
       let prevX = 0
       let prevY = 0
 
@@ -78,17 +77,21 @@ export function TilemapEditor({ tilemap, onTileClick }: Props) {
         }
 
         if (middleMouseButtonIsDown) {
-          if (ref) {
-            const top = Number(ref.style.top?.split('px')?.[0] || ref.offsetTop)
+          if (gridRef.current) {
+            const top = Number(
+              gridRef.current.style.top?.split('px')?.[0] ||
+                gridRef.current.offsetTop
+            )
             const left = Number(
-              ref.style.left?.split('px')?.[0] || ref.offsetLeft
+              gridRef.current.style.left?.split('px')?.[0] ||
+                gridRef.current.offsetLeft
             )
 
             const deltaX = -clamp(prevX - e.x, -10, 10)
             const deltaY = -clamp(prevY - e.y, -10, 10)
 
-            ref.style.left = `${left + deltaX}px`
-            ref.style.top = `${top + deltaY}px`
+            gridRef.current.style.left = `${left + deltaX}px`
+            gridRef.current.style.top = `${top + deltaY}px`
 
             prevX = e.x
             prevY = e.y
@@ -180,7 +183,7 @@ export function TilemapEditor({ tilemap, onTileClick }: Props) {
       className="items-center flex justify-center bg-gray-300 relative h-[calc(100%-3.5rem-1px)]"
     >
       <div
-        ref={(el) => setRef(el)}
+        ref={gridRef}
         id="tilemap-grid"
         className={clsx(
           'grid border-l border-b border-black border-opacity-10 absolute',
@@ -194,7 +197,7 @@ export function TilemapEditor({ tilemap, onTileClick }: Props) {
           zoom: zoomLevel,
         }}
       >
-        <TilemapEditorCursor anchor={ref} tilemap={tilemap} />
+        <TilemapEditorCursor anchor={gridRef} tilemap={tilemap} />
         {tilemap.data.map((row, y) => {
           return row.map((tile, x) => {
             return (
