@@ -108,8 +108,8 @@ export function TilemapEditor({ tilemap, onTileClick }: Props) {
 
           if (!img) return
 
-          const cursorX = Math.floor((cursorRef.current?.offsetLeft ?? 0) / 32)
-          const cursorY = Math.floor((cursorRef.current?.offsetTop ?? 0) / 32)
+          const cursorX = Math.ceil((cursorRef.current?.offsetLeft ?? 0) / 32)
+          const cursorY = Math.ceil((cursorRef.current?.offsetTop ?? 0) / 32)
 
           if (
             cursorX < 0 ||
