@@ -22,7 +22,7 @@ export function TilemapEditorCursor({ tilemap, anchor }: Props) {
             e.target.id === 'tilemap-editor' ||
             e.target.parentElement?.id === 'tilemap-grid'
 
-          if (!cursorRef || !anchor) return
+          if (!cursorRef.current || !anchor) return
 
           const { x: offsetX, y: offsetY } = anchor.getBoundingClientRect()
 
@@ -36,11 +36,11 @@ export function TilemapEditorCursor({ tilemap, anchor }: Props) {
             0.5
 
           if (isHoveringTilemapEditor) {
-            cursorRef.classList.remove('hidden')
-            cursorRef.style.top = `${top}px`
-            cursorRef.style.left = `${left}px`
+            cursorRef.current.classList.remove('hidden')
+            cursorRef.current.style.top = `${top}px`
+            cursorRef.current.style.left = `${left}px`
           } else {
-            cursorRef.classList.add('hidden')
+            cursorRef.current.classList.add('hidden')
           }
         }
       }
@@ -51,7 +51,7 @@ export function TilemapEditorCursor({ tilemap, anchor }: Props) {
         document.removeEventListener('mousemove', onMouseMove)
       }
     },
-    [tilemap, cursorRef, zoomLevel]
+    [tilemap, zoomLevel]
   )
 
   const currentTool = tool

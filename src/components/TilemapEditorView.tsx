@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useCallback } from 'react'
 
 import { TilemapType } from '../types/tilemap'
 import { TilemapEditor } from './TilemapEditor'
@@ -21,29 +21,32 @@ export function TilemapEditorView() {
   const [showSettings, setShowSettings] = React.useState(false)
   const [tilemap, setTilemap] = React.useState<TilemapType>(initialTilemap)
 
-  function updateTile({
-    tileX,
-    tileY,
-    tilesetX,
-    tilesetY,
-    tilesetName,
-  }: {
-    tileX: number
-    tileY: number
-    tilesetX: number
-    tilesetY: number
-    tilesetName: string
-  }) {
-    setTilemap((tilemap) => {
-      const newTilemap = { ...tilemap }
-      newTilemap.data[tileY][tileX] = {
-        tilesetName,
-        tilesetX,
-        tilesetY,
-      }
-      return newTilemap
-    })
-  }
+  const updateTile = useCallback(
+    ({
+      tileX,
+      tileY,
+      tilesetX,
+      tilesetY,
+      tilesetName,
+    }: {
+      tileX: number
+      tileY: number
+      tilesetX: number
+      tilesetY: number
+      tilesetName: string
+    }) => {
+      setTilemap((tilemap) => {
+        const newTilemap = { ...tilemap }
+        newTilemap.data[tileY][tileX] = {
+          tilesetName,
+          tilesetX,
+          tilesetY,
+        }
+        return newTilemap
+      })
+    },
+    []
+  )
 
   return (
     <div className="basis-[70vw] h-screen overflow-hidden">

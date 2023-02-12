@@ -1,4 +1,4 @@
-import React, { useContext, useEffect } from 'react'
+import React, { useContext, useEffect, useRef, useState } from 'react'
 import clsx from 'clsx'
 
 import { TilemapType } from '../../types/tilemap'
@@ -22,35 +22,53 @@ export function TilemapEditor({ tilemap, onTileClick }: Props) {
   const [ref, setRef] = React.useState<HTMLDivElement | null>(null)
   const [{ tool, showGrid, cursorRef, zoomLevel }, { setZoomLevel }] =
     useContext(EditorContext)
-  const [leftMouseButtonIsDown, setLeftMouseButtonIsDown] =
-    React.useState(false)
-  const [middleMouseButtonIsDown, setMiddleMouseButtonIsDown] =
-    React.useState(false)
+  const [mouseState, setMouseState] = useState({
+    leftMouseButtonIsDown: false,
+    middleMouseButtonIsDown: false,
+  })
+  const mouseStateRef = useRef(mouseState)
+
+  function setMouseStateRef(state: Partial<typeof mouseState>) {
+    mouseStateRef.current = { ...mouseStateRef.current, ...state }
+    setMouseState((currentState) => ({ ...currentState, ...state }))
+  }
 
   useEffect(
     function registerEventListeners() {
+      console.log('registering event listeners')
       let prevX = 0
       let prevY = 0
 
       function handleMouseDown(e: MouseEvent) {
         if (e.button === 0) {
-          setLeftMouseButtonIsDown(true)
+          setMouseStateRef({
+            leftMouseButtonIsDown: true,
+          })
         } else if (e.button === 1) {
           prevX = e.x
           prevY = e.y
-          setMiddleMouseButtonIsDown(true)
+          setMouseStateRef({
+            middleMouseButtonIsDown: true,
+          })
         }
       }
 
       function handleMouseUp(e: MouseEvent) {
         if (e.button === 0) {
-          setLeftMouseButtonIsDown(false)
+          setMouseStateRef({
+            leftMouseButtonIsDown: false,
+          })
         } else if (e.button === 1) {
-          setMiddleMouseButtonIsDown(false)
+          setMouseStateRef({
+            middleMouseButtonIsDown: false,
+          })
         }
       }
 
       function handleMouseMove(e: MouseEvent) {
+        const { leftMouseButtonIsDown, middleMouseButtonIsDown } =
+          mouseStateRef.current
+
         if (
           leftMouseButtonIsDown &&
           e.target instanceof HTMLDivElement &&
@@ -87,8 +105,8 @@ export function TilemapEditor({ tilemap, onTileClick }: Props) {
 
           if (!img) return
 
-          const cursorX = Math.floor((cursorRef?.offsetLeft ?? 0) / 32)
-          const cursorY = Math.floor((cursorRef?.offsetTop ?? 0) / 32)
+          const cursorX = Math.floor((cursorRef.current?.offsetLeft ?? 0) / 32)
+          const cursorY = Math.floor((cursorRef.current?.offsetTop ?? 0) / 32)
 
           if (
             cursorX < 0 ||
@@ -153,14 +171,7 @@ export function TilemapEditor({ tilemap, onTileClick }: Props) {
         document.removeEventListener('wheel', handleMouseWheel)
       }
     },
-    [
-      leftMouseButtonIsDown,
-      middleMouseButtonIsDown,
-      tool,
-      cursorRef,
-      onTileClick,
-      zoomLevel,
-    ]
+    [tool, zoomLevel]
   )
 
   return (

@@ -1,4 +1,4 @@
-import React, { createContext, useState } from 'react'
+import React, { createContext, useRef, useState } from 'react'
 
 export type ToolType = 'tile' | 'eraser' | 'grid'
 
@@ -12,7 +12,7 @@ export type Tool = {
 
 export type State = {
   tool: Tool
-  cursorRef: HTMLDivElement | null
+  cursorRef: React.MutableRefObject<HTMLDivElement | null>
   zoomLevel: number
   showGrid: boolean
 }
@@ -39,7 +39,7 @@ const initialState: State = {
     canvas: tileCanvas,
   },
   zoomLevel: 1,
-  cursorRef: null,
+  cursorRef: { current: null },
   showGrid: true,
 }
 
@@ -54,8 +54,17 @@ export const EditorContext = createContext<[State, Actions]>([
 ])
 
 export function EditorProvider({ children }: { children: React.ReactNode }) {
-  const [cursorRef, setCursorRef] = useState<HTMLDivElement | null>(null)
+  const cursorRef = useRef<HTMLDivElement | null>(null)
   const [state, setState] = useState<State>(initialState)
+
+  function setCursorRef(ref: HTMLDivElement | null) {
+    cursorRef.current = ref
+
+    // setState({
+    //   ...state,
+    //   cursorRef,
+    // })
+  }
 
   function updateCanvas({
     canvas,
