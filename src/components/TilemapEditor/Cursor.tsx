@@ -32,11 +32,9 @@ export function TilemapEditorCursor({ tilemap, anchor }: Props) {
           const tileSize = 32
 
           const top =
-            tileSize * Math.floor((clientY / zoomLevel - offsetY) / tileSize) +
-            0.5
+            tileSize * Math.floor((clientY / zoomLevel - offsetY) / tileSize)
           const left =
-            tileSize * Math.floor((clientX / zoomLevel - offsetX) / tileSize) -
-            0.5
+            tileSize * Math.floor((clientX / zoomLevel - offsetX) / tileSize)
 
           if (isHoveringTilemapEditor) {
             cursorRef.current.classList.remove('hidden')
