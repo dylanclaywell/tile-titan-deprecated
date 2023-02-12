@@ -29,7 +29,6 @@ export function TilemapEditor({ tilemap, onTileClick }: Props) {
 
   useEffect(
     function registerEventListeners() {
-      console.log('BLAH')
       let prevX = 0
       let prevY = 0
 
@@ -93,9 +92,9 @@ export function TilemapEditor({ tilemap, onTileClick }: Props) {
 
           if (
             cursorX < 0 ||
-            cursorX > tilemap.width ||
+            cursorX > tilemap.width - 1 ||
             cursorY < 0 ||
-            cursorY > tilemap.height
+            cursorY > tilemap.height - 1
           )
             return
 
