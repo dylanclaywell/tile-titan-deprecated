@@ -10,9 +10,10 @@ export interface Props {
   }[]
   onChange: (value: string) => void
   value: string
+  inputProps?: React.InputHTMLAttributes<HTMLInputElement>
 }
 
-export function SelectField({ options, onChange, value }: Props) {
+export function SelectField({ options, onChange, value, inputProps }: Props) {
   const [isOpen, setIsOpen] = useState(false)
 
   return (
@@ -29,6 +30,7 @@ export function SelectField({ options, onChange, value }: Props) {
         )}
         label="Tileset"
         inputProps={{
+          ...inputProps,
           readOnly: true,
           onClick: () => setIsOpen(!isOpen),
           placeholder: 'Select a tileset',

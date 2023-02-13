@@ -9,8 +9,8 @@ import { EditorContext } from '../contexts/EditorContext'
 
 export function TilemapEditorView() {
   const [
-    { layers, selectedLayerId },
-    { updateTilemap, updateTilemapSettings },
+    { layers, selectedLayerId, tool, showGrid },
+    { updateTilemap, updateTilemapSettings, handleToolClick },
   ] = useContext(EditorContext)
   const [showSettings, setShowSettings] = React.useState(false)
 
@@ -36,11 +36,26 @@ export function TilemapEditorView() {
           />
         </ToolSection>
         <ToolSection>
-          <Tool name="Tile" type="tile" icon="image" />
-          <Tool name="Erase" type="eraser" icon="eraser" />
+          <Tool
+            name="Tile"
+            onClick={() => handleToolClick('tile')}
+            isSelected={tool.type === 'tile'}
+            icon="image"
+          />
+          <Tool
+            name="Erase"
+            onClick={() => handleToolClick('eraser')}
+            isSelected={tool.type === 'eraser'}
+            icon="eraser"
+          />
         </ToolSection>
         <ToolSection>
-          <Tool name="Show Grid" type="grid" icon="border-all" />
+          <Tool
+            name="Show Grid"
+            onClick={() => handleToolClick('grid')}
+            isSelected={showGrid}
+            icon="border-all"
+          />
         </ToolSection>
         <ToolSection>
           <Tool

@@ -10,7 +10,7 @@ export function Tools({ children, classes }: Props) {
   return (
     <div
       className={clsx(
-        'flex p-2 divide-x space-x-2 border-b border-gray-300',
+        'flex items-center p-2 divide-x space-x-2 border-b border-gray-300',
         classes
       )}
     >

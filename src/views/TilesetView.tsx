@@ -96,9 +96,24 @@ export function TilesetView() {
     ) : null
 
   return (
-    <div className="h-0 flex flex-col flex-1 border-gray-600 divide-y">
-      <div className="divide-y">
+    <div className="h-0 flex flex-col flex-1 border-gray-600">
+      <div>
         <Tools>
+          <ToolSection>
+            <SelectField
+              options={tilesets.map((tileset) => ({
+                value: tileset.id,
+                label: tileset.name,
+              }))}
+              onChange={(value) => {
+                setSelectedTileset(value)
+              }}
+              value={selectedTileset ?? ''}
+              inputProps={{
+                className: 'w-full',
+              }}
+            />
+          </ToolSection>
           <ToolSection>
             <TilesetUploader
               refreshTilesets={refreshTilesets}
@@ -115,21 +130,13 @@ export function TilesetView() {
               name="Delete tileset"
               onClick={() => undefined}
             />
-            <Tool icon="gear" name="Rename tileset" onClick={() => undefined} />
+            <Tool
+              icon="gear"
+              name="Tileset settings"
+              onClick={() => undefined}
+            />
           </ToolSection>
         </Tools>
-        <div className="p-2 border-gray-300">
-          <SelectField
-            options={tilesets.map((tileset) => ({
-              value: tileset.id,
-              label: tileset.name,
-            }))}
-            onChange={(value) => {
-              setSelectedTileset(value)
-            }}
-            value={selectedTileset ?? ''}
-          />
-        </div>
       </div>
       <div className="overflow-auto h-full flex-1 border-gray-300">
         {tilesets.map((tileset, i) => (

@@ -1,39 +1,26 @@
-import React, { useContext } from 'react'
+import React from 'react'
 import clsx from 'clsx'
 
-import { EditorContext, ToolType } from '../contexts/EditorContext'
-
-type BaseProps = {
+export interface Props {
   name: string
   icon: string
+  classes?: string
+  isSelected?: boolean
+  onClick: () => void
 }
 
-export type Props =
-  | (BaseProps & {
-      type: ToolType
-    })
-  | (BaseProps & {
-      onClick: () => void
-    })
-
-export function Tool({ name, icon, ...rest }: Props) {
-  const [toolState, { handleToolClick: setTool }] = useContext(EditorContext)
-
+export function Tool({ name, icon, isSelected, classes, onClick }: Props) {
   return (
     <button
       title={name}
       className={clsx(
         'w-10 h-10 cursor-default hover:bg-gray-200 hover:border hover:border-gray-300 rounded-md',
+        classes,
         {
-          'bg-gray-300 border border-gray-400':
-            'type' in rest &&
-            (toolState.tool.type === rest.type ||
-              (rest.type === 'grid' && toolState.showGrid)),
+          'bg-gray-300 border border-gray-400': isSelected,
         }
       )}
-      onClick={() => {
-        'onClick' in rest ? rest.onClick() : setTool(rest.type)
-      }}
+      onClick={onClick}
     >
       <i className={`fa-solid fa-${icon}`}></i>
     </button>

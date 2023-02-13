@@ -41,13 +41,13 @@ export default function TextField({
           <i className={`fa-solid fa-${leftIconName} text-gray-500`}></i>
         )}
         <input
+          {...inputProps}
           className={clsx('outline-none flex-grow', {
             ['cursor-text']: !inputProps?.readOnly,
             ['cursor-default']: inputProps?.readOnly,
           })}
           value={value}
           onChange={onChange}
-          {...inputProps}
         />
         {rightIconName && (
           <i className={`fa-solid fa-${rightIconName} text-gray-500`}></i>
