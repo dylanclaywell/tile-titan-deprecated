@@ -1,15 +1,17 @@
-import React, { useContext, useEffect, useRef, useState } from 'react'
+import React, { useContext, useEffect, useMemo, useRef, useState } from 'react'
 import clsx from 'clsx'
 
-import { TilemapType } from '../../types/tilemap'
 import { EditorContext } from '../../contexts/EditorContext'
 import { TilemapEditorCursor } from './Cursor'
 import { clamp } from '../../utils/clamp'
 import { Tile } from './Tile'
+import { LayerType } from '../../types/layer'
 
 export interface Props {
-  tilemap: TilemapType | undefined
+  layers: LayerType[]
+  currentLayer: LayerType | undefined
   onTileClick: (args: {
+    layerId: string
     tileX: number
     tileY: number
     tilesetX: number
@@ -18,7 +20,7 @@ export interface Props {
   }) => void
 }
 
-export function TilemapEditor({ tilemap, onTileClick }: Props) {
+export function TilemapEditor({ layers, currentLayer, onTileClick }: Props) {
   const gridRef = useRef<HTMLDivElement | null>(null)
   const [{ tool, showGrid, cursorRef, zoomLevel }, { setZoomLevel }] =
     useContext(EditorContext)
@@ -32,6 +34,20 @@ export function TilemapEditor({ tilemap, onTileClick }: Props) {
     mouseStateRef.current = { ...mouseStateRef.current, ...state }
     setMouseState((currentState) => ({ ...currentState, ...state }))
   }
+
+  const { width, height, id } = currentLayer || {}
+
+  const currentLayerData = useMemo(
+    () =>
+      width && height && id
+        ? {
+            width,
+            height,
+            id,
+          }
+        : undefined,
+    [width, height, id]
+  )
 
   useEffect(
     function registerEventListeners() {
@@ -106,21 +122,22 @@ export function TilemapEditor({ tilemap, onTileClick }: Props) {
         ) {
           const img = e.target.querySelector('img')
 
-          if (!img || !tilemap) return
+          if (!img || !currentLayerData) return
 
           const cursorX = Math.ceil((cursorRef.current?.offsetLeft ?? 0) / 32)
           const cursorY = Math.ceil((cursorRef.current?.offsetTop ?? 0) / 32)
 
           if (
             cursorX < 0 ||
-            cursorX > tilemap.width - 1 ||
+            cursorX > currentLayerData.width - 1 ||
             cursorY < 0 ||
-            cursorY > tilemap.height - 1
+            cursorY > currentLayerData.height - 1
           )
             return
 
           if (tool.type === 'tile') {
             onTileClick({
+              layerId: currentLayerData.id,
               tileX: cursorX,
               tileY: cursorY,
               tilesetX: tool.tilesetX ?? -1,
@@ -131,6 +148,7 @@ export function TilemapEditor({ tilemap, onTileClick }: Props) {
             img.src = tool.canvas.toDataURL()
           } else if (tool.type === 'eraser') {
             onTileClick({
+              layerId: currentLayerData.id,
               tileX: cursorX,
               tileY: cursorY,
               tilesetX: -1,
@@ -174,7 +192,7 @@ export function TilemapEditor({ tilemap, onTileClick }: Props) {
         document.removeEventListener('wheel', handleMouseWheel)
       }
     },
-    [tool, zoomLevel]
+    [tool, zoomLevel, currentLayerData]
   )
 
   return (
@@ -182,39 +200,53 @@ export function TilemapEditor({ tilemap, onTileClick }: Props) {
       id="tilemap-editor"
       className="items-center flex justify-center bg-gray-200 relative h-[calc(100%-3.5rem-1px)]"
     >
-      {tilemap !== undefined && (
-        <div
-          ref={gridRef}
-          id="tilemap-grid"
-          className={clsx(
-            'grid border-l border-b border-black border-opacity-25 absolute',
-            {
-              'border-r border-t': !showGrid,
-            }
-          )}
-          style={{
-            gridTemplateColumns: `repeat(${tilemap.width}, ${tilemap.tileWidth}px)`,
-            gridTemplateRows: `repeat(${tilemap.height}, ${tilemap.tileHeight}px)`,
-            zoom: zoomLevel,
-          }}
-        >
-          <TilemapEditorCursor anchor={gridRef} tilemap={tilemap} />
-          {tilemap.data.map((row, y) => {
-            return row.map((tile, x) => {
-              return (
-                <Tile
-                  key={`${x}-${y}`}
-                  x={x}
-                  y={y}
-                  tileWidth={tilemap.tileWidth}
-                  tileHeight={tilemap.tileHeight}
-                  showGrid={showGrid}
-                />
-              )
-            })
-          })}
-        </div>
-      )}
+      <div
+        className="absolute"
+        ref={gridRef}
+        style={{
+          zoom: zoomLevel,
+        }}
+      >
+        {currentLayer && (
+          <TilemapEditorCursor anchor={gridRef} layer={currentLayer} />
+        )}
+        {layers.map((layer, i) => (
+          <div
+            key={`layer-${layer.id}`}
+            id="tilemap-grid"
+            className={clsx(
+              'grid border-l border-b border-black border-opacity-25 absolute',
+              {
+                'border-r border-t': !showGrid,
+                'pointer-events-none': currentLayer?.id !== layer.id,
+              }
+            )}
+            style={{
+              gridTemplateColumns: `repeat(${layer.width}, ${layer.tileWidth}px)`,
+              gridTemplateRows: `repeat(${layer.height}, ${layer.tileHeight}px)`,
+              zIndex: i,
+            }}
+          >
+            {layer.tilemap.map((row, y) => {
+              return row.map((tile, x) => {
+                return (
+                  <Tile
+                    key={`${x}-${y}`}
+                    x={x}
+                    y={y}
+                    classes={clsx({
+                      hidden: !layer.isVisible,
+                    })}
+                    tileWidth={layer.tileWidth}
+                    tileHeight={layer.tileHeight}
+                    showGrid={showGrid}
+                  />
+                )
+              })
+            })}
+          </div>
+        ))}
+      </div>
     </div>
   )
 }

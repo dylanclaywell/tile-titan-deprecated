@@ -1,14 +1,14 @@
 import React, { useEffect, useContext, MutableRefObject } from 'react'
 
 import { EditorContext } from '../../contexts/EditorContext'
-import { TilemapType } from '../../types/tilemap'
+import { LayerType } from '../../types/layer'
 
 export interface Props {
-  tilemap: TilemapType
+  layer: LayerType
   anchor: (HTMLElement | null) | MutableRefObject<HTMLDivElement | null>
 }
 
-export function TilemapEditorCursor({ tilemap, anchor }: Props) {
+export function TilemapEditorCursor({ layer, anchor }: Props) {
   const [{ cursorRef, tool, zoomLevel }, { setCursorRef }] =
     useContext(EditorContext)
 
@@ -62,15 +62,15 @@ export function TilemapEditorCursor({ tilemap, anchor }: Props) {
       className="p-4 absolute pointer-events-none bg-blue-600 bg-opacity-75 opacity-75"
       ref={(el) => setCursorRef(el)}
       style={{
-        width: tilemap.tileWidth,
-        height: tilemap.tileHeight,
+        width: layer.tileWidth,
+        height: layer.tileHeight,
       }}
     >
       <img
         className="absolute top-0 left-0"
         style={{
-          width: tilemap.tileWidth,
-          height: tilemap.tileHeight,
+          width: layer.tileWidth,
+          height: layer.tileHeight,
         }}
         src={currentTool.canvas.toDataURL()}
       />

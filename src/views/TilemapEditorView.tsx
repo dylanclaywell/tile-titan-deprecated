@@ -1,6 +1,6 @@
 import React, { useContext } from 'react'
 
-import { TilemapEditor } from '../components/TilemapEditor'
+import { TilemapEditor } from '../components/TilemapEditor/TilemapEditor'
 import { Tools } from '../components/Tools/Tools'
 import { ToolSection } from '../components/Tools/ToolSection'
 import { Tool } from '../components/Tool'
@@ -10,11 +10,11 @@ import { EditorContext } from '../contexts/EditorContext'
 export function TilemapEditorView() {
   const [
     { layers, selectedLayerId, tool, showGrid },
-    { updateTilemap, updateTilemapSettings, handleToolClick },
+    { updateTilemap, updateLayerSettings, handleToolClick },
   ] = useContext(EditorContext)
   const [showSettings, setShowSettings] = React.useState(false)
 
-  const tilemap = layers.find((layer) => layer.id === selectedLayerId)?.tilemap
+  const currentLayer = layers.find((layer) => layer.id === selectedLayerId)
 
   return (
     <div className="basis-[70vw] h-screen overflow-hidden">
@@ -23,9 +23,12 @@ export function TilemapEditorView() {
           <Tool
             name="Save"
             onClick={() => {
-              const file = new Blob([JSON.stringify(tilemap, null, 2)], {
-                type: 'application/json',
-              })
+              const file = new Blob(
+                [JSON.stringify(currentLayer?.tilemap, null, 2)],
+                {
+                  type: 'application/json',
+                }
+              )
               const url = URL.createObjectURL(file)
               const a = document.createElement('a')
               a.href = url
@@ -67,15 +70,19 @@ export function TilemapEditorView() {
           />
         </ToolSection>
       </Tools>
-      <TilemapEditor tilemap={tilemap} onTileClick={updateTilemap} />
-      {tilemap !== undefined && (
+      <TilemapEditor
+        layers={layers}
+        currentLayer={currentLayer}
+        onTileClick={updateTilemap}
+      />
+      {currentLayer !== undefined && (
         <TilemapEditorSettings
           isOpen={showSettings}
-          updateTilemap={updateTilemapSettings}
+          updateLayer={updateLayerSettings}
           onClose={() => {
             setShowSettings(false)
           }}
-          tilemap={tilemap}
+          layer={currentLayer}
         />
       )}
     </div>

@@ -1,15 +1,20 @@
-import React from 'react'
+import React, { useContext } from 'react'
 import clsx from 'clsx'
 
 import { LayerButton } from './LayerButton'
+import { EditorContext } from '../../contexts/EditorContext'
 
 export interface Props {
+  id: string
   isSelected: boolean
+  isVisible: boolean
   name: string
   onClick: () => void
 }
 
-export function Layer({ isSelected, name, onClick }: Props) {
+export function Layer({ id, isSelected, isVisible, name, onClick }: Props) {
+  const [, { updateLayerSettings }] = useContext(EditorContext)
+
   return (
     <div
       className={clsx('w-full flex', {
@@ -28,6 +33,15 @@ export function Layer({ isSelected, name, onClick }: Props) {
           })}
           iconName="pencil"
           onClick={() => undefined}
+        />
+        <LayerButton
+          name="Rename"
+          classes={clsx({
+            'hover:text-yellow-600': !isSelected,
+            'hover:text-yellow-700': isSelected,
+          })}
+          iconName={isVisible ? 'eye' : 'eye-slash'}
+          onClick={() => updateLayerSettings(id, { isVisible: !isVisible })}
         />
         <LayerButton
           name="Delete"
