@@ -201,10 +201,12 @@ export function TilemapEditor({ layers, currentLayer, onTileClick }: Props) {
       className="items-center flex justify-center bg-gray-200 relative h-[calc(100%-3.5rem-1px)]"
     >
       <div
-        className="absolute"
+        className={clsx('absolute border border-black border-opacity-25')}
         ref={gridRef}
         style={{
           zoom: zoomLevel,
+          width: 10 * 32,
+          height: 10 * 32,
         }}
       >
         {currentLayer && (
@@ -214,13 +216,10 @@ export function TilemapEditor({ layers, currentLayer, onTileClick }: Props) {
           <div
             key={`layer-${layer.id}`}
             id="tilemap-grid"
-            className={clsx(
-              'grid border-l border-b border-black border-opacity-25 absolute',
-              {
-                'border-r border-t': !showGrid,
-                'pointer-events-none': currentLayer?.id !== layer.id,
-              }
-            )}
+            className={clsx('grid absolute', {
+              'pointer-events-none': currentLayer?.id !== layer.id,
+              hidden: !layer.isVisible,
+            })}
             style={{
               gridTemplateColumns: `repeat(${layer.width}, ${layer.tileWidth}px)`,
               gridTemplateRows: `repeat(${layer.height}, ${layer.tileHeight}px)`,
@@ -234,9 +233,6 @@ export function TilemapEditor({ layers, currentLayer, onTileClick }: Props) {
                     key={`${x}-${y}`}
                     x={x}
                     y={y}
-                    classes={clsx({
-                      hidden: !layer.isVisible,
-                    })}
                     tileWidth={layer.tileWidth}
                     tileHeight={layer.tileHeight}
                     showGrid={showGrid}

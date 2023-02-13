@@ -59,7 +59,7 @@ export function TilemapEditorCursor({ layer, anchor }: Props) {
 
   return (
     <div
-      className="p-4 absolute pointer-events-none bg-blue-600 bg-opacity-75 opacity-75"
+      className="p-4 absolute pointer-events-none bg-blue-600 bg-opacity-75 opacity-75 z-50"
       ref={(el) => setCursorRef(el)}
       style={{
         width: layer.tileWidth,
