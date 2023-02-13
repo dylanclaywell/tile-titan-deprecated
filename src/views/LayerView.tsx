@@ -17,7 +17,7 @@ export function LayerView() {
     useContext(EditorContext)
 
   return (
-    <div className="divide-y">
+    <div>
       <Tools>
         <ToolSection>
           <Tool onClick={() => undefined} icon="circle-plus" name="Add layer" />

@@ -35,7 +35,7 @@ export function SelectField({ options, onChange, value, inputProps }: Props) {
           onClick: () => setIsOpen(!isOpen),
           placeholder: 'Select a tileset',
         }}
-        value={options.find((option) => option.value === value)?.label}
+        value={options.find((option) => option.value === value)?.label ?? ''}
         rightIconName="chevron-down"
       />
       {isOpen && (
