@@ -8,6 +8,7 @@ export interface Props {
   hasError?: boolean
   hintText?: string
   inputProps?: React.InputHTMLAttributes<HTMLInputElement>
+  classes?: string
 }
 
 export default function TextField({
@@ -17,9 +18,10 @@ export default function TextField({
   hasError,
   hintText,
   inputProps,
+  classes,
 }: Props) {
   return (
-    <div className="flex flex-col">
+    <div className={clsx('flex flex-col', classes)}>
       <label
         className={clsx(
           'relative inline-block rounded-md p-4 border-gray-400 border-solid border cursor-text',

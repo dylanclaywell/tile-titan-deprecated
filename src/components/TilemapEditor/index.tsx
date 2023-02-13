@@ -2,13 +2,13 @@ import React, { useContext, useEffect, useRef, useState } from 'react'
 import clsx from 'clsx'
 
 import { TilemapType } from '../../types/tilemap'
-import { EditorContext } from '../../contexts/ToolContext'
+import { EditorContext } from '../../contexts/EditorContext'
 import { TilemapEditorCursor } from './Cursor'
 import { clamp } from '../../utils/clamp'
 import { Tile } from './Tile'
 
 export interface Props {
-  tilemap: TilemapType
+  tilemap: TilemapType | undefined
   onTileClick: (args: {
     tileX: number
     tileY: number
@@ -106,7 +106,7 @@ export function TilemapEditor({ tilemap, onTileClick }: Props) {
         ) {
           const img = e.target.querySelector('img')
 
-          if (!img) return
+          if (!img || !tilemap) return
 
           const cursorX = Math.ceil((cursorRef.current?.offsetLeft ?? 0) / 32)
           const cursorY = Math.ceil((cursorRef.current?.offsetTop ?? 0) / 32)
@@ -182,37 +182,39 @@ export function TilemapEditor({ tilemap, onTileClick }: Props) {
       id="tilemap-editor"
       className="items-center flex justify-center bg-gray-300 relative h-[calc(100%-3.5rem-1px)]"
     >
-      <div
-        ref={gridRef}
-        id="tilemap-grid"
-        className={clsx(
-          'grid border-l border-b border-black border-opacity-10 absolute',
-          {
-            'border-r border-t': !showGrid,
-          }
-        )}
-        style={{
-          gridTemplateColumns: `repeat(${tilemap.width}, ${tilemap.tileWidth}px)`,
-          gridTemplateRows: `repeat(${tilemap.height}, ${tilemap.tileHeight}px)`,
-          zoom: zoomLevel,
-        }}
-      >
-        <TilemapEditorCursor anchor={gridRef} tilemap={tilemap} />
-        {tilemap.data.map((row, y) => {
-          return row.map((tile, x) => {
-            return (
-              <Tile
-                key={`${x}-${y}`}
-                x={x}
-                y={y}
-                tileWidth={tilemap.tileWidth}
-                tileHeight={tilemap.tileHeight}
-                showGrid={showGrid}
-              />
-            )
-          })
-        })}
-      </div>
+      {tilemap !== undefined && (
+        <div
+          ref={gridRef}
+          id="tilemap-grid"
+          className={clsx(
+            'grid border-l border-b border-black border-opacity-10 absolute',
+            {
+              'border-r border-t': !showGrid,
+            }
+          )}
+          style={{
+            gridTemplateColumns: `repeat(${tilemap.width}, ${tilemap.tileWidth}px)`,
+            gridTemplateRows: `repeat(${tilemap.height}, ${tilemap.tileHeight}px)`,
+            zoom: zoomLevel,
+          }}
+        >
+          <TilemapEditorCursor anchor={gridRef} tilemap={tilemap} />
+          {tilemap.data.map((row, y) => {
+            return row.map((tile, x) => {
+              return (
+                <Tile
+                  key={`${x}-${y}`}
+                  x={x}
+                  y={y}
+                  tileWidth={tilemap.tileWidth}
+                  tileHeight={tilemap.tileHeight}
+                  showGrid={showGrid}
+                />
+              )
+            })
+          })}
+        </div>
+      )}
     </div>
   )
 }

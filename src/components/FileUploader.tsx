@@ -11,7 +11,7 @@ export function FileUploader({ label, onChange }: Props) {
       <div className="p-2 rounded-md bg-cyan-600 hover:bg-cyan-700 transition-colors">
         {label}
       </div>
-      <input type="file" className="w-0 h-0" onChange={onChange} />
+      <input type="file" className="hidden" onChange={onChange} />
     </label>
   )
 }

@@ -12,6 +12,14 @@ html {
   box-sizing: inherit;
 }
 
+button {
+  cursor: default;
+}
+
+area {
+  cursor: default;
+}
+
 img {
   image-rendering: optimizeSpeed; /* STOP SMOOTHING, GIVE ME SPEED  */
   image-rendering: -moz-crisp-edges; /* Firefox                        */

@@ -1,6 +1,6 @@
 import React, { useEffect, useContext, MutableRefObject } from 'react'
 
-import { EditorContext } from '../../contexts/ToolContext'
+import { EditorContext } from '../../contexts/EditorContext'
 import { TilemapType } from '../../types/tilemap'
 
 export interface Props {
@@ -59,7 +59,7 @@ export function TilemapEditorCursor({ tilemap, anchor }: Props) {
 
   return (
     <div
-      className="p-4 absolute pointer-events-none bg-sky-900 bg-opacity-75 opacity-75"
+      className="p-4 absolute pointer-events-none bg-blue-600 bg-opacity-75 opacity-75"
       ref={(el) => setCursorRef(el)}
       style={{
         width: tilemap.tileWidth,
