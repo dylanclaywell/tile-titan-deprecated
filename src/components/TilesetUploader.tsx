@@ -5,6 +5,7 @@ import { addTileset } from '../indexedDB/tileset'
 
 export interface Props {
   refreshTilesets: () => void
+  label: string | React.ReactNode
 }
 
 async function readImage(file: File) {
@@ -17,10 +18,11 @@ async function readImage(file: File) {
   })
 }
 
-export function TilesetUploader({ refreshTilesets }: Props) {
+export function TilesetUploader({ refreshTilesets, label }: Props) {
   return (
     <FileUploader
-      label="Upload a tileset"
+      label={label}
+      name="New tileset"
       onChange={async (event) => {
         const file = event.target.files?.[0]
 

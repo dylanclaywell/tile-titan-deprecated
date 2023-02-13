@@ -9,7 +9,7 @@ function App() {
   return (
     <EditorProvider>
       <TilemapEditorView />
-      <div className="overflow-hidden flex flex-col basis-[30vw] divide-y">
+      <div className="overflow-hidden flex flex-col basis-[30vw] divide-y border-gray-600">
         <LayerView />
         <TilesetView />
       </div>

@@ -180,14 +180,14 @@ export function TilemapEditor({ tilemap, onTileClick }: Props) {
   return (
     <div
       id="tilemap-editor"
-      className="items-center flex justify-center bg-gray-300 relative h-[calc(100%-3.5rem-1px)]"
+      className="items-center flex justify-center bg-gray-200 relative h-[calc(100%-3.5rem-1px)]"
     >
       {tilemap !== undefined && (
         <div
           ref={gridRef}
           id="tilemap-grid"
           className={clsx(
-            'grid border-l border-b border-black border-opacity-10 absolute',
+            'grid border-l border-b border-black border-opacity-25 absolute',
             {
               'border-r border-t': !showGrid,
             }

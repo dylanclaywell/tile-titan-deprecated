@@ -7,7 +7,10 @@ import {
   getTilesets,
 } from '../indexedDB/tileset'
 import { EditorContext } from '../contexts/EditorContext'
-import TextField from '../components/TextField'
+import { Tool } from '../components/Tool'
+import { SelectField } from '../components/SelectField'
+import { ToolSection } from '../components/Tools/ToolSection'
+import { Tools } from '../components/Tools/Tools'
 
 export function TilesetView() {
   const [tilesets, setTilesets] = useState<TilesetType[]>([])
@@ -15,9 +18,12 @@ export function TilesetView() {
   const [cursorRef, setCursorRef] = useState<HTMLDivElement | null>(null)
   const [imageRef, setImageRef] = useState<HTMLImageElement | null>(null)
   const [, { updateCanvas: updateToolCanvas }] = useContext(EditorContext)
+  const [selectedTileset, setSelectedTileset] = useState<string | null>(null)
 
   async function refreshTilesets() {
-    setTilesets(await getTilesets())
+    const tilesets = await getTilesets()
+    setTilesets(tilesets)
+    setSelectedTileset(tilesets[0]?.id ?? null)
   }
 
   useEffect(() => {
@@ -90,27 +96,42 @@ export function TilesetView() {
     ) : null
 
   return (
-    <div className="h-0 flex flex-col flex-1">
-      <div>
-        <div>
-          <TilesetUploader refreshTilesets={refreshTilesets} />
-        </div>
-        <div className="overflow-x-auto">
-          {tilesets.map((tileset, i) => (
-            <>
-              <TextField
-                label="Name"
-                value={tileset.name}
-                onChange={(e) => {
-                  changeTilesetName(tileset.id, e.target.value)
-                  refreshTilesets()
-                }}
-              />
-            </>
-          ))}
+    <div className="h-0 flex flex-col flex-1 border-gray-600 divide-y">
+      <div className="divide-y">
+        <Tools>
+          <ToolSection>
+            <TilesetUploader
+              refreshTilesets={refreshTilesets}
+              label={
+                <div className="w-10 h-10 cursor-default hover:bg-gray-200 hover:border hover:border-gray-300 rounded-md flex justify-center items-center">
+                  <i className="fa-solid fa-file-circle-plus"></i>
+                </div>
+              }
+            />
+          </ToolSection>
+          <ToolSection>
+            <Tool
+              icon="trash-can"
+              name="Delete tileset"
+              onClick={() => undefined}
+            />
+            <Tool icon="gear" name="Rename tileset" onClick={() => undefined} />
+          </ToolSection>
+        </Tools>
+        <div className="p-2 border-gray-300">
+          <SelectField
+            options={tilesets.map((tileset) => ({
+              value: tileset.id,
+              label: tileset.name,
+            }))}
+            onChange={(value) => {
+              setSelectedTileset(value)
+            }}
+            value={selectedTileset ?? ''}
+          />
         </div>
       </div>
-      <div className="overflow-auto border-gray-400 h-full flex-1">
+      <div className="overflow-auto h-full flex-1 border-gray-300">
         {tilesets.map((tileset, i) => (
           <div key={`${tileset.name}-${i}`} className="h-full">
             <div key={tileset.id} className="relative h-full">
@@ -126,7 +147,7 @@ export function TilesetView() {
               />
               <div
                 ref={(el) => setCursorRef(el)}
-                className="absolute bg-blue-600 z-50 w-8 h-8 pointer-events-none opacity-50"
+                className="absolute bg-blue-600 z-40 w-8 h-8 pointer-events-none opacity-50"
               />
               {map}
             </div>

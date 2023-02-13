@@ -1,7 +1,7 @@
 import React, { useContext } from 'react'
 import clsx from 'clsx'
 
-import { EditorContext, ToolType } from '../../contexts/EditorContext'
+import { EditorContext, ToolType } from '../contexts/EditorContext'
 
 type BaseProps = {
   name: string

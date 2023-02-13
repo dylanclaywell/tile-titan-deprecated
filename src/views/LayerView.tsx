@@ -3,6 +3,9 @@ import { v4 as generateId } from 'uuid'
 
 import { Layer } from '../components/Layer/Layer'
 import { EditorContext } from '../contexts/EditorContext'
+import { Tool } from '../components/Tool'
+import { Tools } from '../components/Tools/Tools'
+import { ToolSection } from '../components/Tools/ToolSection'
 
 type Layer = {
   id: string
@@ -14,9 +17,13 @@ export function LayerView() {
     useContext(EditorContext)
 
   return (
-    <div>
-      <span className="pl-2">Layers</span>
-      <div className="p-2">
+    <div className="divide-y">
+      <Tools>
+        <ToolSection>
+          <Tool onClick={() => undefined} icon="circle-plus" name="Add layer" />
+        </ToolSection>
+      </Tools>
+      <div className="p-2 border-gray-300">
         {layers.map((layer) => (
           <Layer
             key={`layer-${layer.name}`}

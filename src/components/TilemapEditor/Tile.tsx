@@ -21,7 +21,7 @@ export function Tile({
       data-x={x}
       data-y={y}
       className={clsx({
-        'border-t border-r border-black border-opacity-10 select-none':
+        'border-t border-r border-black border-opacity-25 select-none':
           showGrid,
       })}
       style={{
