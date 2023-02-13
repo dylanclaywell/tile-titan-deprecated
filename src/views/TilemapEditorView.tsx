@@ -10,7 +10,7 @@ import { EditorContext } from '../contexts/EditorContext'
 export function TilemapEditorView() {
   const [
     { layers, selectedLayerId, tool, showGrid },
-    { updateTilemap, updateLayerSettings, handleToolClick },
+    { updateTilemap, handleToolClick },
   ] = useContext(EditorContext)
   const [showSettings, setShowSettings] = React.useState(false)
 
@@ -78,7 +78,6 @@ export function TilemapEditorView() {
       {currentLayer !== undefined && (
         <TilemapEditorSettings
           isOpen={showSettings}
-          updateLayer={updateLayerSettings}
           onClose={() => {
             setShowSettings(false)
           }}

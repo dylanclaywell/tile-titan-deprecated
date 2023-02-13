@@ -21,6 +21,10 @@ export type State = {
   showGrid: boolean
   selectedLayerId: string | null
   layers: LayerType[]
+  tileWidth: number
+  tileHeight: number
+  width: number
+  height: number
 }
 
 export type Actions = {
@@ -47,6 +51,12 @@ export type Actions = {
   setZoomLevel: (level: number) => void
   setSelectedLayerId: (id: string) => void
   addLayer: () => void
+  updateTilemapSettings: (args: {
+    width: number
+    height: number
+    tileWidth: number
+    tileHeight: number
+  }) => void
 }
 
 const tileCanvas = document.createElement('canvas')
@@ -62,14 +72,14 @@ const initialState: State = {
   zoomLevel: 1,
   cursorRef: { current: null },
   showGrid: true,
+  height: 10,
+  width: 10,
+  tileHeight: 32,
+  tileWidth: 32,
   layers: [
     {
       id: initialSelectedLayerId,
       name: 'Layer 1',
-      height: 10,
-      width: 10,
-      tileHeight: 32,
-      tileWidth: 32,
       tilemap: generateMap(10, 10),
       isVisible: true,
     },
@@ -88,6 +98,7 @@ export const EditorContext = createContext<[State, Actions]>([
     setSelectedLayerId: () => undefined,
     updateLayerSettings: () => undefined,
     addLayer: () => undefined,
+    updateTilemapSettings: () => undefined,
   },
 ])
 
@@ -248,21 +259,41 @@ export function EditorProvider({ children }: { children: React.ReactNode }) {
     })
   }
 
+  function updateTilemapSettings({
+    width,
+    height,
+    tileWidth,
+    tileHeight,
+  }: {
+    width: number
+    height: number
+    tileWidth: number
+    tileHeight: number
+  }) {
+    setState((state) => {
+      return {
+        ...state,
+        width,
+        height,
+        tileWidth,
+        tileHeight,
+      }
+    })
+  }
+
   function addLayer() {
-    const layer: LayerType = {
-      id: generateId(),
-      name: `Layer ${state.layers.length + 1}`,
-      height: 10,
-      width: 10,
-      tileHeight: 32,
-      tileWidth: 32,
-      tilemap: generateMap(10, 10),
-      isVisible: true,
-    }
-    setState((state) => ({
-      ...state,
-      layers: [...state.layers, layer],
-    }))
+    setState((state) => {
+      const layer: LayerType = {
+        id: generateId(),
+        name: `Layer ${state.layers.length + 1}`,
+        tilemap: generateMap(state.width, state.height),
+        isVisible: true,
+      }
+      return {
+        ...state,
+        layers: [...state.layers, layer],
+      }
+    })
   }
 
   const actions = {
@@ -274,6 +305,7 @@ export function EditorProvider({ children }: { children: React.ReactNode }) {
     setSelectedLayerId,
     updateLayerSettings,
     addLayer,
+    updateTilemapSettings,
   }
 
   return (

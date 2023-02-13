@@ -1,9 +1,10 @@
-import React, { useState } from 'react'
+import React, { useContext, useState } from 'react'
 import z from 'zod'
 
 import TextField from '../TextField'
 import { generateMap } from '../../utils/generateMap'
 import { Layer, LayerType } from '../../types/layer'
+import { EditorContext } from '../../contexts/EditorContext'
 
 const FormElement = z.instanceof(HTMLFormElement)
 const FormData = z.object({
@@ -16,17 +17,15 @@ const FormData = z.object({
 
 export interface Props {
   isOpen: boolean
-  updateLayer: (id: string, layer: LayerType) => void
   layer: LayerType
   onClose: () => void
 }
 
-export function TilemapEditorSettings({
-  isOpen,
-  updateLayer,
-  layer,
-  onClose,
-}: Props) {
+export function TilemapEditorSettings({ isOpen, layer, onClose }: Props) {
+  const [
+    { width, height, tileWidth, tileHeight },
+    { updateLayerSettings, updateTilemapSettings },
+  ] = useContext(EditorContext)
   const [errors, setErrors] = useState<z.ZodIssue[]>()
 
   function hasError(name: string) {
@@ -46,20 +45,46 @@ export function TilemapEditorSettings({
     try {
       const form = FormElement.parse(e.target)
       const formData = FormData.parse(form)
-      const newTilemap = Layer.omit({ tilemap: true }).parse({
-        name: formData.name.value,
-        width: Number(formData.width.value),
-        height: Number(formData.height.value),
-        tileWidth: Number(formData.tileWidth.value),
-        tileHeight: Number(formData.tileHeight.value),
+
+      const name = z.string().parse(formData.name.value)
+      const width = z
+        .number()
+        .positive()
+        .min(1)
+        .parse(Number(formData.width.value))
+      const height = z
+        .number()
+        .positive()
+        .min(1)
+        .parse(Number(formData.height.value))
+      const tileWidth = z
+        .number()
+        .positive()
+        .min(1)
+        .parse(Number(formData.tileWidth.value))
+      const tileHeight = z
+        .number()
+        .positive()
+        .min(1)
+        .parse(Number(formData.tileHeight.value))
+
+      console.log({
+        name,
+        width,
+        height,
+        tileWidth,
+        tileHeight,
       })
 
-      updateLayer(layer.id, {
-        ...newTilemap,
-        tilemap: generateMap(
-          Number(formData.width.value),
-          Number(formData.height.value)
-        ),
+      updateLayerSettings(layer.id, {
+        name,
+        tilemap: generateMap(width, height),
+      })
+      updateTilemapSettings({
+        width,
+        height,
+        tileWidth,
+        tileHeight,
       })
       setErrors([])
     } catch (error) {
@@ -87,7 +112,7 @@ export function TilemapEditorSettings({
             label="Width"
             hasError={hasError('width')}
             hintText={getErrorText('width')}
-            inputProps={{ name: 'width', defaultValue: layer.width }}
+            inputProps={{ name: 'width', defaultValue: width }}
           />
           <TextField
             label="Height"
@@ -95,7 +120,7 @@ export function TilemapEditorSettings({
             hintText={getErrorText('height')}
             inputProps={{
               name: 'height',
-              defaultValue: layer.height,
+              defaultValue: height,
             }}
           />
           <TextField
@@ -104,7 +129,7 @@ export function TilemapEditorSettings({
             hintText={getErrorText('tileWidth')}
             inputProps={{
               name: 'tileWidth',
-              defaultValue: layer.tileWidth,
+              defaultValue: tileWidth,
             }}
           />
           <TextField
@@ -113,7 +138,7 @@ export function TilemapEditorSettings({
             hintText={getErrorText('tileHeight')}
             inputProps={{
               name: 'tileHeight',
-              defaultValue: layer.tileHeight,
+              defaultValue: tileHeight,
             }}
           />
         </div>

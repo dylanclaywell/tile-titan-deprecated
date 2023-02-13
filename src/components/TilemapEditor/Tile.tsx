@@ -21,8 +21,7 @@ function BaseTile({
       data-x={x}
       data-y={y}
       className={clsx({
-        'border-t border-r border-black border-opacity-25 select-none':
-          showGrid,
+        'select-none': showGrid,
       })}
       style={{
         width: tileWidth,

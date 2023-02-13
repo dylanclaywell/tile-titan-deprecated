@@ -55,8 +55,6 @@ export function TilemapEditorCursor({ layer, anchor }: Props) {
     [zoomLevel]
   )
 
-  const currentTool = tool
-
   return (
     <div
       className="p-4 absolute pointer-events-none bg-blue-600 bg-opacity-75 opacity-75 z-50"
@@ -72,7 +70,7 @@ export function TilemapEditorCursor({ layer, anchor }: Props) {
           width: layer.tileWidth,
           height: layer.tileHeight,
         }}
-        src={currentTool.canvas.toDataURL()}
+        src={tool.canvas.toDataURL()}
       />
     </div>
   )
