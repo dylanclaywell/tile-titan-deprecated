@@ -107,12 +107,11 @@ export function EditorProvider({ children }: { children: React.ReactNode }) {
     tilesetY: number
     tilesetName: string
   }) {
-    if (state.tool.type !== 'tile') return
-
     setState({
       ...state,
       tool: {
         ...state.tool,
+        type: 'tile',
         canvas,
         tilesetX,
         tilesetY,
