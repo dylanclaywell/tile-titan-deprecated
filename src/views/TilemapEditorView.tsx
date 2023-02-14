@@ -4,7 +4,7 @@ import { TilemapEditor } from '../components/TilemapEditor/TilemapEditor'
 import { Tools } from '../components/Tools/Tools'
 import { ToolSection } from '../components/Tools/ToolSection'
 import { Tool } from '../components/Tool'
-import { TilemapEditorSettings } from '../components/TilemapEditor/Settings'
+import { SettingsModal } from '../components/TilemapEditor/SettingsModal'
 import { EditorContext } from '../contexts/EditorContext'
 
 export function TilemapEditorView() {
@@ -76,7 +76,7 @@ export function TilemapEditorView() {
         onTileClick={updateTilemap}
       />
       {currentLayer !== undefined && (
-        <TilemapEditorSettings
+        <SettingsModal
           isOpen={showSettings}
           onClose={() => {
             setShowSettings(false)

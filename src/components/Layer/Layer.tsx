@@ -10,10 +10,18 @@ export interface Props {
   isVisible: boolean
   name: string
   onClick: () => void
+  onRename: (id: string) => void
 }
 
-export function Layer({ id, isSelected, isVisible, name, onClick }: Props) {
-  const [, { updateLayerSettings }] = useContext(EditorContext)
+export function Layer({
+  id,
+  isSelected,
+  isVisible,
+  name,
+  onClick,
+  onRename,
+}: Props) {
+  const [, { updateLayerSettings, removeLayer }] = useContext(EditorContext)
 
   return (
     <div
@@ -32,10 +40,10 @@ export function Layer({ id, isSelected, isVisible, name, onClick }: Props) {
             'hover:text-green-700': isSelected,
           })}
           iconName="pencil"
-          onClick={() => undefined}
+          onClick={() => onRename(id)}
         />
         <LayerButton
-          name="Rename"
+          name={isVisible ? 'Hide' : 'Show'}
           classes={clsx({
             'hover:text-yellow-600': !isSelected,
             'hover:text-yellow-700': isSelected,
@@ -50,7 +58,7 @@ export function Layer({ id, isSelected, isVisible, name, onClick }: Props) {
             'hover:text-red-600': isSelected,
           })}
           iconName="trash-can"
-          onClick={() => undefined}
+          onClick={() => removeLayer(id)}
         />
       </div>
     </div>

@@ -1,10 +1,12 @@
-import React, { useContext, useState } from 'react'
+import React, { useCallback, useContext, useState } from 'react'
 import z from 'zod'
 
 import TextField from '../TextField'
 import { generateMap } from '../../utils/generateMap'
 import { Layer, LayerType } from '../../types/layer'
 import { EditorContext } from '../../contexts/EditorContext'
+import { Overlay } from '../Overlay'
+import { useEscapeKey } from '../../hooks/useEscapeKey'
 
 const FormElement = z.instanceof(HTMLFormElement)
 const FormData = z.object({
@@ -21,7 +23,12 @@ export interface Props {
   onClose: () => void
 }
 
-export function TilemapEditorSettings({ isOpen, layer, onClose }: Props) {
+export function SettingsModal({ isOpen, layer, onClose }: Props) {
+  const close = useCallback(() => {
+    onClose()
+  }, [])
+  useEscapeKey(close)
+
   const [
     { width, height, tileWidth, tileHeight },
     { updateLayerSettings, updateTilemapSettings },
@@ -68,14 +75,6 @@ export function TilemapEditorSettings({ isOpen, layer, onClose }: Props) {
         .min(1)
         .parse(Number(formData.tileHeight.value))
 
-      console.log({
-        name,
-        width,
-        height,
-        tileWidth,
-        tileHeight,
-      })
-
       updateLayerSettings(layer.id, {
         name,
         tilemap: generateMap(width, height),
@@ -96,11 +95,12 @@ export function TilemapEditorSettings({ isOpen, layer, onClose }: Props) {
 
   return (
     <>
-      <div className="absolute top-0 bottom-0 left-0 right-0 bg-gray-500 opacity-50 z-40" />
+      <Overlay onClick={onClose} />
       <form
-        className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 p-4 bg-white border border-gray-300 rounded-md shadow-md z-50"
+        className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 p-4 bg-white border border-gray-300 rounded-md shadow-md z-50 space-y-2"
         onSubmit={onSubmit}
       >
+        <h1>Tilemap Settings</h1>
         <div className="flex flex-col gap-4">
           <TextField
             label="Name"
@@ -142,17 +142,11 @@ export function TilemapEditorSettings({ isOpen, layer, onClose }: Props) {
             }}
           />
         </div>
-        <div className="flex justify-end space-x-2 mt-2">
-          <button
-            type="button"
-            className="p-2 bg-gray-200 cursor-default rounded-md hover:bg-gray-300"
-            onClick={onClose}
-          >
+        <div className="flex justify-end space-x-2">
+          <button type="button" className="button" onClick={onClose}>
             Close
           </button>
-          <button className="p-2 bg-gray-200 cursor-default rounded-md hover:bg-gray-300">
-            Apply
-          </button>
+          <button className="button">Apply</button>
         </div>
       </form>
     </>

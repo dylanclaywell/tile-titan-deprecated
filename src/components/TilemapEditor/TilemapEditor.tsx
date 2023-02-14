@@ -224,36 +224,38 @@ export function TilemapEditor({ layers, currentLayer, onTileClick }: Props) {
           height={height}
           show={showGrid}
         />
-        {layers.map((layer, i) => (
-          <div
-            key={`layer-${layer.id}`}
-            id="tilemap-grid"
-            className={clsx('grid absolute', {
-              'pointer-events-none': currentLayer?.id !== layer.id,
-              hidden: !layer.isVisible,
-            })}
-            style={{
-              gridTemplateColumns: `repeat(${width}, ${tileWidth}px)`,
-              gridTemplateRows: `repeat(${height}, ${tileHeight}px)`,
-              zIndex: i,
-            }}
-          >
-            {layer.tilemap.map((row, y) => {
-              return row.map((tile, x) => {
-                return (
-                  <Tile
-                    key={`${x}-${y}`}
-                    x={x}
-                    y={y}
-                    tileWidth={tileWidth}
-                    tileHeight={tileHeight}
-                    showGrid={showGrid}
-                  />
-                )
-              })
-            })}
-          </div>
-        ))}
+        {layers
+          .sort((a, b) => (a.sortOrder < b.sortOrder ? -1 : 1))
+          .map((layer, i) => (
+            <div
+              key={`layer-${layer.id}`}
+              id="tilemap-grid"
+              className={clsx('grid absolute', {
+                'pointer-events-none': currentLayer?.id !== layer.id,
+                hidden: !layer.isVisible,
+              })}
+              style={{
+                gridTemplateColumns: `repeat(${width}, ${tileWidth}px)`,
+                gridTemplateRows: `repeat(${height}, ${tileHeight}px)`,
+                zIndex: i,
+              }}
+            >
+              {layer.tilemap.map((row, y) => {
+                return row.map((tile, x) => {
+                  return (
+                    <Tile
+                      key={`${x}-${y}`}
+                      x={x}
+                      y={y}
+                      tileWidth={tileWidth}
+                      tileHeight={tileHeight}
+                      showGrid={showGrid}
+                    />
+                  )
+                })
+              })}
+            </div>
+          ))}
       </div>
     </div>
   )

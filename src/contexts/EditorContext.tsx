@@ -57,6 +57,7 @@ export type Actions = {
     tileWidth: number
     tileHeight: number
   }) => void
+  removeLayer: (id: string) => void
 }
 
 const tileCanvas = document.createElement('canvas')
@@ -82,6 +83,7 @@ const initialState: State = {
       name: 'Layer 1',
       tilemap: generateMap(10, 10),
       isVisible: true,
+      sortOrder: 0,
     },
   ],
   selectedLayerId: initialSelectedLayerId,
@@ -99,6 +101,7 @@ export const EditorContext = createContext<[State, Actions]>([
     updateLayerSettings: () => undefined,
     addLayer: () => undefined,
     updateTilemapSettings: () => undefined,
+    removeLayer: () => undefined,
   },
 ])
 
@@ -283,12 +286,39 @@ export function EditorProvider({ children }: { children: React.ReactNode }) {
 
   function addLayer() {
     setState((state) => {
+      const sortOrder = state.layers.length + 1
       const layer: LayerType = {
         id: generateId(),
         name: `Layer ${state.layers.length + 1}`,
         tilemap: generateMap(state.width, state.height),
         isVisible: true,
+        sortOrder,
       }
+      return {
+        ...state,
+        layers: [layer, ...state.layers],
+      }
+    })
+  }
+
+  function removeLayer(layerId: string) {
+    setState((state) => {
+      const layers = state.layers.filter((layer) => layer.id !== layerId)
+      return {
+        ...state,
+        layers,
+      }
+    })
+  }
+
+  function renameLayer(name: string) {
+    setState((state) => {
+      const layer = state.layers.find(
+        (layer) => layer.id === state.selectedLayerId
+      )
+      if (!layer) return state
+
+      layer.name = name
       return {
         ...state,
         layers: [...state.layers, layer],
@@ -306,6 +336,7 @@ export function EditorProvider({ children }: { children: React.ReactNode }) {
     updateLayerSettings,
     addLayer,
     updateTilemapSettings,
+    removeLayer,
   }
 
   return (

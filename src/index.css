@@ -29,3 +29,7 @@ img {
   image-rendering: optimize-contrast; /* CSS3 Proposed                  */
   -ms-interpolation-mode: nearest-neighbor; /* IE8+                           */
 }
+
+.button {
+  @apply p-2 bg-gray-200 cursor-default rounded-md hover:bg-gray-300;
+}
