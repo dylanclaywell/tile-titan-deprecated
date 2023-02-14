@@ -311,21 +311,6 @@ export function EditorProvider({ children }: { children: React.ReactNode }) {
     })
   }
 
-  function renameLayer(name: string) {
-    setState((state) => {
-      const layer = state.layers.find(
-        (layer) => layer.id === state.selectedLayerId
-      )
-      if (!layer) return state
-
-      layer.name = name
-      return {
-        ...state,
-        layers: [...state.layers, layer],
-      }
-    })
-  }
-
   const actions = {
     updateCanvas,
     handleToolClick,

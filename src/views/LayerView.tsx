@@ -1,5 +1,4 @@
 import React, { useContext, useState } from 'react'
-import { v4 as generateId } from 'uuid'
 
 import { Layer } from '../components/Layer/Layer'
 import { EditorContext } from '../contexts/EditorContext'

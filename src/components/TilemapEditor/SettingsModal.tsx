@@ -3,7 +3,7 @@ import z from 'zod'
 
 import TextField from '../TextField'
 import { generateMap } from '../../utils/generateMap'
-import { Layer, LayerType } from '../../types/layer'
+import { LayerType } from '../../types/layer'
 import { EditorContext } from '../../contexts/EditorContext'
 import { Overlay } from '../Overlay'
 import { useEscapeKey } from '../../hooks/useEscapeKey'
