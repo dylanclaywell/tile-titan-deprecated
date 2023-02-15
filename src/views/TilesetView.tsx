@@ -23,7 +23,6 @@ function TilesetViewBase({
   }) => void
 }) {
   const [tilesets, setTilesets] = useState<TilesetType[]>([])
-  const [imageIsLoaded, setImageIsLoaded] = useState(false)
   const [cursorRef, setCursorRef] = useState<HTMLDivElement | null>(null)
   const [imageRef, setImageRef] = useState<HTMLImageElement | null>(null)
   const [selectedTilesetId, setSelectedTilesetId] = useState<string | null>(
@@ -36,19 +35,39 @@ function TilesetViewBase({
     setSelectedTilesetId(tilesets[0]?.id ?? null)
   }
 
-  useEffect(() => {
+  useEffect(function loadTilesets() {
     refreshTilesets()
   }, [])
 
-  function handleAreaHover(e: React.MouseEvent<HTMLAreaElement, MouseEvent>) {
-    if (!(e.target instanceof HTMLAreaElement) || !cursorRef) return
+  useEffect(function registerEventListeners() {
+    function handleMouseMove(event: MouseEvent) {
+      if (
+        !(event.target instanceof HTMLImageElement) ||
+        event.target.id !== 'tileset'
+      )
+        return
 
-    const coords = e.target.coords
-    const [x, y] = coords.split(',').map((n) => parseInt(n))
+      if (!cursorRef) return
 
-    cursorRef.style.top = `${y}px`
-    cursorRef.style.left = `${x}px`
-  }
+      const area = cursorRef.querySelector('area')
+
+      if (!area) return
+
+      const x = Math.floor(event.offsetX / 32) * 32
+      const y = Math.floor(event.offsetY / 32) * 32
+
+      cursorRef.style.top = `${y}px`
+      cursorRef.style.left = `${x}px`
+
+      area.coords = `${x},${y},${x + 32},${y + 32}`
+    }
+
+    document.addEventListener('mousemove', handleMouseMove)
+
+    return function cleanup() {
+      document.removeEventListener('mousemove', handleMouseMove)
+    }
+  })
 
   async function handleAreaClick(
     e: React.MouseEvent<HTMLAreaElement, MouseEvent>
@@ -74,40 +93,9 @@ function TilesetViewBase({
     updateToolCanvas({ canvas, tilesetX, tilesetY, tilesetName })
   }
 
-  const imageWidth = imageIsLoaded && imageRef ? imageRef.width : 0
-  const imageHeight = imageIsLoaded && imageRef ? imageRef.height : 0
-
-  const rows = new Array(imageHeight / 32).fill(0)
-  const columns = new Array(imageWidth / 32).fill(0)
-
-  const grid = rows.map(() => columns.map(() => 0))
-
   const currentTileset = tilesets.find(
     (tileset) => tileset.id === selectedTilesetId
   )
-
-  const map =
-    imageWidth && imageHeight && currentTileset ? (
-      <map name={`testmap`}>
-        {grid.map((row, i) => {
-          return row.map((tile, j) => {
-            return (
-              <area
-                key={`${i}-${j}`}
-                onClick={handleAreaClick}
-                onMouseOver={handleAreaHover}
-                shape="rect"
-                coords={`${j * 32},${i * 32},${j * 32 + 32},${i * 32 + 32}`}
-                href="#"
-                alt="tile"
-                // TODO fix this
-                data-tileset-name={currentTileset.name}
-              />
-            )
-          })
-        })}
-      </map>
-    ) : null
 
   return (
     <div className="h-0 flex flex-col flex-1 border-gray-600">
@@ -161,16 +149,23 @@ function TilesetViewBase({
                 className="max-w-none"
                 src={currentTileset.blob}
                 alt="tileset"
+                id="tileset"
                 useMap={`#testmap`}
-                onLoad={() => {
-                  setImageIsLoaded(true)
-                }}
               />
               <div
                 ref={(el) => setCursorRef(el)}
                 className="absolute bg-blue-600 z-40 w-8 h-8 pointer-events-none opacity-50"
-              />
-              {map}
+              >
+                <map name="testmap">
+                  <area
+                    onClick={handleAreaClick}
+                    shape="rect"
+                    href="#"
+                    alt="tile"
+                    data-tileset-name={currentTileset.name}
+                  />
+                </map>
+              </div>
             </div>
           </div>
         )}
