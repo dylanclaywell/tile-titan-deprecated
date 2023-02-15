@@ -113,63 +113,70 @@ export function EditorProvider({ children }: { children: React.ReactNode }) {
     cursorRef.current = ref
   }
 
-  function updateCanvas({
-    canvas,
-    tilesetX,
-    tilesetY,
-    tilesetName,
-  }: {
-    canvas: HTMLCanvasElement
-    tilesetX: number
-    tilesetY: number
-    tilesetName: string
-  }) {
-    setState({
-      ...state,
-      tool: {
-        ...state.tool,
-        type: 'tile',
-        canvas,
-        tilesetX,
-        tilesetY,
-        tilesetName,
-      },
-    })
-  }
+  const updateCanvas = useCallback(
+    ({
+      canvas,
+      tilesetX,
+      tilesetY,
+      tilesetName,
+    }: {
+      canvas: HTMLCanvasElement
+      tilesetX: number
+      tilesetY: number
+      tilesetName: string
+    }) => {
+      setState((state) => ({
+        ...state,
+        tool: {
+          ...state.tool,
+          type: 'tile',
+          canvas,
+          tilesetX,
+          tilesetY,
+          tilesetName,
+        },
+      }))
+    },
+    []
+  )
 
   function toggleGrid() {
-    setState({
+    setState((state) => ({
       ...state,
       showGrid: !state.showGrid,
-    })
+    }))
   }
 
   function handleToolClick(type: ToolType) {
     switch (type) {
       case 'tile':
         {
-          const tool: Tool = {
-            ...state.tool,
-            type,
-          }
-          setState({
-            ...state,
-            tool,
+          setState((state) => {
+            const tool: Tool = {
+              ...state.tool,
+              type,
+            }
+            return {
+              ...state,
+              tool,
+            }
           })
         }
         break
       case 'eraser':
         {
-          const tool: Tool = {
-            ...state.tool,
-            type,
-          }
-          const canvas = tool.canvas
-          const context = canvas.getContext('2d')
-          context?.clearRect(0, 0, canvas.width, canvas.height)
-          setState({
-            ...state,
-            tool,
+          setState(() => {
+            const tool: Tool = {
+              ...state.tool,
+              type,
+            }
+            const canvas = tool.canvas
+            const context = canvas.getContext('2d')
+            context?.clearRect(0, 0, canvas.width, canvas.height)
+            return {
+              ...state,
+              tool,
+            }
           })
         }
         break

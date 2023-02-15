@@ -12,18 +12,28 @@ import { SelectField } from '../components/SelectField'
 import { ToolSection } from '../components/Tools/ToolSection'
 import { Tools } from '../components/Tools/Tools'
 
-export function TilesetView() {
+function TilesetViewBase({
+  updateToolCanvas,
+}: {
+  updateToolCanvas: (canvas: {
+    canvas: HTMLCanvasElement
+    tilesetX: number
+    tilesetY: number
+    tilesetName: string
+  }) => void
+}) {
   const [tilesets, setTilesets] = useState<TilesetType[]>([])
   const [imageIsLoaded, setImageIsLoaded] = useState(false)
   const [cursorRef, setCursorRef] = useState<HTMLDivElement | null>(null)
   const [imageRef, setImageRef] = useState<HTMLImageElement | null>(null)
-  const [, { updateCanvas: updateToolCanvas }] = useContext(EditorContext)
-  const [selectedTileset, setSelectedTileset] = useState<string | null>(null)
+  const [selectedTilesetId, setSelectedTilesetId] = useState<string | null>(
+    null
+  )
 
   async function refreshTilesets() {
     const tilesets = await getTilesets()
     setTilesets(tilesets)
-    setSelectedTileset(tilesets[0]?.id ?? null)
+    setSelectedTilesetId(tilesets[0]?.id ?? null)
   }
 
   useEffect(() => {
@@ -72,8 +82,12 @@ export function TilesetView() {
 
   const grid = rows.map(() => columns.map(() => 0))
 
+  const currentTileset = tilesets.find(
+    (tileset) => tileset.id === selectedTilesetId
+  )
+
   const map =
-    imageWidth && imageHeight ? (
+    imageWidth && imageHeight && currentTileset ? (
       <map name={`testmap`}>
         {grid.map((row, i) => {
           return row.map((tile, j) => {
@@ -87,7 +101,7 @@ export function TilesetView() {
                 href="#"
                 alt="tile"
                 // TODO fix this
-                data-tileset-name={tilesets[0].name}
+                data-tileset-name={currentTileset.name}
               />
             )
           })
@@ -106,9 +120,9 @@ export function TilesetView() {
                 label: tileset.name,
               }))}
               onChange={(value) => {
-                setSelectedTileset(value)
+                setSelectedTilesetId(value)
               }}
-              value={selectedTileset ?? ''}
+              value={selectedTilesetId ?? ''}
               inputProps={{
                 className: 'w-full',
               }}
@@ -139,13 +153,13 @@ export function TilesetView() {
         </Tools>
       </div>
       <div className="overflow-auto h-full flex-1 border-gray-300">
-        {tilesets.map((tileset, i) => (
-          <div key={`${tileset.name}-${i}`} className="h-full">
-            <div key={tileset.id} className="relative h-full">
+        {currentTileset && (
+          <div className="h-full">
+            <div key={currentTileset.id} className="relative h-full">
               <img
                 ref={(el) => setImageRef(el)}
                 className="max-w-none"
-                src={tileset.blob}
+                src={currentTileset.blob}
                 alt="tileset"
                 useMap={`#testmap`}
                 onLoad={() => {
@@ -159,8 +173,16 @@ export function TilesetView() {
               {map}
             </div>
           </div>
-        ))}
+        )}
       </div>
     </div>
   )
+}
+
+const TilesetViewMemoized = React.memo(TilesetViewBase)
+
+export function TilesetView() {
+  const [, { updateCanvas: updateToolCanvas }] = useContext(EditorContext)
+
+  return <TilesetViewMemoized updateToolCanvas={updateToolCanvas} />
 }
