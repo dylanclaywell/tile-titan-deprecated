@@ -150,13 +150,13 @@ function TilesetViewBase({
                 src={currentTileset.blob}
                 alt="tileset"
                 id="tileset"
-                useMap={`#testmap`}
+                useMap={`#tileset-map`}
               />
               <div
                 ref={(el) => setCursorRef(el)}
                 className="absolute bg-blue-600 z-40 w-8 h-8 pointer-events-none opacity-50"
               >
-                <map name="testmap">
+                <map name="tileset-map">
                   <area
                     onClick={handleAreaClick}
                     shape="rect"

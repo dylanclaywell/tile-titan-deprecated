@@ -1,33 +1,72 @@
-import React, { useContext } from 'react'
+import React, { useContext, useState } from 'react'
 import clsx from 'clsx'
 
 import { LayerButton } from './LayerButton'
 import { EditorContext } from '../../contexts/EditorContext'
+import { LayerType } from '../../types/layer'
 
 export interface Props {
   id: string
+  sortOrder: number
   isSelected: boolean
   isVisible: boolean
   name: string
   onClick: () => void
   onRename: (id: string) => void
+  draggedLayer: LayerType | null
+  onDragStart: React.DragEventHandler<HTMLDivElement>
+  onDragEnd: React.DragEventHandler<HTMLDivElement>
 }
 
 export function Layer({
   id,
+  sortOrder,
   isSelected,
   isVisible,
   name,
   onClick,
   onRename,
+  draggedLayer,
+  onDragStart,
+  onDragEnd,
 }: Props) {
+  const [isHoveredWhileDragging, setIsHoveredWhileDragging] = useState(false)
   const [, { updateLayerSettings, removeLayer }] = useContext(EditorContext)
+
+  const isDragging = draggedLayer?.id === id
 
   return (
     <div
       className={clsx('w-full flex', {
-        'bg-blue-400': isSelected,
+        'bg-blue-400': isSelected && !isHoveredWhileDragging,
+        'bg-blue-200': isHoveredWhileDragging,
+        'bg-blue-100': isDragging,
       })}
+      draggable
+      onDrop={(event) => {
+        event.preventDefault()
+
+        if (!draggedLayer) return
+        if (draggedLayer?.id === id) return
+
+        updateLayerSettings(draggedLayer.id, { sortOrder })
+        updateLayerSettings(id, { sortOrder: draggedLayer.sortOrder })
+        setIsHoveredWhileDragging(false)
+      }}
+      onDragStart={onDragStart}
+      onDragEnd={onDragEnd}
+      onDragOver={(event) => {
+        event.preventDefault()
+
+        if (draggedLayer?.id === id) return
+
+        setIsHoveredWhileDragging(true)
+      }}
+      onDragLeave={(event) => {
+        event.preventDefault()
+
+        setIsHoveredWhileDragging(false)
+      }}
     >
       <button onClick={onClick} className="flex-grow pl-2 text-left">
         <span>{name}</span>

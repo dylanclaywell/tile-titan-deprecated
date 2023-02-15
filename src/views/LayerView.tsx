@@ -6,8 +6,10 @@ import { Tool } from '../components/Tool'
 import { Tools } from '../components/Tools/Tools'
 import { ToolSection } from '../components/Tools/ToolSection'
 import { RenameLayerModal } from '../components/Layer/RenameLayerModal'
+import { LayerType } from '../types/layer'
 
 export function LayerView() {
+  const [draggedLayer, setDraggedLayer] = useState<LayerType | null>(null)
   const [renamingLayerId, setRenamingLayerId] = useState<string | null>(null)
   const [
     { layers, selectedLayerId },
@@ -34,11 +36,19 @@ export function LayerView() {
             <Layer
               key={`layer-${layer.name}`}
               id={layer.id}
+              sortOrder={layer.sortOrder}
               isSelected={layer.id === selectedLayerId}
               isVisible={layer.isVisible}
               name={layer.name}
               onClick={() => setSelectedLayerId(layer.id)}
               onRename={() => setRenamingLayerId(layer.id)}
+              onDragStart={() => {
+                setDraggedLayer(layer)
+              }}
+              onDragEnd={() => {
+                setDraggedLayer(null)
+              }}
+              draggedLayer={draggedLayer}
             />
           ))}
       </div>
