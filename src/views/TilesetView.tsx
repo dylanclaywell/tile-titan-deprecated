@@ -11,6 +11,7 @@ import { Tool } from '../components/Tool'
 import { SelectField } from '../components/SelectField'
 import { ToolSection } from '../components/Tools/ToolSection'
 import { Tools } from '../components/Tools/Tools'
+import { TilesetSettingsModal } from '../components/TilesetSettingsModal'
 
 function TilesetViewBase({
   updateToolCanvas,
@@ -22,6 +23,7 @@ function TilesetViewBase({
     tilesetName: string
   }) => void
 }) {
+  const [tilesetSettingsIsOpen, setTilesetSettingsIsOpen] = useState(false)
   const [tilesets, setTilesets] = useState<TilesetType[]>([])
   const [cursorRef, setCursorRef] = useState<HTMLDivElement | null>(null)
   const [imageRef, setImageRef] = useState<HTMLImageElement | null>(null)
@@ -135,7 +137,7 @@ function TilesetViewBase({
             <Tool
               icon="gear"
               name="Tileset settings"
-              onClick={() => undefined}
+              onClick={() => setTilesetSettingsIsOpen(true)}
             />
           </ToolSection>
         </Tools>
@@ -170,6 +172,17 @@ function TilesetViewBase({
           </div>
         )}
       </div>
+      <TilesetSettingsModal
+        isOpen={tilesetSettingsIsOpen}
+        onSubmit={async (values) => {
+          const tilesetId = currentTileset?.id ?? ''
+
+          await changeTilesetName(currentTileset?.id ?? '', values.name)
+          await refreshTilesets()
+          setSelectedTilesetId(tilesetId)
+        }}
+        onClose={() => setTilesetSettingsIsOpen(false)}
+      />
     </div>
   )
 }

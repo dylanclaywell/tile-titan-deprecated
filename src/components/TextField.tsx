@@ -25,7 +25,7 @@ export default function TextField({
   leftIconName,
 }: Props) {
   return (
-    <div className={clsx('flex flex-col', classes)}>
+    <div className={clsx('flex flex-col bg-white', classes)}>
       <label
         className={clsx(
           'relative rounded-md p-4 border-gray-400 border-solid border flex items-center gap-2',
