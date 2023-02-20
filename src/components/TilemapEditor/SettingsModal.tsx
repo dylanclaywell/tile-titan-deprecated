@@ -77,7 +77,7 @@ export function SettingsModal({ isOpen, layer, onClose }: Props) {
 
       updateLayerSettings(layer.id, {
         name,
-        tilemap: generateMap(width, height),
+        data: generateMap(width, height),
       })
       updateTilemapSettings({
         width,

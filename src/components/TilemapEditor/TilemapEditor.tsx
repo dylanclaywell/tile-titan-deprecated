@@ -2,7 +2,7 @@ import React, { useContext, useEffect, useMemo, useRef, useState } from 'react'
 import clsx from 'clsx'
 
 import { EditorContext } from '../../contexts/EditorContext'
-import { TilemapEditorCursor } from './Cursor'
+import { Cursor } from './Cursor'
 import { clamp } from '../../utils/clamp'
 import { Tile } from './Tile'
 import { LayerType } from '../../types/layer'
@@ -195,6 +195,8 @@ export function TilemapEditor({ layers, currentLayer, onTileClick }: Props) {
     [tool, zoomLevel, currentLayerId, width, height]
   )
 
+  console.log(layers)
+
   return (
     <div
       id="tilemap-editor"
@@ -214,9 +216,7 @@ export function TilemapEditor({ layers, currentLayer, onTileClick }: Props) {
           height: height * 32,
         }}
       >
-        {currentLayer && (
-          <TilemapEditorCursor anchor={gridRef} layer={currentLayer} />
-        )}
+        {currentLayer && <Cursor anchor={gridRef} layer={currentLayer} />}
         <GridOverlay
           tileHeight={tileHeight}
           tileWidth={tileWidth}
@@ -226,36 +226,51 @@ export function TilemapEditor({ layers, currentLayer, onTileClick }: Props) {
         />
         {layers
           .sort((a, b) => (a.sortOrder < b.sortOrder ? -1 : 1))
-          .map((layer, i) => (
-            <div
-              key={`layer-${layer.id}`}
-              id="tilemap-grid"
-              className={clsx('grid absolute', {
-                'pointer-events-none': currentLayer?.id !== layer.id,
-                hidden: !layer.isVisible,
-              })}
-              style={{
-                gridTemplateColumns: `repeat(${width}, ${tileWidth}px)`,
-                gridTemplateRows: `repeat(${height}, ${tileHeight}px)`,
-                zIndex: i,
-              }}
-            >
-              {layer.tilemap.map((row, y) => {
-                return row.map((tile, x) => {
-                  return (
-                    <Tile
-                      key={`${x}-${y}`}
-                      x={x}
-                      y={y}
-                      tileWidth={tileWidth}
-                      tileHeight={tileHeight}
-                      showGrid={showGrid}
-                    />
-                  )
-                })
-              })}
-            </div>
-          ))}
+          .map((layer, i) =>
+            layer.type === 'tilelayer' ? (
+              <div
+                key={`layer-${layer.id}`}
+                id="tilemap-grid"
+                className={clsx('grid absolute', {
+                  'pointer-events-none': currentLayer?.id !== layer.id,
+                  hidden: !layer.isVisible,
+                })}
+                style={{
+                  gridTemplateColumns: `repeat(${width}, ${tileWidth}px)`,
+                  gridTemplateRows: `repeat(${height}, ${tileHeight}px)`,
+                  zIndex: i,
+                }}
+              >
+                {layer.data.map((row, y) => {
+                  return row.map((tile, x) => {
+                    return (
+                      <Tile
+                        key={`${x}-${y}`}
+                        x={x}
+                        y={y}
+                        tileWidth={tileWidth}
+                        tileHeight={tileHeight}
+                        showGrid={showGrid}
+                      />
+                    )
+                  })
+                })}
+              </div>
+            ) : (
+              layer.data.map((object, j) => (
+                <div
+                  key={`object-${layer.id}-${j}`}
+                  className="absolute border border-black pointer-events-none"
+                  style={{
+                    top: object.y2 > object.y ? object.y : object.y2,
+                    left: object.x2 > object.x ? object.x : object.x2,
+                    width: object.width,
+                    height: object.height,
+                  }}
+                ></div>
+              ))
+            )
+          )}
       </div>
     </div>
   )

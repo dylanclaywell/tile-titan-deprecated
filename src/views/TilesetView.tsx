@@ -6,7 +6,7 @@ import {
   changeTilesetName,
   getTilesets,
 } from '../indexedDB/tileset'
-import { EditorContext } from '../contexts/EditorContext'
+import { EditorContext, ToolType } from '../contexts/EditorContext'
 import { Tool } from '../components/Tool'
 import { SelectField } from '../components/SelectField'
 import { ToolSection } from '../components/Tools/ToolSection'
@@ -15,6 +15,7 @@ import { TilesetSettingsModal } from '../components/TilesetSettingsModal'
 
 function TilesetViewBase({
   updateToolCanvas,
+  layerType,
 }: {
   updateToolCanvas: (canvas: {
     canvas: HTMLCanvasElement
@@ -22,6 +23,7 @@ function TilesetViewBase({
     tilesetY: number
     tilesetName: string
   }) => void
+  layerType: 'tilelayer' | 'objectlayer'
 }) {
   const [tilesetSettingsIsOpen, setTilesetSettingsIsOpen] = useState(false)
   const [tilesets, setTilesets] = useState<TilesetType[]>([])
@@ -75,6 +77,10 @@ function TilesetViewBase({
     e: React.MouseEvent<HTMLAreaElement, MouseEvent>
   ) {
     e.preventDefault()
+
+    if (layerType === 'objectlayer') {
+      return
+    }
 
     if (!(e.target instanceof HTMLAreaElement) || !imageRef) return
 
@@ -190,7 +196,15 @@ function TilesetViewBase({
 const TilesetViewMemoized = React.memo(TilesetViewBase)
 
 export function TilesetView() {
-  const [, { updateCanvas: updateToolCanvas }] = useContext(EditorContext)
+  const [{ selectedLayerId, layers }, { updateCanvas: updateToolCanvas }] =
+    useContext(EditorContext)
 
-  return <TilesetViewMemoized updateToolCanvas={updateToolCanvas} />
+  const layer = layers.find((layer) => layer.id === selectedLayerId)
+
+  return (
+    <TilesetViewMemoized
+      updateToolCanvas={updateToolCanvas}
+      layerType={layer?.type ?? 'tilelayer'}
+    />
+  )
 }

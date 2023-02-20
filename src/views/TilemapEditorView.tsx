@@ -1,4 +1,5 @@
 import React, { useContext } from 'react'
+import clsx from 'clsx'
 
 import { TilemapEditor } from '../components/TilemapEditor/TilemapEditor'
 import { Tools } from '../components/Tools/Tools'
@@ -15,16 +16,21 @@ export function TilemapEditorView() {
   const [showSettings, setShowSettings] = React.useState(false)
 
   const currentLayer = layers.find((layer) => layer.id === selectedLayerId)
+  const layerType = currentLayer?.type
 
   return (
-    <div className="basis-[70vw] h-screen overflow-hidden">
+    <div
+      className={clsx('basis-[70vw] h-screen overflow-hidden', {
+        'cursor-crosshair': tool.type === 'object',
+      })}
+    >
       <Tools>
         <ToolSection>
           <Tool
             name="Save"
             onClick={() => {
               const file = new Blob(
-                [JSON.stringify(currentLayer?.tilemap, null, 2)],
+                [JSON.stringify(currentLayer?.data, null, 2)],
                 {
                   type: 'application/json',
                 }
@@ -39,18 +45,43 @@ export function TilemapEditorView() {
           />
         </ToolSection>
         <ToolSection>
-          <Tool
-            name="Tile"
-            onClick={() => handleToolClick('tile')}
-            isSelected={tool.type === 'tile'}
-            icon="image"
-          />
-          <Tool
-            name="Erase"
-            onClick={() => handleToolClick('eraser')}
-            isSelected={tool.type === 'eraser'}
-            icon="eraser"
-          />
+          {layerType === 'tilelayer' ? (
+            <>
+              <Tool
+                name="Tile"
+                onClick={() => handleToolClick('tile')}
+                isSelected={tool.type === 'tile'}
+                icon="image"
+              />
+              <Tool
+                name="Erase"
+                onClick={() => handleToolClick('eraser')}
+                isSelected={tool.type === 'eraser'}
+                icon="eraser"
+              />
+            </>
+          ) : (
+            <>
+              <Tool
+                name="Select"
+                onClick={() => handleToolClick('select')}
+                isSelected={tool.type === 'select'}
+                icon="arrow-pointer"
+              />
+              <Tool
+                name="Object"
+                onClick={() => handleToolClick('object')}
+                isSelected={tool.type === 'object'}
+                icon="vector-square"
+              />
+              <Tool
+                name="Erase"
+                onClick={() => handleToolClick('eraser')}
+                isSelected={tool.type === 'eraser'}
+                icon="eraser"
+              />
+            </>
+          )}
         </ToolSection>
         <ToolSection>
           <Tool

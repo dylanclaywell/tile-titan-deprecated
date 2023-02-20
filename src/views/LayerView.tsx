@@ -13,7 +13,7 @@ export function LayerView() {
   const [renamingLayerId, setRenamingLayerId] = useState<string | null>(null)
   const [
     { layers, selectedLayerId },
-    { setSelectedLayerId, addLayer, updateLayerSettings },
+    { setSelectedLayerId, addLayer, updateLayerSettings, handleToolClick },
   ] = useContext(EditorContext)
 
   const currentLayer = layers.find((layer) => layer.id === selectedLayerId)
@@ -23,9 +23,14 @@ export function LayerView() {
       <Tools>
         <ToolSection>
           <Tool
-            onClick={() => addLayer()}
-            icon="circle-plus"
-            name="Add layer"
+            onClick={() => addLayer('tilelayer')}
+            icon="image"
+            name="Add tile layer"
+          />
+          <Tool
+            onClick={() => addLayer('objectlayer')}
+            icon="object-group"
+            name="Add object layer"
           />
         </ToolSection>
       </Tools>
@@ -36,11 +41,18 @@ export function LayerView() {
             <Layer
               key={`layer-${layer.name}`}
               id={layer.id}
+              type={layer.type}
               sortOrder={layer.sortOrder}
               isSelected={layer.id === selectedLayerId}
               isVisible={layer.isVisible}
               name={layer.name}
-              onClick={() => setSelectedLayerId(layer.id)}
+              onClick={() => {
+                if (layer.type !== currentLayer?.type) {
+                  handleToolClick('select')
+                }
+
+                setSelectedLayerId(layer.id)
+              }}
               onRename={() => setRenamingLayerId(layer.id)}
               onDragStart={() => {
                 setDraggedLayer(layer)

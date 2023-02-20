@@ -7,6 +7,7 @@ import { LayerType } from '../../types/layer'
 
 export interface Props {
   id: string
+  type: 'tilelayer' | 'objectlayer'
   sortOrder: number
   isSelected: boolean
   isVisible: boolean
@@ -20,6 +21,7 @@ export interface Props {
 
 export function Layer({
   id,
+  type,
   sortOrder,
   isSelected,
   isVisible,
@@ -68,7 +70,13 @@ export function Layer({
         setIsHoveredWhileDragging(false)
       }}
     >
-      <button onClick={onClick} className="flex-grow pl-2 text-left">
+      <button onClick={onClick} className="flex-grow pl-2 text-left space-x-2">
+        <i
+          className={clsx('fa-solid text-gray-600', {
+            'fa-image': type === 'tilelayer',
+            'fa-object-group': type === 'objectlayer',
+          })}
+        ></i>
         <span>{name}</span>
       </button>
       <div className="flex justify-end gap-2 p-2">

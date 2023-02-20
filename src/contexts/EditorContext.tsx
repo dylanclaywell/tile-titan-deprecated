@@ -1,10 +1,11 @@
 import React, { createContext, useCallback, useRef, useState } from 'react'
 import { v4 as generateId } from 'uuid'
 
-import { LayerType } from '../types/layer'
+import { LayerType, ObjectLayerType, TileLayerType } from '../types/layer'
 import { generateMap } from '../utils/generateMap'
+import { ObjectType } from '../types/object'
 
-export type ToolType = 'tile' | 'eraser' | 'grid'
+export type ToolType = 'select' | 'tile' | 'eraser' | 'grid' | 'object'
 
 export type Tool = {
   type: ToolType
@@ -50,7 +51,17 @@ export type Actions = {
   setCursorRef: (cursorRef: HTMLDivElement | null) => void
   setZoomLevel: (level: number) => void
   setSelectedLayerId: (id: string) => void
-  addLayer: () => void
+  addLayer: (type: 'tilelayer' | 'objectlayer') => void
+  addObject: (args: {
+    layerId: string
+    name: string
+    x: number
+    y: number
+    x2: number
+    y2: number
+    width: number
+    height: number
+  }) => void
   updateTilemapSettings: (args: {
     width: number
     height: number
@@ -80,8 +91,9 @@ const initialState: State = {
   layers: [
     {
       id: initialSelectedLayerId,
+      type: 'tilelayer',
       name: 'Layer 1',
-      tilemap: generateMap(10, 10),
+      data: generateMap(10, 10),
       isVisible: true,
       sortOrder: 0,
     },
@@ -102,6 +114,7 @@ export const EditorContext = createContext<[State, Actions]>([
     addLayer: () => undefined,
     updateTilemapSettings: () => undefined,
     removeLayer: () => undefined,
+    addObject: () => undefined,
   },
 ])
 
@@ -149,6 +162,34 @@ export function EditorProvider({ children }: { children: React.ReactNode }) {
 
   function handleToolClick(type: ToolType) {
     switch (type) {
+      case 'select':
+        {
+          setState((state) => {
+            const tool: Tool = {
+              ...state.tool,
+              type,
+            }
+            return {
+              ...state,
+              tool,
+            }
+          })
+        }
+        break
+      case 'object':
+        {
+          setState((state) => {
+            const tool: Tool = {
+              ...state.tool,
+              type,
+            }
+            return {
+              ...state,
+              tool,
+            }
+          })
+        }
+        break
       case 'tile':
         {
           setState((state) => {
@@ -214,24 +255,28 @@ export function EditorProvider({ children }: { children: React.ReactNode }) {
 
         if (!selectedLayer) return state
 
-        const newTilemap = selectedLayer.tilemap
-        newTilemap[tileY][tileX] = {
-          tilesetName,
-          tilesetX,
-          tilesetY,
-        }
+        if (selectedLayer.type === 'tilelayer') {
+          const newTilemap = selectedLayer.data
+          newTilemap[tileY][tileX] = {
+            tilesetName,
+            tilesetX,
+            tilesetY,
+          }
 
-        const newLayers = state.layers.map((layer) =>
-          layer.id === selectedLayer.id
-            ? {
-                ...layer,
-                tilemap: newTilemap,
-              }
-            : layer
-        )
-        return {
-          ...state,
-          layers: newLayers,
+          const newLayers: LayerType[] = state.layers.map((layer) => {
+            return layer.id === selectedLayer.id && layer.type === 'tilelayer'
+              ? {
+                  ...layer,
+                  data: newTilemap,
+                }
+              : layer
+          })
+          return {
+            ...state,
+            layers: newLayers,
+          }
+        } else {
+          return state
         }
       })
     },
@@ -247,7 +292,7 @@ export function EditorProvider({ children }: { children: React.ReactNode }) {
 
   function updateLayerSettings(
     layerId: string,
-    newLayer: Partial<Omit<LayerType, 'tilemap'>>
+    newLayer: Partial<Omit<LayerType, 'data' | 'type'>>
   ) {
     setState((state) => {
       const selectedLayer = state.layers.find((layer) => layer.id === layerId)
@@ -291,19 +336,36 @@ export function EditorProvider({ children }: { children: React.ReactNode }) {
     })
   }
 
-  function addLayer() {
+  function addLayer(type: 'tilelayer' | 'objectlayer') {
     setState((state) => {
       const sortOrder = state.layers.length + 1
-      const layer: LayerType = {
-        id: generateId(),
-        name: `Layer ${state.layers.length + 1}`,
-        tilemap: generateMap(state.width, state.height),
-        isVisible: true,
-        sortOrder,
-      }
-      return {
-        ...state,
-        layers: [layer, ...state.layers],
+
+      if (type === 'tilelayer') {
+        const layer: TileLayerType = {
+          id: generateId(),
+          type,
+          name: `Layer ${state.layers.length + 1}`,
+          data: generateMap(state.width, state.height),
+          isVisible: true,
+          sortOrder,
+        }
+        return {
+          ...state,
+          layers: [layer, ...state.layers],
+        }
+      } else {
+        const layer: ObjectLayerType = {
+          id: generateId(),
+          type,
+          name: `Layer ${state.layers.length + 1}`,
+          data: [],
+          isVisible: true,
+          sortOrder,
+        }
+        return {
+          ...state,
+          layers: [layer, ...state.layers],
+        }
       }
     })
   }
@@ -314,6 +376,58 @@ export function EditorProvider({ children }: { children: React.ReactNode }) {
       return {
         ...state,
         layers,
+      }
+    })
+  }
+
+  function addObject({
+    layerId,
+    name,
+    x,
+    y,
+    x2,
+    y2,
+    width,
+    height,
+  }: {
+    layerId: string
+    name: string
+    x: number
+    y: number
+    x2: number
+    y2: number
+    width: number
+    height: number
+  }) {
+    setState((state) => {
+      const selectedLayer = state.layers.find(
+        (layer) => layer.id === state.selectedLayerId
+      )
+
+      if (!selectedLayer || selectedLayer.type !== 'objectlayer') return state
+
+      const newObject: ObjectType = {
+        name,
+        x,
+        y,
+        x2,
+        y2,
+        width,
+        height,
+      }
+
+      const newLayers = state.layers.map((layer) => {
+        return layer.id === selectedLayer.id && layer.type === 'objectlayer'
+          ? {
+              ...layer,
+              data: [...layer.data, newObject],
+            }
+          : layer
+      })
+
+      return {
+        ...state,
+        layers: newLayers,
       }
     })
   }
@@ -329,6 +443,7 @@ export function EditorProvider({ children }: { children: React.ReactNode }) {
     addLayer,
     updateTilemapSettings,
     removeLayer,
+    addObject,
   }
 
   return (
