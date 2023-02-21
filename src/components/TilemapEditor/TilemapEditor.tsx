@@ -2,7 +2,8 @@ import React, { useContext, useEffect, useMemo, useRef, useState } from 'react'
 import clsx from 'clsx'
 
 import { EditorContext } from '../../contexts/EditorContext'
-import { Cursor } from './Cursor'
+import { TileCursor } from './TileCursor'
+import { ObjectCursor } from './ObjectCursor'
 import { clamp } from '../../utils/clamp'
 import { Tile } from './Tile'
 import { LayerType } from '../../types/layer'
@@ -195,8 +196,6 @@ export function TilemapEditor({ layers, currentLayer, onTileClick }: Props) {
     [tool, zoomLevel, currentLayerId, width, height]
   )
 
-  console.log(layers)
-
   return (
     <div
       id="tilemap-editor"
@@ -216,7 +215,12 @@ export function TilemapEditor({ layers, currentLayer, onTileClick }: Props) {
           height: height * 32,
         }}
       >
-        {currentLayer && <Cursor anchor={gridRef} layer={currentLayer} />}
+        {currentLayer && (
+          <>
+            <TileCursor anchor={gridRef} layer={currentLayer} />
+            <ObjectCursor anchor={gridRef} layer={currentLayer} />
+          </>
+        )}
         <GridOverlay
           tileHeight={tileHeight}
           tileWidth={tileWidth}
