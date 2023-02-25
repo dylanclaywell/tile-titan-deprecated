@@ -30,8 +30,6 @@ export function SelectField({ options, onChange, value, inputProps }: Props) {
   const [anchor, setAnchor] = useState<HTMLDivElement | null>(null)
   const [isOpen, setIsOpen] = useState(false)
 
-  console.log(anchor)
-
   return (
     <div>
       <TextField
