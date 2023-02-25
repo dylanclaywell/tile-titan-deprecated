@@ -1,18 +1,14 @@
 import React from 'react'
 
-import { TilesetView } from './views/TilesetView'
 import { TilemapEditorView } from './views/TilemapEditorView'
 import { EditorProvider } from './contexts/EditorContext'
-import { LayerView } from './views/LayerView'
+import { MetadataView } from './views/MetadataView'
 
 function App() {
   return (
     <EditorProvider>
       <TilemapEditorView />
-      <div className="overflow-hidden flex flex-col basis-[30vw] divide-y border-gray-600">
-        <LayerView />
-        <TilesetView />
-      </div>
+      <MetadataView />
     </EditorProvider>
   )
 }

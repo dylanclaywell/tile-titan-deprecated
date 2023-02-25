@@ -11,6 +11,7 @@ export interface Props {
   classes?: string
   leftIconName?: string
   rightIconName?: string
+  forwardRef?: React.RefObject<HTMLDivElement> | React.LegacyRef<HTMLDivElement>
 }
 
 export default function TextField({
@@ -23,9 +24,10 @@ export default function TextField({
   classes,
   rightIconName,
   leftIconName,
+  forwardRef,
 }: Props) {
   return (
-    <div className={clsx('flex flex-col bg-white', classes)}>
+    <div className={clsx('flex flex-col bg-white', classes)} ref={forwardRef}>
       <label
         className={clsx(
           'relative rounded-md p-4 border-gray-400 border-solid border flex items-center gap-2',

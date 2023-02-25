@@ -13,12 +13,29 @@ export interface Props {
   inputProps?: React.InputHTMLAttributes<HTMLInputElement>
 }
 
+function calculatePosition(anchor: HTMLDivElement | null) {
+  if (!anchor) return {}
+
+  const { top, left, width, height } = anchor.getBoundingClientRect()
+
+  return {
+    // Minus 1 to close the gap between the menu and the anchor (where the bottom border would be)
+    top: `${top + height - 1}px`,
+    left: `${left}px`,
+    width: `${width}px`,
+  }
+}
+
 export function SelectField({ options, onChange, value, inputProps }: Props) {
+  const [anchor, setAnchor] = useState<HTMLDivElement | null>(null)
   const [isOpen, setIsOpen] = useState(false)
 
+  console.log(anchor)
+
   return (
-    <div className="relative">
+    <div>
       <TextField
+        forwardRef={(el) => setAnchor(el)}
         classes={clsx(
           '[&_i]:transition-all [&_i]:duration-300 [&_i]:ease-in-out',
           {
@@ -39,7 +56,10 @@ export function SelectField({ options, onChange, value, inputProps }: Props) {
         rightIconName="chevron-down"
       />
       {isOpen && (
-        <menu className="absolute border-x border-b border-gray-400 rounded-b-md bg-white z-50 top-full w-full flex flex-col rotate">
+        <menu
+          className="absolute border-x border-b border-gray-400 rounded-b-md bg-white z-50 top-full w-full flex flex-col rotate"
+          style={calculatePosition(anchor)}
+        >
           {options.map((option) => (
             <button
               key={option.value}
