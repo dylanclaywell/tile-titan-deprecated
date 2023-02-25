@@ -107,47 +107,45 @@ function TilesetViewBase({
 
   return (
     <div className="h-0 flex flex-col flex-1 border-gray-600">
-      <div>
-        <Tools>
-          <ToolSection>
-            <SelectField
-              options={tilesets.map((tileset) => ({
-                value: tileset.id,
-                label: tileset.name,
-              }))}
-              onChange={(value) => {
-                setSelectedTilesetId(value)
-              }}
-              value={selectedTilesetId ?? ''}
-              inputProps={{
-                className: 'w-full',
-              }}
-            />
-          </ToolSection>
-          <ToolSection>
-            <TilesetUploader
-              refreshTilesets={refreshTilesets}
-              label={
-                <div className="w-10 h-10 cursor-default hover:bg-gray-200 hover:border hover:border-gray-300 rounded-md flex justify-center items-center">
-                  <i className="fa-solid fa-file-circle-plus"></i>
-                </div>
-              }
-            />
-          </ToolSection>
-          <ToolSection>
-            <Tool
-              icon="trash-can"
-              name="Delete tileset"
-              onClick={() => undefined}
-            />
-            <Tool
-              icon="gear"
-              name="Tileset settings"
-              onClick={() => setTilesetSettingsIsOpen(true)}
-            />
-          </ToolSection>
-        </Tools>
-      </div>
+      <Tools>
+        <ToolSection>
+          <SelectField
+            options={tilesets.map((tileset) => ({
+              value: tileset.id,
+              label: tileset.name,
+            }))}
+            onChange={(value) => {
+              setSelectedTilesetId(value)
+            }}
+            value={selectedTilesetId ?? ''}
+            inputProps={{
+              className: 'w-full',
+            }}
+          />
+        </ToolSection>
+        <ToolSection>
+          <TilesetUploader
+            refreshTilesets={refreshTilesets}
+            label={
+              <div className="w-10 h-10 cursor-default hover:bg-gray-200 hover:border hover:border-gray-300 rounded-md flex justify-center items-center">
+                <i className="fa-solid fa-file-circle-plus"></i>
+              </div>
+            }
+          />
+        </ToolSection>
+        <ToolSection>
+          <Tool
+            icon="trash-can"
+            name="Delete tileset"
+            onClick={() => undefined}
+          />
+          <Tool
+            icon="gear"
+            name="Tileset settings"
+            onClick={() => setTilesetSettingsIsOpen(true)}
+          />
+        </ToolSection>
+      </Tools>
       <div className="overflow-auto h-full flex-1 border-gray-300">
         {currentTileset && (
           <div className="h-full">
