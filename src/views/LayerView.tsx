@@ -34,6 +34,7 @@ export function LayerView() {
           />
         </ToolSection>
       </Tools>
+      <h1 className="m-2 mb-0 text-xl text-gray-400">Layers</h1>
       <div className="p-2 border-gray-300">
         {layers
           .sort((a, b) => (a.sortOrder > b.sortOrder ? -1 : 1))
