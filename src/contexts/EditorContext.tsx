@@ -1,7 +1,12 @@
 import React, { createContext, useCallback, useRef, useState } from 'react'
 import { v4 as generateId } from 'uuid'
 
-import { LayerType, ObjectLayerType, TileLayerType } from '../types/layer'
+import {
+  LayerType,
+  ObjectLayer,
+  ObjectLayerType,
+  TileLayerType,
+} from '../types/layer'
 import { generateMap } from '../utils/generateMap'
 import { ObjectType } from '../types/object'
 
@@ -53,8 +58,6 @@ export type Actions = {
   setSelectedLayerId: (id: string) => void
   addLayer: (type: 'tilelayer' | 'objectlayer') => void
   addObject: (args: {
-    layerId: string
-    name: string
     x: number
     y: number
     x2: number
@@ -68,7 +71,13 @@ export type Actions = {
     tileWidth: number
     tileHeight: number
   }) => void
+  updateObjectSettings: (
+    layerId: string,
+    objectId: string,
+    object: Partial<ObjectType>
+  ) => void
   removeLayer: (id: string) => void
+  removeObject: (layerId: string, objectId: string) => void
 }
 
 const tileCanvas = document.createElement('canvas')
@@ -115,6 +124,8 @@ export const EditorContext = createContext<[State, Actions]>([
     updateTilemapSettings: () => undefined,
     removeLayer: () => undefined,
     addObject: () => undefined,
+    updateObjectSettings: () => undefined,
+    removeObject: () => undefined,
   },
 ])
 
@@ -381,8 +392,6 @@ export function EditorProvider({ children }: { children: React.ReactNode }) {
   }
 
   function addObject({
-    layerId,
-    name,
     x,
     y,
     x2,
@@ -390,8 +399,6 @@ export function EditorProvider({ children }: { children: React.ReactNode }) {
     width,
     height,
   }: {
-    layerId: string
-    name: string
     x: number
     y: number
     x2: number
@@ -407,7 +414,10 @@ export function EditorProvider({ children }: { children: React.ReactNode }) {
       if (!selectedLayer || selectedLayer.type !== 'objectlayer') return state
 
       const newObject: ObjectType = {
-        name,
+        id: generateId(),
+        name: `Object ${selectedLayer.data.length + 1}`,
+        sortOrder: selectedLayer.data.length + 1,
+        isVisible: true,
         x,
         y,
         x2,
@@ -432,6 +442,85 @@ export function EditorProvider({ children }: { children: React.ReactNode }) {
     })
   }
 
+  function updateObjectSettings(
+    layerId: string,
+    objectId: string,
+    newObject: Partial<ObjectType>
+  ) {
+    setState((state) => {
+      const selectedLayer = ObjectLayer.safeParse(
+        state.layers.find((layer) => layer.id === layerId)
+      )
+
+      if (!selectedLayer.success) return state
+
+      const newLayers = state.layers.map((layer) => {
+        const verifiedLayer = ObjectLayer.safeParse(layer)
+        if (!verifiedLayer.success) return layer
+
+        if (verifiedLayer.data.id === selectedLayer.data.id) {
+          const existingObject = selectedLayer.data.data.find(
+            (object) => object.id === objectId
+          )
+
+          if (!existingObject) return verifiedLayer.data
+
+          const newObjects = selectedLayer.data.data.map((object) => {
+            return object.id === existingObject.id
+              ? {
+                  ...object,
+                  ...newObject,
+                }
+              : object
+          })
+
+          return {
+            ...verifiedLayer.data,
+            data: newObjects,
+          }
+        }
+
+        return layer
+      })
+      return {
+        ...state,
+        layers: newLayers,
+      }
+    })
+  }
+
+  function removeObject(layerId: string, objectId: string) {
+    setState((state) => {
+      const selectedLayer = ObjectLayer.safeParse(
+        state.layers.find((layer) => layer.id === layerId)
+      )
+
+      if (!selectedLayer.success) return state
+
+      const newLayers = state.layers.map((layer) => {
+        const verifiedLayer = ObjectLayer.safeParse(layer)
+        if (!verifiedLayer.success) return layer
+
+        if (verifiedLayer.data.id === selectedLayer.data.id) {
+          const newObjects = selectedLayer.data.data.filter(
+            (object) => object.id !== objectId
+          )
+
+          return {
+            ...verifiedLayer.data,
+            data: newObjects,
+          }
+        }
+
+        return layer
+      })
+      return {
+        ...state,
+        layers: newLayers,
+      }
+    })
+  }
+
   const actions = {
     updateCanvas,
     handleToolClick,
@@ -442,8 +531,10 @@ export function EditorProvider({ children }: { children: React.ReactNode }) {
     updateLayerSettings,
     addLayer,
     updateTilemapSettings,
+    updateObjectSettings,
     removeLayer,
     addObject,
+    removeObject,
   }
 
   return (

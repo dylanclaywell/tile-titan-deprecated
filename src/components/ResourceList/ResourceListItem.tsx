@@ -1,41 +1,44 @@
-import React, { useContext, useState } from 'react'
+import React, { useState } from 'react'
 import clsx from 'clsx'
 
-import { LayerButton } from './LayerButton'
-import { EditorContext } from '../../contexts/EditorContext'
+import { Button } from './Button'
 import { LayerType } from '../../types/layer'
 
 export interface Props {
   id: string
-  type: 'tilelayer' | 'objectlayer'
+  icon?: string
   sortOrder: number
   isSelected: boolean
   isVisible: boolean
   name: string
   onClick: () => void
   onRename: (id: string) => void
-  draggedLayer: LayerType | null
+  draggedId: string | null
   onDragStart: React.DragEventHandler<HTMLDivElement>
   onDragEnd: React.DragEventHandler<HTMLDivElement>
+  onDrop: React.DragEventHandler<HTMLDivElement>
+  onHide: (id: string) => void
+  onDelete: (id: string) => void
 }
 
-export function Layer({
+export function ResourceListItem({
   id,
-  type,
-  sortOrder,
+  icon,
   isSelected,
   isVisible,
   name,
   onClick,
   onRename,
-  draggedLayer,
+  draggedId,
   onDragStart,
   onDragEnd,
+  onDrop,
+  onDelete,
+  onHide,
 }: Props) {
   const [isHoveredWhileDragging, setIsHoveredWhileDragging] = useState(false)
-  const [, { updateLayerSettings, removeLayer }] = useContext(EditorContext)
 
-  const isDragging = draggedLayer?.id === id
+  const isDragging = draggedId === id
 
   return (
     <div
@@ -46,13 +49,7 @@ export function Layer({
       })}
       draggable
       onDrop={(event) => {
-        event.preventDefault()
-
-        if (!draggedLayer) return
-        if (draggedLayer?.id === id) return
-
-        updateLayerSettings(draggedLayer.id, { sortOrder })
-        updateLayerSettings(id, { sortOrder: draggedLayer.sortOrder })
+        onDrop(event)
         setIsHoveredWhileDragging(false)
       }}
       onDragStart={onDragStart}
@@ -60,7 +57,7 @@ export function Layer({
       onDragOver={(event) => {
         event.preventDefault()
 
-        if (draggedLayer?.id === id) return
+        if (draggedId === id) return
 
         setIsHoveredWhileDragging(true)
       }}
@@ -71,16 +68,11 @@ export function Layer({
       }}
     >
       <button onClick={onClick} className="flex-grow pl-2 text-left space-x-2">
-        <i
-          className={clsx('fa-solid text-gray-600', {
-            'fa-image': type === 'tilelayer',
-            'fa-object-group': type === 'objectlayer',
-          })}
-        ></i>
+        {icon && <i className={clsx('fa-solid text-gray-600', icon)}></i>}
         <span>{name}</span>
       </button>
       <div className="flex justify-end gap-2 p-2">
-        <LayerButton
+        <Button
           name="Rename"
           classes={clsx({
             'hover:text-green-600': !isSelected,
@@ -89,23 +81,23 @@ export function Layer({
           iconName="pencil"
           onClick={() => onRename(id)}
         />
-        <LayerButton
+        <Button
           name={isVisible ? 'Hide' : 'Show'}
           classes={clsx({
             'hover:text-yellow-600': !isSelected,
             'hover:text-yellow-700': isSelected,
           })}
           iconName={isVisible ? 'eye' : 'eye-slash'}
-          onClick={() => updateLayerSettings(id, { isVisible: !isVisible })}
+          onClick={() => onHide(id)}
         />
-        <LayerButton
+        <Button
           name="Delete"
           classes={clsx({
             'hover:text-red-500': !isSelected,
             'hover:text-red-600': isSelected,
           })}
           iconName="trash-can"
-          onClick={() => removeLayer(id)}
+          onClick={() => onDelete(id)}
         />
       </div>
     </div>

@@ -1,19 +1,26 @@
 import React, { useContext, useState } from 'react'
 
-import { Layer } from '../components/Layer/Layer'
 import { EditorContext } from '../contexts/EditorContext'
 import { Tool } from '../components/Tool'
 import { Tools } from '../components/Tools/Tools'
 import { ToolSection } from '../components/Tools/ToolSection'
 import { RenameLayerModal } from '../components/Layer/RenameLayerModal'
 import { LayerType } from '../types/layer'
+import { ResourceListItem } from '../components/ResourceList/ResourceListItem'
+import { ResourceList } from '../components/ResourceList/ResourceList'
 
 export function LayerView() {
   const [draggedLayer, setDraggedLayer] = useState<LayerType | null>(null)
   const [renamingLayerId, setRenamingLayerId] = useState<string | null>(null)
   const [
     { layers, selectedLayerId },
-    { setSelectedLayerId, addLayer, updateLayerSettings, handleToolClick },
+    {
+      setSelectedLayerId,
+      addLayer,
+      updateLayerSettings,
+      handleToolClick,
+      removeLayer,
+    },
   ] = useContext(EditorContext)
 
   const currentLayer = layers.find((layer) => layer.id === selectedLayerId)
@@ -35,14 +42,14 @@ export function LayerView() {
         </ToolSection>
       </Tools>
       <h1 className="m-2 mb-0 text-xl text-gray-400">Layers</h1>
-      <div className="p-2 border-gray-300">
+      <ResourceList>
         {layers
           .sort((a, b) => (a.sortOrder > b.sortOrder ? -1 : 1))
           .map((layer) => (
-            <Layer
-              key={`layer-${layer.name}`}
+            <ResourceListItem
+              key={`layer-${layer.id}`}
               id={layer.id}
-              type={layer.type}
+              icon={layer.type === 'tilelayer' ? 'fa-image' : 'fa-object-group'}
               sortOrder={layer.sortOrder}
               isSelected={layer.id === selectedLayerId}
               isVisible={layer.isVisible}
@@ -61,10 +68,27 @@ export function LayerView() {
               onDragEnd={() => {
                 setDraggedLayer(null)
               }}
-              draggedLayer={draggedLayer}
+              onDrop={(event) => {
+                event.preventDefault()
+
+                if (!draggedLayer) return
+                if (draggedLayer?.id === layer.id) return
+
+                updateLayerSettings(draggedLayer.id, {
+                  sortOrder: layer.sortOrder,
+                })
+                updateLayerSettings(layer.id, {
+                  sortOrder: draggedLayer.sortOrder,
+                })
+              }}
+              onHide={() =>
+                updateLayerSettings(layer.id, { isVisible: !layer.isVisible })
+              }
+              onDelete={() => removeLayer(layer.id)}
+              draggedId={draggedLayer?.id ?? null}
             />
           ))}
-      </div>
+      </ResourceList>
       <RenameLayerModal
         isOpen={Boolean(renamingLayerId)}
         onClose={() => setRenamingLayerId(null)}

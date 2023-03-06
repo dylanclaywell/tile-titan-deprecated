@@ -93,8 +93,6 @@ export function ObjectCursor({ anchor }: Props) {
         }
 
         addObject({
-          layerId: selectedLayerId,
-          name: 'New Object',
           x,
           y,
           x2,

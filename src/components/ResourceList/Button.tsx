@@ -7,7 +7,7 @@ export interface Props {
   classes?: string
 }
 
-export function LayerButton({ name, iconName, onClick, classes }: Props) {
+export function Button({ name, iconName, onClick, classes }: Props) {
   return (
     <button className={classes} onClick={onClick}>
       <i title={name} className={`fa-solid fa-${iconName}`}></i>
