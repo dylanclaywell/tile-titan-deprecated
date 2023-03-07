@@ -10,12 +10,12 @@ export interface Props {
 
 export function ObjectCursor({ anchor }: Props) {
   const objectToolPreviewRef = useRef<HTMLDivElement | null>(null)
-  const objectToolMouseRef = useRef({
-    x: 0,
-    y: 0,
-    x2: 0,
-    y2: 0,
-  })
+  const objectToolMouseRef = useRef<{
+    x: number
+    y: number
+    x2: number
+    y2: number
+  } | null>(null)
   const [{ tool, zoomLevel, selectedLayerId }, { addObject }] =
     useContext(EditorContext)
 
@@ -37,9 +37,10 @@ export function ObjectCursor({ anchor }: Props) {
 
         const { clientX, clientY } = e
         objectToolMouseRef.current = {
-          ...objectToolMouseRef.current,
           x: clientX,
           y: clientY,
+          x2: clientX,
+          y2: clientY,
         }
 
         if (!anchor) return
@@ -63,9 +64,12 @@ export function ObjectCursor({ anchor }: Props) {
           tool.type !== 'object' ||
           !selectedLayerId ||
           !anchor ||
-          ('current' in anchor && !anchor.current)
-        )
+          ('current' in anchor && !anchor.current) ||
+          !objectToolMouseRef.current
+        ) {
+          objectToolMouseRef.current = null
           return
+        }
 
         if (
           e.target !== anchor &&
@@ -74,6 +78,7 @@ export function ObjectCursor({ anchor }: Props) {
         ) {
           if (objectToolPreviewRef.current)
             objectToolPreviewRef.current.style.visibility = 'hidden'
+          objectToolMouseRef.current = null
           return
         }
 
@@ -100,10 +105,13 @@ export function ObjectCursor({ anchor }: Props) {
           width,
           height,
         })
+        objectToolMouseRef.current = null
       }
 
       function handleObjectToolMouseMove(e: MouseEvent) {
         const { clientX, clientY } = e
+
+        if (!objectToolMouseRef.current) return
 
         objectToolMouseRef.current = {
           ...objectToolMouseRef.current,
@@ -114,20 +122,27 @@ export function ObjectCursor({ anchor }: Props) {
         if (objectToolPreviewRef.current) {
           if (!anchor) return
 
-          const width = Math.abs(clientX - objectToolMouseRef.current.x)
-          const height = Math.abs(clientY - objectToolMouseRef.current.y)
+          const movementX = clientX - objectToolMouseRef.current.x
+          const movementY = clientY - objectToolMouseRef.current.y
+
+          const width = Math.abs(movementX) / zoomLevel
+          const height = Math.abs(movementY) / zoomLevel
 
           const { x: offsetX, y: offsetY } = getAnchorOffset()
 
           const x = clientX / zoomLevel - offsetX
           const y = clientY / zoomLevel - offsetY
 
-          if (y < objectToolPreviewRef.current.offsetTop) {
+          if (movementY < 0) {
             objectToolPreviewRef.current.style.top = `${y}px`
+          } else {
+            objectToolPreviewRef.current.style.top = `${y - height}px`
           }
 
-          if (x < objectToolPreviewRef.current.offsetLeft) {
+          if (movementX < 0) {
             objectToolPreviewRef.current.style.left = `${x}px`
+          } else {
+            objectToolPreviewRef.current.style.left = `${x - width}px`
           }
 
           objectToolPreviewRef.current.style.width = `${width}px`
