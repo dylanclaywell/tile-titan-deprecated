@@ -6,7 +6,7 @@ import {
   changeTilesetName,
   getTilesets,
 } from '../indexedDB/tileset'
-import { EditorContext, ToolType } from '../contexts/EditorContext'
+import { EditorContext } from '../contexts/EditorContext'
 import { Tool } from '../components/Tool'
 import { SelectField } from '../components/SelectField'
 import { ToolSection } from '../components/Tools/ToolSection'

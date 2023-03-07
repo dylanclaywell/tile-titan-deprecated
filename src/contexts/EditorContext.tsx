@@ -9,7 +9,7 @@ import {
 } from '../types/layer'
 import { generateMap } from '../utils/generateMap'
 import { ObjectType } from '../types/object'
-import { TilemapType } from '../types/tilemap'
+import { FileType } from '../types/file'
 
 export type ToolType = 'select' | 'tile' | 'eraser' | 'grid' | 'object'
 
@@ -22,6 +22,7 @@ export type Tool = {
 }
 
 export type State = {
+  files: FileType[]
   tool: Tool
   cursorRef: React.MutableRefObject<HTMLDivElement | null>
   zoomLevel: number
@@ -88,6 +89,7 @@ tileCanvas.height = 32
 
 const initialSelectedLayerId = generateId()
 const initialState: State = {
+  files: [],
   tool: {
     type: 'tile',
     canvas: tileCanvas,
