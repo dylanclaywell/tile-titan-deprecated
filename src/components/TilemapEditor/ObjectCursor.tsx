@@ -33,6 +33,8 @@ export function ObjectCursor({ anchor }: Props) {
   useEffect(
     function registerObjectTool() {
       function handleObjectToolMouseDown(e: MouseEvent) {
+        if (e.button !== 0) return
+
         if (tool.type !== 'object') return
 
         const { clientX, clientY } = e
