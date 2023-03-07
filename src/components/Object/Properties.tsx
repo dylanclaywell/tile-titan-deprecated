@@ -3,8 +3,9 @@ import z from 'zod'
 
 import { EditorContext } from '../../contexts/EditorContext'
 import { ObjectType } from '../../types/object'
-import TextField from '../TextField'
+import { TextField } from '../TextField'
 import { useKey } from '../../hooks/useKey'
+import { zodStringToNumber } from '../../utils/zodStringToNumber'
 
 export interface Props {
   object: ObjectType
@@ -18,31 +19,12 @@ function isPropertiesFormElement(
   )
 }
 
-function stringToNumber(value: string, context: z.RefinementCtx) {
-  const parsedValue = Number(value)
-  if (isNaN(parsedValue)) {
-    context.addIssue({
-      code: z.ZodIssueCode.custom,
-      message: 'Not a number',
-    })
-    return z.NEVER
-  }
-  if (parsedValue < 0) {
-    context.addIssue({
-      code: z.ZodIssueCode.custom,
-      message: 'Number must be positive',
-    })
-    return z.NEVER
-  }
-  return parsedValue
-}
-
 const Form = z.object({
   name: z.string().min(1),
-  width: z.string().transform(stringToNumber),
-  height: z.string().transform(stringToNumber),
-  x: z.string().transform(stringToNumber),
-  y: z.string().transform(stringToNumber),
+  width: z.string().transform(zodStringToNumber),
+  height: z.string().transform(zodStringToNumber),
+  x: z.string().transform(zodStringToNumber),
+  y: z.string().transform(zodStringToNumber),
 })
 
 type FormType = z.infer<typeof Form>

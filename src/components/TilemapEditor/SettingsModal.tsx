@@ -1,20 +1,20 @@
 import React, { useCallback, useContext, useState } from 'react'
 import z from 'zod'
 
-import TextField from '../TextField'
+import { TextField } from '../TextField'
 import { generateMap } from '../../utils/generateMap'
 import { LayerType } from '../../types/layer'
 import { EditorContext } from '../../contexts/EditorContext'
 import { Overlay } from '../Overlay'
 import { useKey } from '../../hooks/useKey'
+import { zodStringToNumber } from '../../utils/zodStringToNumber'
 
-const FormElement = z.instanceof(HTMLFormElement)
-const FormData = z.object({
-  name: z.instanceof(HTMLInputElement),
-  width: z.instanceof(HTMLInputElement),
-  height: z.instanceof(HTMLInputElement),
-  tileWidth: z.instanceof(HTMLInputElement),
-  tileHeight: z.instanceof(HTMLInputElement),
+const Form = z.object({
+  name: z.string().min(1),
+  width: z.string().min(1).transform(zodStringToNumber),
+  height: z.string().min(1).transform(zodStringToNumber),
+  tileWidth: z.string().min(1).transform(zodStringToNumber),
+  tileHeight: z.string().min(1).transform(zodStringToNumber),
 })
 
 export interface Props {
@@ -31,7 +31,7 @@ export function SettingsModal({ isOpen, layer, onClose }: Props) {
 
   const [
     { width, height, tileWidth, tileHeight },
-    { updateLayerSettings, updateTilemapSettings },
+    { updateLayerSettings, updateTilemapSettings, regenerateMap },
   ] = useContext(EditorContext)
   const [errors, setErrors] = useState<z.ZodIssue[]>()
 
@@ -49,41 +49,26 @@ export function SettingsModal({ isOpen, layer, onClose }: Props) {
   function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
 
+    if (!(e.target instanceof HTMLFormElement)) return
+
+    const formData = Object.fromEntries(new FormData(e.target).entries())
+
+    console.log(formData)
+
     try {
-      const form = FormElement.parse(e.target)
-      const formData = FormData.parse(form)
-
-      const name = z.string().parse(formData.name.value)
-      const width = z
-        .number()
-        .positive()
-        .min(1)
-        .parse(Number(formData.width.value))
-      const height = z
-        .number()
-        .positive()
-        .min(1)
-        .parse(Number(formData.height.value))
-      const tileWidth = z
-        .number()
-        .positive()
-        .min(1)
-        .parse(Number(formData.tileWidth.value))
-      const tileHeight = z
-        .number()
-        .positive()
-        .min(1)
-        .parse(Number(formData.tileHeight.value))
-
+      const form = Form.parse(formData)
       updateLayerSettings(layer.id, {
-        name,
-        data: generateMap(width, height),
+        name: form.name,
       })
+
+      if (layer.type === 'tilelayer') {
+        regenerateMap(layer.id, form.width, form.height)
+      }
       updateTilemapSettings({
-        width,
-        height,
-        tileWidth,
-        tileHeight,
+        width: form.width,
+        height: form.height,
+        tileWidth: form.tileWidth,
+        tileHeight: form.tileHeight,
       })
       setErrors([])
     } catch (error) {

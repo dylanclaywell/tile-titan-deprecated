@@ -9,6 +9,7 @@ import {
 } from '../types/layer'
 import { generateMap } from '../utils/generateMap'
 import { ObjectType } from '../types/object'
+import { TilemapType } from '../types/tilemap'
 
 export type ToolType = 'select' | 'tile' | 'eraser' | 'grid' | 'object'
 
@@ -78,6 +79,7 @@ export type Actions = {
   ) => void
   removeLayer: (id: string) => void
   removeObject: (layerId: string, objectId: string) => void
+  regenerateMap: (layerId: string, width: number, height: number) => void
 }
 
 const tileCanvas = document.createElement('canvas')
@@ -126,6 +128,7 @@ export const EditorContext = createContext<[State, Actions]>([
     addObject: () => undefined,
     updateObjectSettings: () => undefined,
     removeObject: () => undefined,
+    regenerateMap: () => undefined,
   },
 ])
 
@@ -321,6 +324,34 @@ export function EditorProvider({ children }: { children: React.ReactNode }) {
       return {
         ...state,
         layers: newLayers,
+      }
+    })
+  }
+
+  function regenerateMap(layerId: string, width: number, height: number) {
+    setState((state) => {
+      const selectedLayer = state.layers.find((layer) => layer.id === layerId)
+
+      if (!selectedLayer) return state
+
+      if (selectedLayer.type === 'tilelayer') {
+        const newTilemap = generateMap(width, height)
+        const newLayers: LayerType[] = state.layers.map((layer) => {
+          return layer.id === selectedLayer.id && layer.type === 'tilelayer'
+            ? {
+                ...layer,
+                data: newTilemap,
+                width,
+                height,
+              }
+            : layer
+        })
+        return {
+          ...state,
+          layers: newLayers,
+        }
+      } else {
+        return state
       }
     })
   }
@@ -535,6 +566,7 @@ export function EditorProvider({ children }: { children: React.ReactNode }) {
     removeLayer,
     addObject,
     removeObject,
+    regenerateMap,
   }
 
   return (

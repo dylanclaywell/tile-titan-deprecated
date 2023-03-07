@@ -15,7 +15,7 @@ export interface Props {
   forwardRef?: React.RefObject<HTMLDivElement> | React.LegacyRef<HTMLDivElement>
 }
 
-export default function TextField({
+export function TextField({
   label,
   value,
   onChange,

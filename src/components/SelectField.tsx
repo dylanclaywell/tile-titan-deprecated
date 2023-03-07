@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import clsx from 'clsx'
 
-import TextField from './TextField'
+import { TextField } from './TextField'
 
 export interface Props {
   options: {

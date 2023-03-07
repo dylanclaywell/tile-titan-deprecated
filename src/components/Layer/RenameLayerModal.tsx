@@ -1,7 +1,7 @@
 import React, { useCallback } from 'react'
 import z from 'zod'
 
-import TextField from '../TextField'
+import { TextField } from '../TextField'
 import { Overlay } from '../Overlay'
 import { useKey } from '../../hooks/useKey'
 
