@@ -1,10 +1,11 @@
-import React, { ChangeEventHandler } from 'react'
+import React, { ChangeEventHandler, FocusEventHandler } from 'react'
 import clsx from 'clsx'
 
 export interface Props {
   label: string
   value?: string
   onChange?: ChangeEventHandler<HTMLInputElement>
+  onBlur?: FocusEventHandler<HTMLInputElement>
   hasError?: boolean
   hintText?: string
   inputProps?: React.InputHTMLAttributes<HTMLInputElement>
@@ -18,6 +19,7 @@ export default function TextField({
   label,
   value,
   onChange,
+  onBlur,
   hasError,
   hintText,
   inputProps,
@@ -50,6 +52,7 @@ export default function TextField({
           })}
           value={value}
           onChange={onChange}
+          onBlur={onBlur}
         />
         {rightIconName && (
           <i className={`fa-solid fa-${rightIconName} text-gray-500`}></i>

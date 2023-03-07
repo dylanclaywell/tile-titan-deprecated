@@ -6,7 +6,7 @@ import { generateMap } from '../../utils/generateMap'
 import { LayerType } from '../../types/layer'
 import { EditorContext } from '../../contexts/EditorContext'
 import { Overlay } from '../Overlay'
-import { useEscapeKey } from '../../hooks/useEscapeKey'
+import { useKey } from '../../hooks/useKey'
 
 const FormElement = z.instanceof(HTMLFormElement)
 const FormData = z.object({
@@ -27,7 +27,7 @@ export function SettingsModal({ isOpen, layer, onClose }: Props) {
   const close = useCallback(() => {
     onClose()
   }, [])
-  useEscapeKey(close)
+  useKey('Escape', close)
 
   const [
     { width, height, tileWidth, tileHeight },

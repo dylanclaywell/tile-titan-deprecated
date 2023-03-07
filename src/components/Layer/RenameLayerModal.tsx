@@ -3,7 +3,7 @@ import z from 'zod'
 
 import TextField from '../TextField'
 import { Overlay } from '../Overlay'
-import { useEscapeKey } from '../../hooks/useEscapeKey'
+import { useKey } from '../../hooks/useKey'
 
 const FormElement = z.instanceof(HTMLFormElement)
 const FormData = z.object({
@@ -27,7 +27,7 @@ export function RenameLayerModal({
     onClose()
   }, [])
 
-  useEscapeKey(close)
+  useKey('Escape', close)
 
   function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
