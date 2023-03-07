@@ -185,6 +185,7 @@ function TilesetViewBase({
           await refreshTilesets()
           setSelectedTilesetId(tilesetId)
         }}
+        tilesetName={currentTileset?.name ?? ''}
         onClose={() => setTilesetSettingsIsOpen(false)}
       />
     </div>
