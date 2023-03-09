@@ -9,12 +9,17 @@ import { Properties } from '../components/Object/Properties'
 
 export function ObjectView() {
   const [selectedObjectId, setSelectedObjectId] = useState<string | null>(null)
-  const [{ selectedLayerId, layers }, { updateObjectSettings, removeObject }] =
-    useContext(EditorContext)
+  const [
+    { selectedLayerId, selectedFileId, files },
+    { updateObjectSettings, removeObject },
+  ] = useContext(EditorContext)
   const [draggedObject, setDraggedObject] = useState<ObjectType | null>(null)
   const [renamingObjectId, setRenamingObjectId] = useState<string | null>(null)
 
-  const currentLayer = layers.find((layer) => layer.id === selectedLayerId)
+  const currentFile = files.find((file) => file.id === selectedFileId)
+  const currentLayer = currentFile?.layers.find(
+    (layer) => layer.id === selectedLayerId
+  )
 
   if (!currentLayer || currentLayer.type !== 'objectlayer') return null
 

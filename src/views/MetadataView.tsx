@@ -6,12 +6,15 @@ import { EditorContext } from '../contexts/EditorContext'
 import { ObjectView } from './ObjectView'
 
 export function MetadataView() {
-  const [{ selectedLayerId, layers }] = useContext(EditorContext)
+  const [{ selectedLayerId, selectedFileId, files }] = useContext(EditorContext)
 
-  const selectedLayer = useMemo(
-    () => layers.find((layer) => layer.id === selectedLayerId),
-    [selectedLayerId]
+  const selectedFile = useMemo(
+    () => files.find((file) => file.id === selectedFileId),
+    [selectedLayerId, selectedFileId]
   )
+  const selectedLayer = useMemo(() => {
+    return selectedFile?.layers.find((layer) => layer.id === selectedLayerId)
+  }, [selectedLayerId, selectedFile])
 
   return (
     <div className="overflow-hidden flex flex-col basis-[30vw] divide-y border-gray-600">

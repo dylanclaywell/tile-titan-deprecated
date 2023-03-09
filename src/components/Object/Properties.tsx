@@ -33,11 +33,14 @@ type Errors = {
 }
 
 export function Properties({ object }: Props) {
-  const [{ selectedLayerId, layers }, { updateObjectSettings }] =
+  const [{ selectedLayerId, selectedFileId, files }, { updateObjectSettings }] =
     useContext(EditorContext)
   const [errors, setErrors] = useState<Errors>({})
 
-  const currentLayer = layers.find((layer) => layer.id === selectedLayerId)
+  const currentFile = files.find((file) => file.id === selectedFileId)
+  const currentLayer = currentFile?.layers.find(
+    (layer) => layer.id === selectedLayerId
+  )
 
   function onBlur(e: React.FocusEvent<HTMLInputElement>) {
     const parent = e.currentTarget.closest('form')

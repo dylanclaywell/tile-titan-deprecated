@@ -28,7 +28,8 @@ export type State = {
   zoomLevel: number
   showGrid: boolean
   selectedLayerId: string | null
-  layers: LayerType[]
+  selectedFileId: string
+  // layers: LayerType[]
   tileWidth: number
   tileHeight: number
   width: number
@@ -88,8 +89,24 @@ tileCanvas.width = 32
 tileCanvas.height = 32
 
 const initialSelectedLayerId = generateId()
+const initialSelectedFileId = generateId()
 const initialState: State = {
-  files: [],
+  files: [
+    {
+      id: initialSelectedFileId,
+      name: 'untitled',
+      layers: [
+        {
+          id: initialSelectedLayerId,
+          type: 'tilelayer',
+          name: 'Layer 1',
+          data: generateMap(10, 10),
+          isVisible: true,
+          sortOrder: 0,
+        },
+      ],
+    },
+  ],
   tool: {
     type: 'tile',
     canvas: tileCanvas,
@@ -101,16 +118,17 @@ const initialState: State = {
   width: 10,
   tileHeight: 32,
   tileWidth: 32,
-  layers: [
-    {
-      id: initialSelectedLayerId,
-      type: 'tilelayer',
-      name: 'Layer 1',
-      data: generateMap(10, 10),
-      isVisible: true,
-      sortOrder: 0,
-    },
-  ],
+  // layers: [
+  //   {
+  //     id: initialSelectedLayerId,
+  //     type: 'tilelayer',
+  //     name: 'Layer 1',
+  //     data: generateMap(10, 10),
+  //     isVisible: true,
+  //     sortOrder: 0,
+  //   },
+  // ],
+  selectedFileId: initialSelectedFileId,
   selectedLayerId: initialSelectedLayerId,
 }
 
@@ -267,7 +285,15 @@ export function EditorProvider({ children }: { children: React.ReactNode }) {
       tilesetName: string
     }) => {
       setState((state) => {
-        const selectedLayer = state.layers.find((layer) => layer.id === layerId)
+        const selectedFile = state.files.find(
+          (file) => file.id === state.selectedFileId
+        )
+
+        if (!selectedFile) return state
+
+        const selectedLayer = selectedFile.layers.find(
+          (layer) => layer.id === layerId
+        )
 
         if (!selectedLayer) return state
 
@@ -279,7 +305,7 @@ export function EditorProvider({ children }: { children: React.ReactNode }) {
             tilesetY,
           }
 
-          const newLayers: LayerType[] = state.layers.map((layer) => {
+          const newLayers: LayerType[] = selectedFile.layers.map((layer) => {
             return layer.id === selectedLayer.id && layer.type === 'tilelayer'
               ? {
                   ...layer,
@@ -289,7 +315,13 @@ export function EditorProvider({ children }: { children: React.ReactNode }) {
           })
           return {
             ...state,
-            layers: newLayers,
+            files: [
+              ...state.files.filter((file) => file.id !== selectedFile.id),
+              {
+                ...selectedFile,
+                layers: newLayers,
+              },
+            ],
           }
         } else {
           return state
@@ -311,11 +343,19 @@ export function EditorProvider({ children }: { children: React.ReactNode }) {
     newLayer: Partial<Omit<LayerType, 'data' | 'type'>>
   ) {
     setState((state) => {
-      const selectedLayer = state.layers.find((layer) => layer.id === layerId)
+      const selectedFile = state.files.find(
+        (file) => file.id === state.selectedFileId
+      )
+
+      if (!selectedFile) return state
+
+      const selectedLayer = selectedFile.layers.find(
+        (layer) => layer.id === layerId
+      )
 
       if (!selectedLayer) return state
 
-      const newLayers = state.layers.map((layer) => {
+      const newLayers = selectedFile.layers.map((layer) => {
         return layer.id === selectedLayer.id
           ? {
               ...layer,
@@ -325,20 +365,34 @@ export function EditorProvider({ children }: { children: React.ReactNode }) {
       })
       return {
         ...state,
-        layers: newLayers,
+        files: [
+          ...state.files.filter((file) => file.id !== selectedFile.id),
+          {
+            ...selectedFile,
+            layers: newLayers,
+          },
+        ],
       }
     })
   }
 
   function regenerateMap(layerId: string, width: number, height: number) {
     setState((state) => {
-      const selectedLayer = state.layers.find((layer) => layer.id === layerId)
+      const selectedFile = state.files.find(
+        (file) => file.id === state.selectedFileId
+      )
+
+      if (!selectedFile) return state
+
+      const selectedLayer = selectedFile.layers.find(
+        (layer) => layer.id === layerId
+      )
 
       if (!selectedLayer) return state
 
       if (selectedLayer.type === 'tilelayer') {
         const newTilemap = generateMap(width, height)
-        const newLayers: LayerType[] = state.layers.map((layer) => {
+        const newLayers: LayerType[] = selectedFile.layers.map((layer) => {
           return layer.id === selectedLayer.id && layer.type === 'tilelayer'
             ? {
                 ...layer,
@@ -350,7 +404,13 @@ export function EditorProvider({ children }: { children: React.ReactNode }) {
         })
         return {
           ...state,
-          layers: newLayers,
+          files: [
+            ...state.files.filter((file) => file.id !== selectedFile.id),
+            {
+              ...selectedFile,
+              layers: newLayers,
+            },
+          ],
         }
       } else {
         return state
@@ -382,33 +442,51 @@ export function EditorProvider({ children }: { children: React.ReactNode }) {
 
   function addLayer(type: 'tilelayer' | 'objectlayer') {
     setState((state) => {
-      const sortOrder = state.layers.length + 1
+      const selectedFile = state.files.find(
+        (file) => file.id === state.selectedFileId
+      )
+
+      if (!selectedFile) return state
+
+      const sortOrder = selectedFile.layers.length + 1
 
       if (type === 'tilelayer') {
         const layer: TileLayerType = {
           id: generateId(),
           type,
-          name: `Layer ${state.layers.length + 1}`,
+          name: `Layer ${selectedFile.layers.length + 1}`,
           data: generateMap(state.width, state.height),
           isVisible: true,
           sortOrder,
         }
         return {
           ...state,
-          layers: [layer, ...state.layers],
+          files: [
+            ...state.files.filter((file) => file.id !== selectedFile.id),
+            {
+              ...selectedFile,
+              layers: [layer, ...selectedFile.layers],
+            },
+          ],
         }
       } else {
         const layer: ObjectLayerType = {
           id: generateId(),
           type,
-          name: `Layer ${state.layers.length + 1}`,
+          name: `Layer ${selectedFile.layers.length + 1}`,
           data: [],
           isVisible: true,
           sortOrder,
         }
         return {
           ...state,
-          layers: [layer, ...state.layers],
+          files: [
+            ...state.files.filter((file) => file.id !== selectedFile.id),
+            {
+              ...selectedFile,
+              layers: [layer, ...selectedFile.layers],
+            },
+          ],
         }
       }
     })
@@ -416,10 +494,22 @@ export function EditorProvider({ children }: { children: React.ReactNode }) {
 
   function removeLayer(layerId: string) {
     setState((state) => {
-      const layers = state.layers.filter((layer) => layer.id !== layerId)
+      const selectedFile = state.files.find(
+        (file) => file.id === state.selectedFileId
+      )
+
+      if (!selectedFile) return state
+
+      const layers = selectedFile.layers.filter((layer) => layer.id !== layerId)
       return {
         ...state,
-        layers,
+        files: [
+          ...state.files.filter((file) => file.id !== selectedFile.id),
+          {
+            ...selectedFile,
+            layers,
+          },
+        ],
       }
     })
   }
@@ -440,7 +530,13 @@ export function EditorProvider({ children }: { children: React.ReactNode }) {
     height: number
   }) {
     setState((state) => {
-      const selectedLayer = state.layers.find(
+      const selectedFile = state.files.find(
+        (file) => file.id === state.selectedFileId
+      )
+
+      if (!selectedFile) return state
+
+      const selectedLayer = selectedFile.layers.find(
         (layer) => layer.id === state.selectedLayerId
       )
 
@@ -459,7 +555,7 @@ export function EditorProvider({ children }: { children: React.ReactNode }) {
         height,
       }
 
-      const newLayers = state.layers.map((layer) => {
+      const newLayers = selectedFile.layers.map((layer) => {
         return layer.id === selectedLayer.id && layer.type === 'objectlayer'
           ? {
               ...layer,
@@ -470,7 +566,13 @@ export function EditorProvider({ children }: { children: React.ReactNode }) {
 
       return {
         ...state,
-        layers: newLayers,
+        files: [
+          ...state.files.filter((file) => file.id !== selectedFile.id),
+          {
+            ...selectedFile,
+            layers: newLayers,
+          },
+        ],
       }
     })
   }
@@ -481,13 +583,19 @@ export function EditorProvider({ children }: { children: React.ReactNode }) {
     newObject: Partial<ObjectType>
   ) {
     setState((state) => {
+      const selectedFile = state.files.find(
+        (file) => file.id === state.selectedFileId
+      )
+
+      if (!selectedFile) return state
+
       const selectedLayer = ObjectLayer.safeParse(
-        state.layers.find((layer) => layer.id === layerId)
+        selectedFile.layers.find((layer) => layer.id === layerId)
       )
 
       if (!selectedLayer.success) return state
 
-      const newLayers = state.layers.map((layer) => {
+      const newLayers = selectedFile.layers.map((layer) => {
         const verifiedLayer = ObjectLayer.safeParse(layer)
         if (!verifiedLayer.success) return layer
 
@@ -517,20 +625,32 @@ export function EditorProvider({ children }: { children: React.ReactNode }) {
       })
       return {
         ...state,
-        layers: newLayers,
+        files: [
+          ...state.files.filter((file) => file.id !== selectedFile.id),
+          {
+            ...selectedFile,
+            layers: newLayers,
+          },
+        ],
       }
     })
   }
 
   function removeObject(layerId: string, objectId: string) {
     setState((state) => {
+      const selectedFile = state.files.find(
+        (file) => file.id === state.selectedFileId
+      )
+
+      if (!selectedFile) return state
+
       const selectedLayer = ObjectLayer.safeParse(
-        state.layers.find((layer) => layer.id === layerId)
+        selectedFile.layers.find((layer) => layer.id === layerId)
       )
 
       if (!selectedLayer.success) return state
 
-      const newLayers = state.layers.map((layer) => {
+      const newLayers = selectedFile.layers.map((layer) => {
         const verifiedLayer = ObjectLayer.safeParse(layer)
         if (!verifiedLayer.success) return layer
 
@@ -549,7 +669,13 @@ export function EditorProvider({ children }: { children: React.ReactNode }) {
       })
       return {
         ...state,
-        layers: newLayers,
+        files: [
+          ...state.files.filter((file) => file.id !== selectedFile.id),
+          {
+            ...selectedFile,
+            layers: newLayers,
+          },
+        ],
       }
     })
   }

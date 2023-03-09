@@ -195,10 +195,13 @@ function TilesetViewBase({
 const TilesetViewMemoized = React.memo(TilesetViewBase)
 
 export function TilesetView() {
-  const [{ selectedLayerId, layers }, { updateCanvas: updateToolCanvas }] =
-    useContext(EditorContext)
+  const [
+    { selectedLayerId, selectedFileId, files },
+    { updateCanvas: updateToolCanvas },
+  ] = useContext(EditorContext)
 
-  const layer = layers.find((layer) => layer.id === selectedLayerId)
+  const file = files.find((file) => file.id === selectedFileId)
+  const layer = file?.layers.find((layer) => layer.id === selectedLayerId)
 
   return (
     <TilesetViewMemoized

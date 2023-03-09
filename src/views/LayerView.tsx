@@ -13,7 +13,7 @@ export function LayerView() {
   const [draggedLayer, setDraggedLayer] = useState<LayerType | null>(null)
   const [renamingLayerId, setRenamingLayerId] = useState<string | null>(null)
   const [
-    { layers, selectedLayerId },
+    { files, selectedLayerId, selectedFileId },
     {
       setSelectedLayerId,
       addLayer,
@@ -23,7 +23,10 @@ export function LayerView() {
     },
   ] = useContext(EditorContext)
 
-  const currentLayer = layers.find((layer) => layer.id === selectedLayerId)
+  const currentFile = files.find((file) => file.id === selectedFileId)
+  const currentLayer = currentFile?.layers.find(
+    (layer) => layer.id === selectedLayerId
+  )
 
   return (
     <div>
@@ -43,7 +46,7 @@ export function LayerView() {
       </Tools>
       <h1 className="m-2 mb-0 text-xl text-gray-400">Layers</h1>
       <ResourceList>
-        {layers
+        {currentFile?.layers
           .sort((a, b) => (a.sortOrder > b.sortOrder ? -1 : 1))
           .map((layer) => (
             <ResourceListItem

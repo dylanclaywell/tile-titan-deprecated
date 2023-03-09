@@ -53,8 +53,6 @@ export function SettingsModal({ isOpen, layer, onClose }: Props) {
 
     const formData = Object.fromEntries(new FormData(e.target).entries())
 
-    console.log(formData)
-
     try {
       const form = Form.parse(formData)
       updateLayerSettings(layer.id, {

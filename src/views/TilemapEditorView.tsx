@@ -10,12 +10,15 @@ import { EditorContext } from '../contexts/EditorContext'
 
 export function TilemapEditorView() {
   const [
-    { layers, selectedLayerId, tool, showGrid },
+    { files, selectedLayerId, tool, showGrid, selectedFileId },
     { updateTilemap, handleToolClick },
   ] = useContext(EditorContext)
   const [showSettings, setShowSettings] = React.useState(false)
 
-  const currentLayer = layers.find((layer) => layer.id === selectedLayerId)
+  const currentFile = files.find((file) => file.id === selectedFileId)
+  const currentLayer = currentFile?.layers.find(
+    (layer) => layer.id === selectedLayerId
+  )
   const layerType = currentLayer?.type
 
   return (
@@ -102,7 +105,7 @@ export function TilemapEditorView() {
         </ToolSection>
       </Tools>
       <TilemapEditor
-        layers={layers}
+        layers={currentFile?.layers ?? []}
         currentLayer={currentLayer}
         onTileClick={updateTilemap}
       />
