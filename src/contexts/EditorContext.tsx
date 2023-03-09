@@ -1,4 +1,10 @@
-import React, { createContext, useCallback, useRef, useState } from 'react'
+import React, {
+  createContext,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from 'react'
 import { v4 as generateId } from 'uuid'
 
 import {
@@ -29,7 +35,6 @@ export type State = {
   showGrid: boolean
   selectedLayerId: string | null
   selectedFileId: string
-  // layers: LayerType[]
   tileWidth: number
   tileHeight: number
   width: number
@@ -50,6 +55,7 @@ export type Actions = {
     tilesetX: number
     tilesetY: number
     tilesetName: string
+    tileData: string
   }) => void
   updateLayerSettings: (
     id: string,
@@ -82,6 +88,8 @@ export type Actions = {
   removeLayer: (id: string) => void
   removeObject: (layerId: string, objectId: string) => void
   regenerateMap: (layerId: string, width: number, height: number) => void
+  addFile: () => void
+  selectFile: (id: string) => void
 }
 
 const tileCanvas = document.createElement('canvas')
@@ -118,16 +126,6 @@ const initialState: State = {
   width: 10,
   tileHeight: 32,
   tileWidth: 32,
-  // layers: [
-  //   {
-  //     id: initialSelectedLayerId,
-  //     type: 'tilelayer',
-  //     name: 'Layer 1',
-  //     data: generateMap(10, 10),
-  //     isVisible: true,
-  //     sortOrder: 0,
-  //   },
-  // ],
   selectedFileId: initialSelectedFileId,
   selectedLayerId: initialSelectedLayerId,
 }
@@ -149,6 +147,8 @@ export const EditorContext = createContext<[State, Actions]>([
     updateObjectSettings: () => undefined,
     removeObject: () => undefined,
     regenerateMap: () => undefined,
+    addFile: () => undefined,
+    selectFile: () => undefined,
   },
 ])
 
@@ -276,6 +276,7 @@ export function EditorProvider({ children }: { children: React.ReactNode }) {
       tilesetX,
       tilesetY,
       tilesetName,
+      tileData,
     }: {
       layerId: string
       tileX: number
@@ -283,6 +284,7 @@ export function EditorProvider({ children }: { children: React.ReactNode }) {
       tilesetX: number
       tilesetY: number
       tilesetName: string
+      tileData: string
     }) => {
       setState((state) => {
         const selectedFile = state.files.find(
@@ -303,6 +305,7 @@ export function EditorProvider({ children }: { children: React.ReactNode }) {
             tilesetName,
             tilesetX,
             tilesetY,
+            tileData,
           }
 
           const newLayers: LayerType[] = selectedFile.layers.map((layer) => {
@@ -680,6 +683,58 @@ export function EditorProvider({ children }: { children: React.ReactNode }) {
     })
   }
 
+  function addFile() {
+    setState((state) => {
+      const newFile: FileType = {
+        id: generateId(),
+        name: `Untitled ${state.files.length + 1}`,
+        layers: [],
+      }
+
+      return {
+        ...state,
+        files: [...state.files, newFile],
+        selectedFileId: newFile.id,
+      }
+    })
+  }
+
+  function selectFile(id: string) {
+    setState((state) => {
+      return {
+        ...state,
+        selectedFileId: id,
+      }
+    })
+  }
+
+  useEffect(
+    function updateTileImagesWithLayerData() {
+      const selectedFile = state.files.find(
+        (file) => file.id === state.selectedFileId
+      )
+
+      if (!selectedFile) return
+
+      const tileImages = document.querySelectorAll('.tile')
+      const layers = selectedFile.layers.filter(
+        (l): l is TileLayerType => l.type === 'tilelayer'
+      )
+
+      layers.forEach((layer) => {
+        layer.data.forEach((row, j) => {
+          row.forEach((tile, k) => {
+            const tileImage = tileImages[j * row.length + k]
+            if (!tileImage || !(tileImage instanceof HTMLImageElement)) return
+
+            tileImage.src = tile.tileData ?? ''
+          })
+        })
+      })
+    },
+    [state.selectedFileId]
+  )
+
   const actions = {
     updateCanvas,
     handleToolClick,
@@ -695,6 +750,8 @@ export function EditorProvider({ children }: { children: React.ReactNode }) {
     addObject,
     removeObject,
     regenerateMap,
+    addFile,
+    selectFile,
   }
 
   return (

@@ -19,6 +19,7 @@ export interface Props {
     tilesetX: number
     tilesetY: number
     tilesetName: string
+    tileData: string
   }) => void
 }
 
@@ -137,6 +138,8 @@ export function TilemapEditor({ layers, currentLayer, onTileClick }: Props) {
             return
 
           if (tool.type === 'tile') {
+            img.src = tool.canvas.toDataURL()
+
             onTileClick({
               layerId: currentLayerId,
               tileX: cursorX,
@@ -144,9 +147,8 @@ export function TilemapEditor({ layers, currentLayer, onTileClick }: Props) {
               tilesetX: tool.tilesetX ?? -1,
               tilesetY: tool.tilesetY ?? -1,
               tilesetName: tool.tilesetName ?? 'unknown',
+              tileData: img.src,
             })
-
-            img.src = tool.canvas.toDataURL()
           } else if (tool.type === 'eraser') {
             onTileClick({
               layerId: currentLayerId,
@@ -155,6 +157,7 @@ export function TilemapEditor({ layers, currentLayer, onTileClick }: Props) {
               tilesetX: -1,
               tilesetY: -1,
               tilesetName: '',
+              tileData: '',
             })
 
             img.src = ''

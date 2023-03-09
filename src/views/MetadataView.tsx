@@ -17,7 +17,7 @@ export function MetadataView() {
   }, [selectedLayerId, selectedFile])
 
   return (
-    <div className="overflow-hidden flex flex-col basis-[30vw] divide-y border-gray-600">
+    <div className="overflow-hidden flex flex-col basis-[20vw] divide-y border-gray-600">
       <LayerView />
       {selectedLayer?.type === 'tilelayer' ? <TilesetView /> : <ObjectView />}
     </div>

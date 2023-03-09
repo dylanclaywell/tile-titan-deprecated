@@ -23,7 +23,7 @@ export function TilemapEditorView() {
 
   return (
     <div
-      className={clsx('basis-[70vw] h-screen overflow-hidden', {
+      className={clsx('basis-[60vw] h-screen overflow-hidden border-black', {
         'cursor-crosshair': tool.type === 'object',
       })}
     >

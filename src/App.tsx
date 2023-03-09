@@ -1,26 +1,18 @@
 import React from 'react'
 
-import { TilemapEditorView } from './views/TilemapEditorView'
 import { EditorProvider } from './contexts/EditorContext'
+import { TilemapEditorView } from './views/TilemapEditorView'
+import { FileView } from './views/FileView'
 import { MetadataView } from './views/MetadataView'
-import { Tools } from './components/Tools/Tools'
-import { ToolSection } from './components/Tools/ToolSection'
-import { Tool } from './components/Tool'
+import { Toolbar } from './components/Toolbar'
 
 function App() {
   return (
     <EditorProvider>
       <div className="w-full flex flex-col">
-        <Tools classes="grow shrink-0 border-black">
-          <ToolSection>
-            <Tool
-              name="New File"
-              icon="file-circle-plus"
-              onClick={() => undefined}
-            />
-          </ToolSection>
-        </Tools>
+        <Toolbar />
         <div className="flex max-h-screen max-w-screen divide-x overflow-hidden">
+          <FileView />
           <TilemapEditorView />
           <MetadataView />
         </div>

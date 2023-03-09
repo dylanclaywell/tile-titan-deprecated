@@ -4,6 +4,7 @@ export const TileData = z.object({
   tilesetName: z.string().min(1),
   tilesetX: z.number(),
   tilesetY: z.number(),
+  tileData: z.string().optional(),
 })
 export type TileDataType = z.infer<typeof TileData>
 

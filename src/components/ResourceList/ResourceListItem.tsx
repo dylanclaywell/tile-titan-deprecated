@@ -9,7 +9,7 @@ export interface Props {
   icon?: string
   sortOrder: number
   isSelected: boolean
-  isVisible: boolean
+  isVisible?: boolean
   name: string
   onClick: () => void
   onRename: (id: string) => void
@@ -17,7 +17,7 @@ export interface Props {
   onDragStart: React.DragEventHandler<HTMLDivElement>
   onDragEnd: React.DragEventHandler<HTMLDivElement>
   onDrop: React.DragEventHandler<HTMLDivElement>
-  onHide: (id: string) => void
+  onHide?: (id: string) => void
   onDelete: (id: string) => void
 }
 
@@ -25,7 +25,7 @@ export function ResourceListItem({
   id,
   icon,
   isSelected,
-  isVisible,
+  isVisible = true,
   name,
   onClick,
   onRename,
@@ -81,15 +81,17 @@ export function ResourceListItem({
           iconName="pencil"
           onClick={() => onRename(id)}
         />
-        <Button
-          name={isVisible ? 'Hide' : 'Show'}
-          classes={clsx({
-            'hover:text-yellow-600': !isSelected,
-            'hover:text-yellow-700': isSelected,
-          })}
-          iconName={isVisible ? 'eye' : 'eye-slash'}
-          onClick={() => onHide(id)}
-        />
+        {onHide && (
+          <Button
+            name={isVisible ? 'Hide' : 'Show'}
+            classes={clsx({
+              'hover:text-yellow-600': !isSelected,
+              'hover:text-yellow-700': isSelected,
+            })}
+            iconName={isVisible ? 'eye' : 'eye-slash'}
+            onClick={() => onHide(id)}
+          />
+        )}
         <Button
           name="Delete"
           classes={clsx({

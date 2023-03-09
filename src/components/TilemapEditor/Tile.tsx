@@ -28,7 +28,7 @@ function BaseTile({
         height: tileHeight,
       }}
     >
-      <img className="pointer-events-none outline-none select-none" />
+      <img className="pointer-events-none outline-none select-none tile" />
     </div>
   )
 }
