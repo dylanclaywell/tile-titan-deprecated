@@ -34,7 +34,7 @@ export type State = {
   zoomLevel: number
   showGrid: boolean
   selectedLayerId: string | null
-  selectedFileId: string
+  selectedFileId: string | null
   tileWidth: number
   tileHeight: number
   width: number
@@ -96,25 +96,8 @@ const tileCanvas = document.createElement('canvas')
 tileCanvas.width = 32
 tileCanvas.height = 32
 
-const initialSelectedLayerId = generateId()
-const initialSelectedFileId = generateId()
 const initialState: State = {
-  files: [
-    {
-      id: initialSelectedFileId,
-      name: 'untitled',
-      layers: [
-        {
-          id: initialSelectedLayerId,
-          type: 'tilelayer',
-          name: 'Layer 1',
-          data: generateMap(10, 10),
-          isVisible: true,
-          sortOrder: 0,
-        },
-      ],
-    },
-  ],
+  files: [],
   tool: {
     type: 'tile',
     canvas: tileCanvas,
@@ -126,8 +109,8 @@ const initialState: State = {
   width: 10,
   tileHeight: 32,
   tileWidth: 32,
-  selectedFileId: initialSelectedFileId,
-  selectedLayerId: initialSelectedLayerId,
+  selectedFileId: null,
+  selectedLayerId: null,
 }
 
 export const EditorContext = createContext<[State, Actions]>([
