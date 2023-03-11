@@ -672,6 +672,7 @@ export function EditorProvider({ children }: { children: React.ReactNode }) {
         id: generateId(),
         name: `Untitled ${state.files.length + 1}`,
         layers: [],
+        sortOrder: state.files.length + 1,
       }
 
       return {

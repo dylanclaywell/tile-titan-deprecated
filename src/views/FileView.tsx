@@ -11,22 +11,24 @@ export function FileView() {
     <div className="p-2 basis-[20vw] border-black">
       <h1 className="text-gray-400 text-xl">Files</h1>
       <ResourceList>
-        {files.map((file) => (
-          <ResourceListItem
-            key={file.id}
-            id={file.id}
-            draggedId={null}
-            name={file.name}
-            onClick={() => selectFile(file.id)}
-            onDragStart={() => undefined}
-            onDragEnd={() => undefined}
-            onDrop={() => undefined}
-            isSelected={selectedFileId === file.id}
-            onDelete={() => undefined}
-            onRename={() => undefined}
-            sortOrder={0}
-          />
-        ))}
+        {files
+          .sort((a, b) => (a.sortOrder > b.sortOrder ? 1 : -1))
+          .map((file) => (
+            <ResourceListItem
+              key={file.id}
+              id={file.id}
+              draggedId={null}
+              name={file.name}
+              onClick={() => selectFile(file.id)}
+              onDragStart={() => undefined}
+              onDragEnd={() => undefined}
+              onDrop={() => undefined}
+              isSelected={selectedFileId === file.id}
+              onDelete={() => undefined}
+              onRename={() => undefined}
+              sortOrder={file.sortOrder}
+            />
+          ))}
       </ResourceList>
     </div>
   )
