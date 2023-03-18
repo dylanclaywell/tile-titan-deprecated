@@ -3,6 +3,7 @@ import React, { useContext } from 'react'
 import { EditorContext } from '../contexts/EditorContext'
 import { ResourceList } from '../components/ResourceList/ResourceList'
 import { ResourceListItem } from '../components/ResourceList/ResourceListItem'
+import { Properties } from '../components/File/Properties'
 
 export function FileView() {
   const [{ files, selectedFileId }, { dispatch }] = useContext(EditorContext)
@@ -29,6 +30,7 @@ export function FileView() {
             />
           ))}
       </ResourceList>
+      {selectedFileId && <Properties />}
     </div>
   )
 }

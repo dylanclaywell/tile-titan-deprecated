@@ -5,9 +5,20 @@ import { Tool } from '../components/Tool'
 import { Tools } from '../components/Tools/Tools'
 import { ToolSection } from '../components/Tools/ToolSection'
 import { RenameLayerModal } from '../components/Layer/RenameLayerModal'
-import { LayerType } from '../types/layer'
+import { LayerType, Type } from '../types/layer'
 import { ResourceListItem } from '../components/ResourceList/ResourceListItem'
 import { ResourceList } from '../components/ResourceList/ResourceList'
+
+function getLayerIcon(layerType: Type) {
+  switch (layerType) {
+    case 'tilelayer':
+      return 'fa-image'
+    case 'objectlayer':
+      return 'fa-object-group'
+    case 'structurelayer':
+      return 'fa-cubes'
+  }
+}
 
 export function LayerView() {
   const [draggedLayer, setDraggedLayer] = useState<LayerType | null>(null)
@@ -58,7 +69,7 @@ export function LayerView() {
             <ResourceListItem
               key={`layer-${layer.id}`}
               id={layer.id}
-              icon={layer.type === 'tilelayer' ? 'fa-image' : 'fa-object-group'}
+              icon={getLayerIcon(layer.type)}
               sortOrder={layer.sortOrder}
               isSelected={layer.id === selectedLayerId}
               isVisible={layer.isVisible}

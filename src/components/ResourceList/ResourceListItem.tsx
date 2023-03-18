@@ -18,7 +18,7 @@ export interface Props {
   onDragEnd: React.DragEventHandler<HTMLDivElement>
   onDrop: React.DragEventHandler<HTMLDivElement>
   onHide?: (id: string) => void
-  onDelete: (id: string) => void
+  onDelete?: (id: string) => void
 }
 
 export function ResourceListItem({
@@ -94,15 +94,17 @@ export function ResourceListItem({
             onClick={() => onHide(id)}
           />
         )}
-        <Button
-          name="Delete"
-          classes={clsx({
-            'hover:text-red-500': !isSelected,
-            'hover:text-red-600': isSelected,
-          })}
-          iconName="trash-can"
-          onClick={() => onDelete(id)}
-        />
+        {onDelete && (
+          <Button
+            name="Delete"
+            classes={clsx({
+              'hover:text-red-500': !isSelected,
+              'hover:text-red-600': isSelected,
+            })}
+            iconName="trash-can"
+            onClick={() => onDelete(id)}
+          />
+        )}
       </div>
     </div>
   )

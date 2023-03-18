@@ -4,6 +4,7 @@ import { LayerView } from './LayerView'
 import { TilesetView } from './TilesetView'
 import { EditorContext } from '../contexts/EditorContext'
 import { ObjectView } from './ObjectView'
+import { StructureView } from './StructureView'
 
 export function MetadataView() {
   const [{ selectedLayerId, selectedFileId, files }] = useContext(EditorContext)
@@ -24,6 +25,8 @@ export function MetadataView() {
         return <TilesetView />
       case 'objectlayer':
         return <ObjectView />
+      case 'structurelayer':
+        return <StructureView />
     }
   })()
 

@@ -18,3 +18,10 @@ export function zodStringToNumber(value: string, context: z.RefinementCtx) {
   }
   return parsedValue
 }
+
+export function zodCheckboxValueToBoolean(
+  value: string | undefined,
+  context: z.RefinementCtx
+) {
+  return value === 'on'
+}

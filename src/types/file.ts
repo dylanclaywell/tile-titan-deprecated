@@ -10,6 +10,7 @@ export const File = z.object({
   name: z.string().min(1),
   layers: z.array(Layer),
   sortOrder: z.number().min(0),
+  isStructure: z.boolean(),
 })
 
 export type FileType = z.infer<typeof File>

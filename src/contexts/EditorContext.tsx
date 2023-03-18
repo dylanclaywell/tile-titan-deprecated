@@ -11,6 +11,7 @@ import {
   LayerType,
   ObjectLayer,
   ObjectLayerType,
+  StructureLayerType,
   TileLayerType,
   Type,
 } from '../types/layer'
@@ -92,6 +93,7 @@ export type Actions =
       height: number
       tileWidth: number
       tileHeight: number
+      isStructure: boolean
     }
   | { type: 'DELETE_FILE'; id: string }
 
@@ -351,46 +353,70 @@ const reducer = (state: State, action: Actions): State => {
 
       const sortOrder = selectedFile.layers.length + 1
 
-      if (layerType === 'tilelayer') {
-        const layer: TileLayerType = {
-          id: generateId(),
-          type: layerType,
-          name: `Layer ${selectedFile.layers.length + 1}`,
-          data: generateMap(selectedFile.width, selectedFile.height),
-          isVisible: true,
-          sortOrder,
+      switch (layerType) {
+        case 'tilelayer': {
+          const layer: TileLayerType = {
+            id: generateId(),
+            type: layerType,
+            name: `Layer ${selectedFile.layers.length + 1}`,
+            data: generateMap(selectedFile.width, selectedFile.height),
+            isVisible: true,
+            sortOrder,
+          }
+          return {
+            ...state,
+            files: [
+              ...state.files.filter((file) => file.id !== selectedFile.id),
+              {
+                ...selectedFile,
+                layers: [layer, ...selectedFile.layers],
+              },
+            ],
+          }
         }
-        return {
-          ...state,
-          files: [
-            ...state.files.filter((file) => file.id !== selectedFile.id),
-            {
-              ...selectedFile,
-              layers: [layer, ...selectedFile.layers],
-            },
-          ],
+        case 'objectlayer': {
+          const layer: ObjectLayerType = {
+            id: generateId(),
+            type: layerType,
+            name: `Layer ${selectedFile.layers.length + 1}`,
+            data: [],
+            isVisible: true,
+            sortOrder,
+          }
+          return {
+            ...state,
+            files: [
+              ...state.files.filter((file) => file.id !== selectedFile.id),
+              {
+                ...selectedFile,
+                layers: [layer, ...selectedFile.layers],
+              },
+            ],
+          }
         }
-      } else if (layerType === 'objectlayer') {
-        const layer: ObjectLayerType = {
-          id: generateId(),
-          type: layerType,
-          name: `Layer ${selectedFile.layers.length + 1}`,
-          data: [],
-          isVisible: true,
-          sortOrder,
+        case 'structurelayer': {
+          const layer: StructureLayerType = {
+            id: generateId(),
+            type: layerType,
+            name: `Layer ${selectedFile.layers.length + 1}`,
+            data: [],
+            isVisible: true,
+            sortOrder,
+          }
+          return {
+            ...state,
+            files: [
+              ...state.files.filter((file) => file.id !== selectedFile.id),
+              {
+                ...selectedFile,
+                layers: [layer, ...selectedFile.layers],
+              },
+            ],
+          }
         }
-        return {
-          ...state,
-          files: [
-            ...state.files.filter((file) => file.id !== selectedFile.id),
-            {
-              ...selectedFile,
-              layers: [layer, ...selectedFile.layers],
-            },
-          ],
+        default: {
+          return state
         }
-      } else {
-        return state
       }
     }
     case 'ADD_OBJECT': {
@@ -552,6 +578,7 @@ const reducer = (state: State, action: Actions): State => {
         name: `Untitled ${state.files.length + 1}`,
         layers: [],
         sortOrder: state.files.length + 1,
+        isStructure: false,
       }
 
       return {
@@ -575,7 +602,7 @@ const reducer = (state: State, action: Actions): State => {
       }
     }
     case 'UPDATE_FILE_SETTINGS': {
-      const { name, width, height, tileWidth, tileHeight } = action
+      const { name, width, height, tileWidth, tileHeight, isStructure } = action
       const currentFile = state.files.find(
         (file) => file.id === state.selectedFileId
       )
