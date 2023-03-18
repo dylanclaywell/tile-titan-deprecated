@@ -35,10 +35,6 @@ export type State = {
   showGrid: boolean
   selectedLayerId: string | null
   selectedFileId: string | null
-  tileWidth: number
-  tileHeight: number
-  width: number
-  height: number
 }
 
 export type Actions = {
@@ -105,10 +101,6 @@ const initialState: State = {
   zoomLevel: 1,
   cursorRef: { current: null },
   showGrid: true,
-  height: 10,
-  width: 10,
-  tileHeight: 32,
-  tileWidth: 32,
   selectedFileId: null,
   selectedLayerId: null,
 }
@@ -416,12 +408,33 @@ export function EditorProvider({ children }: { children: React.ReactNode }) {
     tileHeight: number
   }) {
     setState((state) => {
+      const currentFile = state.files.find(
+        (file) => file.id === state.selectedFileId
+      )
+
+      if (!currentFile) return state
+
+      const layers = currentFile.layers.map((layer) => {
+        if (layer.type === 'tilelayer') {
+          layer.data = generateMap(width, height)
+        }
+
+        return layer
+      })
+
       return {
         ...state,
-        width,
-        height,
-        tileWidth,
-        tileHeight,
+        files: [
+          ...state.files.filter((file) => file.id !== currentFile.id),
+          {
+            ...currentFile,
+            layers,
+            width,
+            height,
+            tileWidth,
+            tileHeight,
+          },
+        ],
       }
     })
   }
@@ -441,7 +454,7 @@ export function EditorProvider({ children }: { children: React.ReactNode }) {
           id: generateId(),
           type,
           name: `Layer ${selectedFile.layers.length + 1}`,
-          data: generateMap(state.width, state.height),
+          data: generateMap(selectedFile.width, selectedFile.height),
           isVisible: true,
           sortOrder,
         }
@@ -670,6 +683,10 @@ export function EditorProvider({ children }: { children: React.ReactNode }) {
     setState((state) => {
       const newFile: FileType = {
         id: generateId(),
+        width: 10,
+        height: 10,
+        tileWidth: 32,
+        tileHeight: 32,
         name: `Untitled ${state.files.length + 1}`,
         layers: [],
         sortOrder: state.files.length + 1,

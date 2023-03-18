@@ -11,12 +11,19 @@ export interface Props {
 
 export function TileCursor({ anchor }: Props) {
   const [
-    { cursorRef, tool, zoomLevel, tileWidth, tileHeight, selectedLayerId },
+    { cursorRef, tool, zoomLevel, selectedFileId, selectedLayerId, files },
     { setCursorRef },
   ] = useContext(EditorContext)
 
-  const width = useMemo(() => tileWidth, [tileWidth])
-  const height = useMemo(() => tileHeight, [tileHeight])
+  const currentFile = useMemo(
+    () => files.find((file) => file.id === selectedFileId),
+    [selectedFileId]
+  )
+
+  const { tileWidth, tileHeight } = currentFile ?? {
+    tileWidth: 0,
+    tileHeight: 0,
+  }
 
   useEffect(
     function registerTileTool() {
@@ -37,8 +44,9 @@ export function TileCursor({ anchor }: Props) {
             : anchor.getBoundingClientRect()
 
         const top =
-          height * Math.floor((clientY / zoomLevel - offsetY) / height)
-        const left = width * Math.floor((clientX / zoomLevel - offsetX) / width)
+          tileHeight * Math.floor((clientY / zoomLevel - offsetY) / tileHeight)
+        const left =
+          tileWidth * Math.floor((clientX / zoomLevel - offsetX) / tileWidth)
 
         if (isHoveringTilemapEditor) {
           cursorRef.current.classList.remove('hidden')

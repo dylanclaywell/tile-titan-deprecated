@@ -23,18 +23,17 @@ export interface Props {
   }) => void
 }
 
-export function TilemapEditor({ layers, currentLayer, onTileClick }: Props) {
+export function TilemapEditor({ layers, onTileClick }: Props) {
   const gridRef = useRef<HTMLDivElement | null>(null)
   const [
     {
+      files,
+      selectedFileId,
+      selectedLayerId,
       tool,
       showGrid,
       cursorRef,
       zoomLevel,
-      tileHeight,
-      tileWidth,
-      width,
-      height,
     },
     { setZoomLevel },
   ] = useContext(EditorContext)
@@ -49,7 +48,19 @@ export function TilemapEditor({ layers, currentLayer, onTileClick }: Props) {
     setMouseState((currentState) => ({ ...currentState, ...state }))
   }
 
-  const currentLayerId = useMemo(() => currentLayer?.id, [currentLayer])
+  const currentFile = files.find((file) => file.id === selectedFileId)
+  const currentLayerId = useMemo(() => selectedLayerId, [selectedLayerId])
+  const currentLayer = useMemo(
+    () => currentFile?.layers.find((layer) => layer.id === currentLayerId),
+    [currentFile, currentLayerId]
+  )
+
+  const { width, height, tileWidth, tileHeight } = currentFile || {
+    width: 0,
+    height: 0,
+    tileWidth: 0,
+    tileHeight: 0,
+  }
 
   useEffect(
     function registerEventListeners() {

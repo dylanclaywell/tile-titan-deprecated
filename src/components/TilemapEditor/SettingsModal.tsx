@@ -2,15 +2,12 @@ import React, { useCallback, useContext, useState } from 'react'
 import z from 'zod'
 
 import { TextField } from '../TextField'
-import { generateMap } from '../../utils/generateMap'
-import { LayerType } from '../../types/layer'
 import { EditorContext } from '../../contexts/EditorContext'
 import { Overlay } from '../Overlay'
 import { useKey } from '../../hooks/useKey'
 import { zodStringToNumber } from '../../utils/zodStringToNumber'
 
 const Form = z.object({
-  name: z.string().min(1),
   width: z.string().min(1).transform(zodStringToNumber),
   height: z.string().min(1).transform(zodStringToNumber),
   tileWidth: z.string().min(1).transform(zodStringToNumber),
@@ -19,20 +16,17 @@ const Form = z.object({
 
 export interface Props {
   isOpen: boolean
-  layer: LayerType
   onClose: () => void
 }
 
-export function SettingsModal({ isOpen, layer, onClose }: Props) {
+export function SettingsModal({ isOpen, onClose }: Props) {
   const close = useCallback(() => {
     onClose()
   }, [])
   useKey('Escape', close)
 
-  const [
-    { width, height, tileWidth, tileHeight },
-    { updateLayerSettings, updateTilemapSettings, regenerateMap },
-  ] = useContext(EditorContext)
+  const [{ files, selectedFileId }, { updateTilemapSettings }] =
+    useContext(EditorContext)
   const [errors, setErrors] = useState<z.ZodIssue[]>()
 
   function hasError(name: string) {
@@ -55,13 +49,6 @@ export function SettingsModal({ isOpen, layer, onClose }: Props) {
 
     try {
       const form = Form.parse(formData)
-      updateLayerSettings(layer.id, {
-        name: form.name,
-      })
-
-      if (layer.type === 'tilelayer') {
-        regenerateMap(layer.id, form.width, form.height)
-      }
       updateTilemapSettings({
         width: form.width,
         height: form.height,
@@ -76,6 +63,12 @@ export function SettingsModal({ isOpen, layer, onClose }: Props) {
     }
   }
 
+  const currentFile = files.find((file) => file.id === selectedFileId)
+
+  if (!currentFile) return null
+
+  const { width, height, tileWidth, tileHeight } = currentFile
+
   return (
     <>
       <Overlay onClick={onClose} />
@@ -85,12 +78,6 @@ export function SettingsModal({ isOpen, layer, onClose }: Props) {
       >
         <h1>Tilemap Settings</h1>
         <div className="flex flex-col gap-4">
-          <TextField
-            label="Name"
-            hasError={hasError('name')}
-            hintText={getErrorText('name')}
-            inputProps={{ name: 'name', defaultValue: layer.name }}
-          />
           <TextField
             label="Width"
             hasError={hasError('width')}

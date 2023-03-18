@@ -109,13 +109,12 @@ export function TilemapEditorView() {
         currentLayer={currentLayer}
         onTileClick={updateTilemap}
       />
-      {currentLayer !== undefined && (
+      {currentFile !== undefined && (
         <SettingsModal
           isOpen={showSettings}
           onClose={() => {
             setShowSettings(false)
           }}
-          layer={currentLayer}
         />
       )}
     </div>
