@@ -33,7 +33,7 @@ export function Layer({
   onDragEnd,
 }: Props) {
   const [isHoveredWhileDragging, setIsHoveredWhileDragging] = useState(false)
-  const [, { updateLayerSettings, removeLayer }] = useContext(EditorContext)
+  const [, { dispatch }] = useContext(EditorContext)
 
   const isDragging = draggedLayer?.id === id
 
@@ -51,8 +51,16 @@ export function Layer({
         if (!draggedLayer) return
         if (draggedLayer?.id === id) return
 
-        updateLayerSettings(draggedLayer.id, { sortOrder })
-        updateLayerSettings(id, { sortOrder: draggedLayer.sortOrder })
+        dispatch({
+          type: 'UPDATE_LAYER_SETTINGS',
+          id: draggedLayer.id,
+          layer: { sortOrder },
+        })
+        dispatch({
+          type: 'UPDATE_LAYER_SETTINGS',
+          id,
+          layer: { sortOrder: draggedLayer.sortOrder },
+        })
         setIsHoveredWhileDragging(false)
       }}
       onDragStart={onDragStart}
@@ -96,7 +104,13 @@ export function Layer({
             'hover:text-yellow-700': isSelected,
           })}
           iconName={isVisible ? 'eye' : 'eye-slash'}
-          onClick={() => updateLayerSettings(id, { isVisible: !isVisible })}
+          onClick={() =>
+            dispatch({
+              type: 'UPDATE_LAYER_SETTINGS',
+              id,
+              layer: { isVisible: !isVisible },
+            })
+          }
         />
         <LayerButton
           name="Delete"
@@ -105,7 +119,7 @@ export function Layer({
             'hover:text-red-600': isSelected,
           })}
           iconName="trash-can"
-          onClick={() => removeLayer(id)}
+          onClick={() => dispatch({ type: 'REMOVE_LAYER', id })}
         />
       </div>
     </div>

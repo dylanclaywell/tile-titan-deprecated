@@ -11,7 +11,7 @@ import { EditorContext } from '../contexts/EditorContext'
 export function TilemapEditorView() {
   const [
     { files, selectedLayerId, tool, showGrid, selectedFileId },
-    { updateTilemap, handleToolClick },
+    { dispatch },
   ] = useContext(EditorContext)
   const [showSettings, setShowSettings] = React.useState(false)
 
@@ -53,14 +53,18 @@ export function TilemapEditorView() {
             <>
               <Tool
                 name="Tile"
-                onClick={() => handleToolClick('tile')}
+                onClick={() =>
+                  dispatch({ type: 'HANDLE_TOOL_CLICK', tool: 'tile' })
+                }
                 isSelected={tool.type === 'tile'}
                 icon="image"
                 isDisabled={!currentLayer}
               />
               <Tool
                 name="Erase"
-                onClick={() => handleToolClick('eraser')}
+                onClick={() =>
+                  dispatch({ type: 'HANDLE_TOOL_CLICK', tool: 'eraser' })
+                }
                 isSelected={tool.type === 'eraser'}
                 icon="eraser"
                 isDisabled={!currentLayer}
@@ -70,21 +74,27 @@ export function TilemapEditorView() {
             <>
               <Tool
                 name="Select"
-                onClick={() => handleToolClick('select')}
+                onClick={() =>
+                  dispatch({ type: 'HANDLE_TOOL_CLICK', tool: 'select' })
+                }
                 isSelected={tool.type === 'select'}
                 icon="arrow-pointer"
                 isDisabled={!currentLayer}
               />
               <Tool
                 name="Object"
-                onClick={() => handleToolClick('object')}
+                onClick={() =>
+                  dispatch({ type: 'HANDLE_TOOL_CLICK', tool: 'object' })
+                }
                 isSelected={tool.type === 'object'}
                 icon="vector-square"
                 isDisabled={!currentLayer}
               />
               <Tool
                 name="Erase"
-                onClick={() => handleToolClick('eraser')}
+                onClick={() =>
+                  dispatch({ type: 'HANDLE_TOOL_CLICK', tool: 'eraser' })
+                }
                 isSelected={tool.type === 'eraser'}
                 icon="eraser"
                 isDisabled={!currentLayer}
@@ -95,7 +105,9 @@ export function TilemapEditorView() {
         <ToolSection>
           <Tool
             name="Show Grid"
-            onClick={() => handleToolClick('grid')}
+            onClick={() =>
+              dispatch({ type: 'HANDLE_TOOL_CLICK', tool: 'grid' })
+            }
             isSelected={showGrid}
             icon="border-all"
             isDisabled={!currentLayer}
@@ -115,7 +127,9 @@ export function TilemapEditorView() {
       <TilemapEditor
         layers={currentFile?.layers ?? []}
         currentLayer={currentLayer}
-        onTileClick={updateTilemap}
+        onTileClick={(args) => {
+          dispatch({ type: 'UPDATE_TILEMAP', ...args })
+        }}
       />
       {currentFile !== undefined && (
         <SettingsModal

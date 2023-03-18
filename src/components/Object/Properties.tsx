@@ -33,7 +33,7 @@ type Errors = {
 }
 
 export function Properties({ object }: Props) {
-  const [{ selectedLayerId, selectedFileId, files }, { updateObjectSettings }] =
+  const [{ selectedLayerId, selectedFileId, files }, { dispatch }] =
     useContext(EditorContext)
   const [errors, setErrors] = useState<Errors>({})
 
@@ -72,7 +72,12 @@ export function Properties({ object }: Props) {
             const values = Form.parse(rawValues)
             setErrors({})
 
-            updateObjectSettings(currentLayer.id, object.id, values)
+            dispatch({
+              type: 'UPDATE_OBJECT_SETTINGS',
+              layerId: currentLayer.id,
+              objectId: object.id,
+              object: values,
+            })
           } catch (error) {
             console.log(error)
 

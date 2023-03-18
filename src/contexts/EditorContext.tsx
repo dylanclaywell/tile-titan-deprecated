@@ -1,9 +1,9 @@
 import React, {
+  Dispatch,
   createContext,
-  useCallback,
   useEffect,
+  useReducer,
   useRef,
-  useState,
 } from 'react'
 import { v4 as generateId } from 'uuid'
 
@@ -38,58 +38,62 @@ export type State = {
   selectedFileId: string | null
 }
 
-export type Actions = {
-  updateCanvas: (args: {
-    canvas: HTMLCanvasElement
-    tilesetX: number
-    tilesetY: number
-    tilesetName: string
-  }) => void
-  updateTilemap: (args: {
-    layerId: string
-    tileX: number
-    tileY: number
-    tilesetX: number
-    tilesetY: number
-    tilesetName: string
-    tileData: string
-  }) => void
-  updateLayerSettings: (
-    id: string,
-    layer: Partial<Omit<LayerType, 'data'>>
-  ) => void
-  handleToolClick: (type: ToolType) => void
-  setCursorRef: (cursorRef: HTMLDivElement | null) => void
-  setZoomLevel: (level: number) => void
-  setSelectedLayerId: (id: string) => void
-  addLayer: (type: Type) => void
-  addObject: (args: {
-    x: number
-    y: number
-    x2: number
-    y2: number
-    width: number
-    height: number
-  }) => void
-  updateObjectSettings: (
-    layerId: string,
-    objectId: string,
-    object: Partial<ObjectType>
-  ) => void
-  removeLayer: (id: string) => void
-  removeObject: (layerId: string, objectId: string) => void
-  regenerateMap: (layerId: string, width: number, height: number) => void
-  addFile: () => void
-  selectFile: (id: string) => void
-  updateFileSettings: (args: {
-    name: string
-    width: number
-    height: number
-    tileWidth: number
-    tileHeight: number
-  }) => void
-  deleteFile: (id: string) => void
-}
+export type Actions =
+  | {
+      type: 'UPDATE_CANVAS'
+      canvas: HTMLCanvasElement
+      tilesetX: number
+      tilesetY: number
+      tilesetName: string
+    }
+  | {
+      type: 'UPDATE_TILEMAP'
+      layerId: string
+      tileX: number
+      tileY: number
+      tilesetX: number
+      tilesetY: number
+      tilesetName: string
+      tileData: string
+    }
+  | {
+      type: 'UPDATE_LAYER_SETTINGS'
+      id: string
+      layer: Partial<Omit<LayerType, 'data' | 'type'>>
+    }
+  | { type: 'HANDLE_TOOL_CLICK'; tool: ToolType }
+  | { type: 'SET_ZOOM_LEVEL'; level: number }
+  | { type: 'SET_SELECTED_LAYER_ID'; id: string }
+  | { type: 'ADD_LAYER'; layerType: Type }
+  | {
+      type: 'ADD_OBJECT'
+      x: number
+      y: number
+      x2: number
+      y2: number
+      width: number
+      height: number
+    }
+  | {
+      type: 'UPDATE_OBJECT_SETTINGS'
+      layerId: string
+      objectId: string
+      object: Partial<ObjectType>
+    }
+  | { type: 'REMOVE_LAYER'; id: string }
+  | { type: 'REMOVE_OBJECT'; layerId: string; objectId: string }
+  | { type: 'REGENERATE_MAP'; layerId: string; width: number; height: number }
+  | { type: 'ADD_FILE' }
+  | { type: 'SELECT_FILE'; id: string }
+  | {
+      type: 'UPDATE_FILE_SETTINGS'
+      name: string
+      width: number
+      height: number
+      tileWidth: number
+      tileHeight: number
+    }
+  | { type: 'DELETE_FILE'; id: string }
 
 const tileCanvas = document.createElement('canvas')
 tileCanvas.width = 32
@@ -108,50 +112,21 @@ const initialState: State = {
   selectedLayerId: null,
 }
 
-export const EditorContext = createContext<[State, Actions]>([
-  initialState,
-  {
-    updateCanvas: () => undefined,
-    handleToolClick: () => undefined,
-    setCursorRef: () => undefined,
-    setZoomLevel: () => undefined,
-    updateTilemap: () => undefined,
-    setSelectedLayerId: () => undefined,
-    updateLayerSettings: () => undefined,
-    addLayer: () => undefined,
-    updateFileSettings: () => undefined,
-    removeLayer: () => undefined,
-    addObject: () => undefined,
-    updateObjectSettings: () => undefined,
-    removeObject: () => undefined,
-    regenerateMap: () => undefined,
-    addFile: () => undefined,
-    selectFile: () => undefined,
-    deleteFile: () => undefined,
-  },
-])
+export const EditorContext = createContext<
+  [
+    State,
+    {
+      dispatch: Dispatch<Actions>
+      setCursorRef: (cursorRef: HTMLDivElement | null) => void
+    }
+  ]
+>([initialState, { dispatch: () => null, setCursorRef: () => null }])
 
-export function EditorProvider({ children }: { children: React.ReactNode }) {
-  const cursorRef = useRef<HTMLDivElement | null>(null)
-  const [state, setState] = useState<State>(initialState)
-
-  function setCursorRef(ref: HTMLDivElement | null) {
-    cursorRef.current = ref
-  }
-
-  const updateCanvas = useCallback(
-    ({
-      canvas,
-      tilesetX,
-      tilesetY,
-      tilesetName,
-    }: {
-      canvas: HTMLCanvasElement
-      tilesetX: number
-      tilesetY: number
-      tilesetName: string
-    }) => {
-      setState((state) => ({
+const reducer = (state: State, action: Actions): State => {
+  switch (action.type) {
+    case 'UPDATE_CANVAS': {
+      const { canvas, tilesetX, tilesetY, tilesetName } = action
+      return {
         ...state,
         tool: {
           ...state.tool,
@@ -161,170 +136,18 @@ export function EditorProvider({ children }: { children: React.ReactNode }) {
           tilesetY,
           tilesetName,
         },
-      }))
-    },
-    []
-  )
-
-  function toggleGrid() {
-    setState((state) => ({
-      ...state,
-      showGrid: !state.showGrid,
-    }))
-  }
-
-  function handleToolClick(type: ToolType) {
-    switch (type) {
-      case 'select':
-        {
-          setState((state) => {
-            const tool: Tool = {
-              ...state.tool,
-              type,
-            }
-            return {
-              ...state,
-              tool,
-            }
-          })
-        }
-        break
-      case 'object':
-        {
-          setState((state) => {
-            const tool: Tool = {
-              ...state.tool,
-              type,
-            }
-            return {
-              ...state,
-              tool,
-            }
-          })
-        }
-        break
-      case 'tile':
-        {
-          setState((state) => {
-            const tool: Tool = {
-              ...state.tool,
-              type,
-            }
-            return {
-              ...state,
-              tool,
-            }
-          })
-        }
-        break
-      case 'eraser':
-        {
-          setState(() => {
-            const tool: Tool = {
-              ...state.tool,
-              type,
-            }
-            const canvas = tool.canvas
-            const context = canvas.getContext('2d')
-            context?.clearRect(0, 0, canvas.width, canvas.height)
-            return {
-              ...state,
-              tool,
-            }
-          })
-        }
-        break
-      case 'grid':
-        toggleGrid()
-        break
+      }
     }
-  }
-
-  function setZoomLevel(level: number) {
-    setState((state) => ({
-      ...state,
-      zoomLevel: level,
-    }))
-  }
-
-  const updateTilemap = useCallback(
-    ({
-      layerId,
-      tileX,
-      tileY,
-      tilesetX,
-      tilesetY,
-      tilesetName,
-      tileData,
-    }: {
-      layerId: string
-      tileX: number
-      tileY: number
-      tilesetX: number
-      tilesetY: number
-      tilesetName: string
-      tileData: string
-    }) => {
-      setState((state) => {
-        const selectedFile = state.files.find(
-          (file) => file.id === state.selectedFileId
-        )
-
-        if (!selectedFile) return state
-
-        const selectedLayer = selectedFile.layers.find(
-          (layer) => layer.id === layerId
-        )
-
-        if (!selectedLayer) return state
-
-        if (selectedLayer.type === 'tilelayer') {
-          const newTilemap = selectedLayer.data
-          newTilemap[tileY][tileX] = {
-            tilesetName,
-            tilesetX,
-            tilesetY,
-            tileData,
-          }
-
-          const newLayers: LayerType[] = selectedFile.layers.map((layer) => {
-            return layer.id === selectedLayer.id && layer.type === 'tilelayer'
-              ? {
-                  ...layer,
-                  data: newTilemap,
-                }
-              : layer
-          })
-          return {
-            ...state,
-            files: [
-              ...state.files.filter((file) => file.id !== selectedFile.id),
-              {
-                ...selectedFile,
-                layers: newLayers,
-              },
-            ],
-          }
-        } else {
-          return state
-        }
-      })
-    },
-    []
-  )
-
-  function setSelectedLayerId(id: string) {
-    setState((state) => ({
-      ...state,
-      selectedLayerId: id,
-    }))
-  }
-
-  function updateLayerSettings(
-    layerId: string,
-    newLayer: Partial<Omit<LayerType, 'data' | 'type'>>
-  ) {
-    setState((state) => {
+    case 'UPDATE_TILEMAP': {
+      const {
+        layerId,
+        tileX,
+        tileY,
+        tilesetX,
+        tilesetY,
+        tilesetName,
+        tileData,
+      } = action
       const selectedFile = state.files.find(
         (file) => file.id === state.selectedFileId
       )
@@ -334,6 +157,47 @@ export function EditorProvider({ children }: { children: React.ReactNode }) {
       const selectedLayer = selectedFile.layers.find(
         (layer) => layer.id === layerId
       )
+
+      if (!selectedLayer) return state
+
+      if (selectedLayer.type !== 'tilelayer') return state
+
+      const newTilemap = selectedLayer.data
+      newTilemap[tileY][tileX] = {
+        tilesetName,
+        tilesetX,
+        tilesetY,
+        tileData,
+      }
+
+      const newLayers: LayerType[] = selectedFile.layers.map((layer) => {
+        return layer.id === selectedLayer.id && layer.type === 'tilelayer'
+          ? {
+              ...layer,
+              data: newTilemap,
+            }
+          : layer
+      })
+      return {
+        ...state,
+        files: [
+          ...state.files.filter((file) => file.id !== selectedFile.id),
+          {
+            ...selectedFile,
+            layers: newLayers,
+          },
+        ],
+      }
+    }
+    case 'UPDATE_LAYER_SETTINGS': {
+      const { id, layer: layerType } = action
+      const selectedFile = state.files.find(
+        (file) => file.id === state.selectedFileId
+      )
+
+      if (!selectedFile) return state
+
+      const selectedLayer = selectedFile.layers.find((layer) => layer.id === id)
 
       if (!selectedLayer) return state
 
@@ -341,7 +205,7 @@ export function EditorProvider({ children }: { children: React.ReactNode }) {
         return layer.id === selectedLayer.id
           ? {
               ...layer,
-              ...newLayer,
+              ...layerType,
             }
           : layer
       })
@@ -355,242 +219,63 @@ export function EditorProvider({ children }: { children: React.ReactNode }) {
           },
         ],
       }
-    })
-  }
-
-  function regenerateMap(layerId: string, width: number, height: number) {
-    setState((state) => {
-      const selectedFile = state.files.find(
-        (file) => file.id === state.selectedFileId
-      )
-
-      if (!selectedFile) return state
-
-      const selectedLayer = selectedFile.layers.find(
-        (layer) => layer.id === layerId
-      )
-
-      if (!selectedLayer) return state
-
-      if (selectedLayer.type === 'tilelayer') {
-        const newTilemap = generateMap(width, height)
-        const newLayers: LayerType[] = selectedFile.layers.map((layer) => {
-          return layer.id === selectedLayer.id && layer.type === 'tilelayer'
-            ? {
-                ...layer,
-                data: newTilemap,
-                width,
-                height,
-              }
-            : layer
-        })
-        return {
-          ...state,
-          files: [
-            ...state.files.filter((file) => file.id !== selectedFile.id),
-            {
-              ...selectedFile,
-              layers: newLayers,
-            },
-          ],
+    }
+    case 'HANDLE_TOOL_CLICK': {
+      const { tool: type } = action
+      switch (type) {
+        case 'select': {
+          const tool: Tool = {
+            ...state.tool,
+            type,
+          }
+          return {
+            ...state,
+            tool,
+          }
         }
-      } else {
-        return state
-      }
-    })
-  }
-
-  function updateFileSettings({
-    name,
-    width,
-    height,
-    tileWidth,
-    tileHeight,
-  }: {
-    name: string
-    width: number
-    height: number
-    tileWidth: number
-    tileHeight: number
-  }) {
-    setState((state) => {
-      const currentFile = state.files.find(
-        (file) => file.id === state.selectedFileId
-      )
-
-      if (!currentFile) return state
-
-      const layers = currentFile.layers.map((layer) => {
-        if (layer.type === 'tilelayer') {
-          layer.data = generateMap(width, height)
+        case 'object': {
+          const tool: Tool = {
+            ...state.tool,
+            type,
+          }
+          return {
+            ...state,
+            tool,
+          }
         }
-
-        return layer
-      })
-
-      return {
-        ...state,
-        files: [
-          ...state.files.filter((file) => file.id !== currentFile.id),
-          {
-            ...currentFile,
-            name,
-            layers,
-            width,
-            height,
-            tileWidth,
-            tileHeight,
-          },
-        ],
-      }
-    })
-  }
-
-  function addLayer(type: Type) {
-    setState((state) => {
-      const selectedFile = state.files.find(
-        (file) => file.id === state.selectedFileId
-      )
-
-      if (!selectedFile) return state
-
-      const sortOrder = selectedFile.layers.length + 1
-
-      if (type === 'tilelayer') {
-        const layer: TileLayerType = {
-          id: generateId(),
-          type,
-          name: `Layer ${selectedFile.layers.length + 1}`,
-          data: generateMap(selectedFile.width, selectedFile.height),
-          isVisible: true,
-          sortOrder,
+        case 'tile': {
+          const tool: Tool = {
+            ...state.tool,
+            type,
+          }
+          return {
+            ...state,
+            tool,
+          }
         }
-        return {
-          ...state,
-          files: [
-            ...state.files.filter((file) => file.id !== selectedFile.id),
-            {
-              ...selectedFile,
-              layers: [layer, ...selectedFile.layers],
-            },
-          ],
+        case 'eraser': {
+          const tool: Tool = {
+            ...state.tool,
+            type,
+          }
+          const canvas = tool.canvas
+          const context = canvas.getContext('2d')
+          context?.clearRect(0, 0, canvas.width, canvas.height)
+          return {
+            ...state,
+            tool,
+          }
         }
-      } else if (type === 'objectlayer') {
-        const layer: ObjectLayerType = {
-          id: generateId(),
-          type,
-          name: `Layer ${selectedFile.layers.length + 1}`,
-          data: [],
-          isVisible: true,
-          sortOrder,
-        }
-        return {
-          ...state,
-          files: [
-            ...state.files.filter((file) => file.id !== selectedFile.id),
-            {
-              ...selectedFile,
-              layers: [layer, ...selectedFile.layers],
-            },
-          ],
-        }
-      } else {
-        return state
+        case 'grid':
+          return {
+            ...state,
+            showGrid: !state.showGrid,
+          }
       }
-    })
-  }
-
-  function removeLayer(layerId: string) {
-    setState((state) => {
-      const selectedFile = state.files.find(
-        (file) => file.id === state.selectedFileId
-      )
-
-      if (!selectedFile) return state
-
-      const layers = selectedFile.layers.filter((layer) => layer.id !== layerId)
-      return {
-        ...state,
-        files: [
-          ...state.files.filter((file) => file.id !== selectedFile.id),
-          {
-            ...selectedFile,
-            layers,
-          },
-        ],
-      }
-    })
-  }
-
-  function addObject({
-    x,
-    y,
-    x2,
-    y2,
-    width,
-    height,
-  }: {
-    x: number
-    y: number
-    x2: number
-    y2: number
-    width: number
-    height: number
-  }) {
-    setState((state) => {
-      const selectedFile = state.files.find(
-        (file) => file.id === state.selectedFileId
-      )
-
-      if (!selectedFile) return state
-
-      const selectedLayer = selectedFile.layers.find(
-        (layer) => layer.id === state.selectedLayerId
-      )
-
-      if (!selectedLayer || selectedLayer.type !== 'objectlayer') return state
-
-      const newObject: ObjectType = {
-        id: generateId(),
-        name: `Object ${selectedLayer.data.length + 1}`,
-        sortOrder: selectedLayer.data.length + 1,
-        isVisible: true,
-        x,
-        y,
-        x2,
-        y2,
-        width,
-        height,
-      }
-
-      const newLayers = selectedFile.layers.map((layer) => {
-        return layer.id === selectedLayer.id && layer.type === 'objectlayer'
-          ? {
-              ...layer,
-              data: [...layer.data, newObject],
-            }
-          : layer
-      })
-
-      return {
-        ...state,
-        files: [
-          ...state.files.filter((file) => file.id !== selectedFile.id),
-          {
-            ...selectedFile,
-            layers: newLayers,
-          },
-        ],
-      }
-    })
-  }
-
-  function updateObjectSettings(
-    layerId: string,
-    objectId: string,
-    newObject: Partial<ObjectType>
-  ) {
-    setState((state) => {
+      break
+    }
+    case 'UPDATE_OBJECT_SETTINGS': {
+      const { layerId, objectId, object: newObject } = action
       const selectedFile = state.files.find(
         (file) => file.id === state.selectedFileId
       )
@@ -641,11 +326,142 @@ export function EditorProvider({ children }: { children: React.ReactNode }) {
           },
         ],
       }
-    })
-  }
+    }
+    case 'SET_ZOOM_LEVEL': {
+      const { level } = action
+      return {
+        ...state,
+        zoomLevel: level,
+      }
+    }
+    case 'SET_SELECTED_LAYER_ID': {
+      const { id } = action
+      return {
+        ...state,
+        selectedLayerId: id,
+      }
+    }
+    case 'ADD_LAYER': {
+      const { layerType } = action
+      const selectedFile = state.files.find(
+        (file) => file.id === state.selectedFileId
+      )
 
-  function removeObject(layerId: string, objectId: string) {
-    setState((state) => {
+      if (!selectedFile) return state
+
+      const sortOrder = selectedFile.layers.length + 1
+
+      if (layerType === 'tilelayer') {
+        const layer: TileLayerType = {
+          id: generateId(),
+          type: layerType,
+          name: `Layer ${selectedFile.layers.length + 1}`,
+          data: generateMap(selectedFile.width, selectedFile.height),
+          isVisible: true,
+          sortOrder,
+        }
+        return {
+          ...state,
+          files: [
+            ...state.files.filter((file) => file.id !== selectedFile.id),
+            {
+              ...selectedFile,
+              layers: [layer, ...selectedFile.layers],
+            },
+          ],
+        }
+      } else if (layerType === 'objectlayer') {
+        const layer: ObjectLayerType = {
+          id: generateId(),
+          type: layerType,
+          name: `Layer ${selectedFile.layers.length + 1}`,
+          data: [],
+          isVisible: true,
+          sortOrder,
+        }
+        return {
+          ...state,
+          files: [
+            ...state.files.filter((file) => file.id !== selectedFile.id),
+            {
+              ...selectedFile,
+              layers: [layer, ...selectedFile.layers],
+            },
+          ],
+        }
+      } else {
+        return state
+      }
+    }
+    case 'ADD_OBJECT': {
+      const { x, y, x2, y2, width, height } = action
+      const selectedFile = state.files.find(
+        (file) => file.id === state.selectedFileId
+      )
+
+      if (!selectedFile) return state
+
+      const selectedLayer = selectedFile.layers.find(
+        (layer) => layer.id === state.selectedLayerId
+      )
+
+      if (!selectedLayer || selectedLayer.type !== 'objectlayer') return state
+
+      const newObject: ObjectType = {
+        id: generateId(),
+        name: `Object ${selectedLayer.data.length + 1}`,
+        sortOrder: selectedLayer.data.length + 1,
+        isVisible: true,
+        x,
+        y,
+        x2,
+        y2,
+        width,
+        height,
+      }
+
+      const newLayers = selectedFile.layers.map((layer) => {
+        return layer.id === selectedLayer.id && layer.type === 'objectlayer'
+          ? {
+              ...layer,
+              data: [...layer.data, newObject],
+            }
+          : layer
+      })
+
+      return {
+        ...state,
+        files: [
+          ...state.files.filter((file) => file.id !== selectedFile.id),
+          {
+            ...selectedFile,
+            layers: newLayers,
+          },
+        ],
+      }
+    }
+    case 'REMOVE_LAYER': {
+      const { id } = action
+      const selectedFile = state.files.find(
+        (file) => file.id === state.selectedFileId
+      )
+
+      if (!selectedFile) return state
+
+      const layers = selectedFile.layers.filter((layer) => layer.id !== id)
+      return {
+        ...state,
+        files: [
+          ...state.files.filter((file) => file.id !== selectedFile.id),
+          {
+            ...selectedFile,
+            layers,
+          },
+        ],
+      }
+    }
+    case 'REMOVE_OBJECT': {
+      const { layerId, objectId } = action
       const selectedFile = state.files.find(
         (file) => file.id === state.selectedFileId
       )
@@ -685,11 +501,48 @@ export function EditorProvider({ children }: { children: React.ReactNode }) {
           },
         ],
       }
-    })
-  }
+    }
+    case 'REGENERATE_MAP': {
+      const { layerId, width, height } = action
+      const selectedFile = state.files.find(
+        (file) => file.id === state.selectedFileId
+      )
 
-  function addFile() {
-    setState((state) => {
+      if (!selectedFile) return state
+
+      const selectedLayer = selectedFile.layers.find(
+        (layer) => layer.id === layerId
+      )
+
+      if (!selectedLayer) return state
+
+      if (selectedLayer.type === 'tilelayer') {
+        const newTilemap = generateMap(width, height)
+        const newLayers: LayerType[] = selectedFile.layers.map((layer) => {
+          return layer.id === selectedLayer.id && layer.type === 'tilelayer'
+            ? {
+                ...layer,
+                data: newTilemap,
+                width,
+                height,
+              }
+            : layer
+        })
+        return {
+          ...state,
+          files: [
+            ...state.files.filter((file) => file.id !== selectedFile.id),
+            {
+              ...selectedFile,
+              layers: newLayers,
+            },
+          ],
+        }
+      } else {
+        return state
+      }
+    }
+    case 'ADD_FILE': {
       const newFile: FileType = {
         id: generateId(),
         width: 10,
@@ -706,25 +559,64 @@ export function EditorProvider({ children }: { children: React.ReactNode }) {
         files: [...state.files, newFile],
         selectedFileId: newFile.id,
       }
-    })
-  }
-
-  function selectFile(id: string) {
-    setState((state) => {
-      return {
-        ...state,
-        selectedFileId: id,
-      }
-    })
-  }
-
-  function deleteFile(id: string) {
-    setState((state) => {
+    }
+    case 'DELETE_FILE': {
+      const { id } = action
       return {
         ...state,
         files: state.files.filter((f) => f.id !== id),
       }
-    })
+    }
+    case 'SELECT_FILE': {
+      const { id } = action
+      return {
+        ...state,
+        selectedFileId: id,
+      }
+    }
+    case 'UPDATE_FILE_SETTINGS': {
+      const { name, width, height, tileWidth, tileHeight } = action
+      const currentFile = state.files.find(
+        (file) => file.id === state.selectedFileId
+      )
+
+      if (!currentFile) return state
+
+      const layers = currentFile.layers.map((layer) => {
+        if (layer.type === 'tilelayer') {
+          layer.data = generateMap(width, height)
+        }
+
+        return layer
+      })
+
+      return {
+        ...state,
+        files: [
+          ...state.files.filter((file) => file.id !== currentFile.id),
+          {
+            ...currentFile,
+            name,
+            layers,
+            width,
+            height,
+            tileWidth,
+            tileHeight,
+          },
+        ],
+      }
+    }
+    default:
+      return state
+  }
+}
+
+export function EditorProvider({ children }: { children: React.ReactNode }) {
+  const [state, dispatch] = useReducer(reducer, initialState)
+  const cursorRef = useRef<HTMLDivElement | null>(null)
+
+  function setCursorRef(ref: HTMLDivElement | null) {
+    cursorRef.current = ref
   }
 
   useEffect(
@@ -755,23 +647,8 @@ export function EditorProvider({ children }: { children: React.ReactNode }) {
   )
 
   const actions = {
-    updateCanvas,
-    handleToolClick,
+    dispatch,
     setCursorRef,
-    setZoomLevel,
-    updateTilemap,
-    setSelectedLayerId,
-    updateLayerSettings,
-    addLayer,
-    updateObjectSettings,
-    removeLayer,
-    addObject,
-    removeObject,
-    regenerateMap,
-    addFile,
-    selectFile,
-    updateFileSettings,
-    deleteFile,
   }
 
   return (

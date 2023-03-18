@@ -26,8 +26,7 @@ export function SettingsModal({ isOpen, onClose }: Props) {
   }, [])
   useKey('Escape', close)
 
-  const [{ files, selectedFileId }, { updateFileSettings }] =
-    useContext(EditorContext)
+  const [{ files, selectedFileId }, { dispatch }] = useContext(EditorContext)
   const [errors, setErrors] = useState<z.ZodIssue[]>()
 
   function hasError(name: string) {
@@ -50,7 +49,9 @@ export function SettingsModal({ isOpen, onClose }: Props) {
 
     try {
       const form = Form.parse(formData)
-      updateFileSettings({
+
+      dispatch({
+        type: 'UPDATE_FILE_SETTINGS',
         name: form.name,
         width: form.width,
         height: form.height,

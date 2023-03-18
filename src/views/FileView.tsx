@@ -5,8 +5,7 @@ import { ResourceList } from '../components/ResourceList/ResourceList'
 import { ResourceListItem } from '../components/ResourceList/ResourceListItem'
 
 export function FileView() {
-  const [{ files, selectedFileId }, { selectFile, deleteFile }] =
-    useContext(EditorContext)
+  const [{ files, selectedFileId }, { dispatch }] = useContext(EditorContext)
 
   return (
     <div className="p-2 basis-[20vw] border-black">
@@ -20,12 +19,12 @@ export function FileView() {
               id={file.id}
               draggedId={null}
               name={file.name}
-              onClick={() => selectFile(file.id)}
+              onClick={() => dispatch({ type: 'SELECT_FILE', id: file.id })}
               onDragStart={() => undefined}
               onDragEnd={() => undefined}
               onDrop={() => undefined}
               isSelected={selectedFileId === file.id}
-              onDelete={() => deleteFile(file.id)}
+              onDelete={() => dispatch({ type: 'DELETE_FILE', id: file.id })}
               sortOrder={file.sortOrder}
             />
           ))}

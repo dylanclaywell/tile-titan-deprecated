@@ -35,7 +35,7 @@ export function TilemapEditor({ layers, onTileClick }: Props) {
       cursorRef,
       zoomLevel,
     },
-    { setZoomLevel },
+    { dispatch },
   ] = useContext(EditorContext)
   const [mouseState, setMouseState] = useState({
     leftMouseButtonIsDown: false,
@@ -187,9 +187,15 @@ export function TilemapEditor({ layers, onTileClick }: Props) {
           const delta = e.deltaY
 
           if (delta > 0) {
-            setZoomLevel(zoomLevel - 0.1 * zoomLevel)
+            dispatch({
+              type: 'SET_ZOOM_LEVEL',
+              level: zoomLevel - 0.1 * zoomLevel,
+            })
           } else if (delta < 0) {
-            setZoomLevel(zoomLevel + 0.1 * zoomLevel)
+            dispatch({
+              type: 'SET_ZOOM_LEVEL',
+              level: zoomLevel + 0.1 * zoomLevel,
+            })
           }
         }
       }

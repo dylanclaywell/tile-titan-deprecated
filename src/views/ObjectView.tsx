@@ -9,10 +9,8 @@ import { Properties } from '../components/Object/Properties'
 
 export function ObjectView() {
   const [selectedObjectId, setSelectedObjectId] = useState<string | null>(null)
-  const [
-    { selectedLayerId, selectedFileId, files },
-    { updateObjectSettings, removeObject },
-  ] = useContext(EditorContext)
+  const [{ selectedLayerId, selectedFileId, files }, { dispatch }] =
+    useContext(EditorContext)
   const [draggedObject, setDraggedObject] = useState<ObjectType | null>(null)
   const [renamingObjectId, setRenamingObjectId] = useState<string | null>(null)
 
@@ -60,19 +58,40 @@ export function ObjectView() {
                   if (!draggedObject) return
                   if (draggedObject?.id === object.id) return
 
-                  updateObjectSettings(currentLayer.id, draggedObject.id, {
-                    sortOrder: object.sortOrder,
+                  dispatch({
+                    type: 'UPDATE_OBJECT_SETTINGS',
+                    layerId: currentLayer.id,
+                    objectId: draggedObject.id,
+                    object: {
+                      sortOrder: object.sortOrder,
+                    },
                   })
-                  updateObjectSettings(currentLayer.id, object.id, {
-                    sortOrder: draggedObject.sortOrder,
+                  dispatch({
+                    type: 'UPDATE_OBJECT_SETTINGS',
+                    layerId: currentLayer.id,
+                    objectId: object.id,
+                    object: {
+                      sortOrder: draggedObject.sortOrder,
+                    },
                   })
                 }}
                 onHide={() =>
-                  updateObjectSettings(currentLayer.id, object.id, {
-                    isVisible: !object.isVisible,
+                  dispatch({
+                    type: 'UPDATE_OBJECT_SETTINGS',
+                    layerId: currentLayer.id,
+                    objectId: object.id,
+                    object: {
+                      isVisible: !object.isVisible,
+                    },
                   })
                 }
-                onDelete={() => removeObject(currentLayer.id, object.id)}
+                onDelete={() =>
+                  dispatch({
+                    type: 'REMOVE_OBJECT',
+                    layerId: currentLayer.id,
+                    objectId: object.id,
+                  })
+                }
                 draggedId={draggedObject?.id ?? null}
               />
             ))}

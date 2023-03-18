@@ -16,7 +16,7 @@ export function ObjectCursor({ anchor }: Props) {
     x2: number
     y2: number
   } | null>(null)
-  const [{ tool, zoomLevel, selectedLayerId }, { addObject }] =
+  const [{ tool, zoomLevel, selectedLayerId }, { dispatch }] =
     useContext(EditorContext)
 
   function getAnchorOffset() {
@@ -99,14 +99,7 @@ export function ObjectCursor({ anchor }: Props) {
           objectToolPreviewRef.current.style.visibility = 'hidden'
         }
 
-        addObject({
-          x,
-          y,
-          x2,
-          y2,
-          width,
-          height,
-        })
+        dispatch({ type: 'ADD_OBJECT', x, y, x2, y2, width, height })
         objectToolMouseRef.current = null
       }
 

@@ -6,12 +6,18 @@ import { ToolSection } from './Tools/ToolSection'
 import { Tool } from './Tool'
 
 export function Toolbar() {
-  const [, { addFile }] = useContext(EditorContext)
+  const [, { dispatch }] = useContext(EditorContext)
 
   return (
     <Tools classes="grow shrink-0 border-black">
       <ToolSection>
-        <Tool name="New File" icon="file-circle-plus" onClick={addFile} />
+        <Tool
+          name="New File"
+          icon="file-circle-plus"
+          onClick={() => {
+            dispatch({ type: 'ADD_FILE' })
+          }}
+        />
       </ToolSection>
     </Tools>
   )
