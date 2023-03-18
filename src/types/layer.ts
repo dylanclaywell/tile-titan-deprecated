@@ -22,6 +22,8 @@ export const ObjectLayer = z.object({
 
 export const Layer = z.union([TileLayer, ObjectLayer])
 
+export type Type = 'tilelayer' | 'objectlayer' | 'structurelayer'
+
 export type TileLayerType = z.infer<typeof TileLayer>
 export type ObjectLayerType = z.infer<typeof ObjectLayer>
 export type LayerType = z.infer<typeof Layer>

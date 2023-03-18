@@ -45,6 +45,7 @@ export function TilemapEditorView() {
               a.click()
             }}
             icon="floppy-disk"
+            isDisabled={!currentLayer}
           />
         </ToolSection>
         <ToolSection>
@@ -55,12 +56,14 @@ export function TilemapEditorView() {
                 onClick={() => handleToolClick('tile')}
                 isSelected={tool.type === 'tile'}
                 icon="image"
+                isDisabled={!currentLayer}
               />
               <Tool
                 name="Erase"
                 onClick={() => handleToolClick('eraser')}
                 isSelected={tool.type === 'eraser'}
                 icon="eraser"
+                isDisabled={!currentLayer}
               />
             </>
           ) : (
@@ -70,18 +73,21 @@ export function TilemapEditorView() {
                 onClick={() => handleToolClick('select')}
                 isSelected={tool.type === 'select'}
                 icon="arrow-pointer"
+                isDisabled={!currentLayer}
               />
               <Tool
                 name="Object"
                 onClick={() => handleToolClick('object')}
                 isSelected={tool.type === 'object'}
                 icon="vector-square"
+                isDisabled={!currentLayer}
               />
               <Tool
                 name="Erase"
                 onClick={() => handleToolClick('eraser')}
                 isSelected={tool.type === 'eraser'}
                 icon="eraser"
+                isDisabled={!currentLayer}
               />
             </>
           )}
@@ -92,6 +98,7 @@ export function TilemapEditorView() {
             onClick={() => handleToolClick('grid')}
             isSelected={showGrid}
             icon="border-all"
+            isDisabled={!currentLayer}
           />
         </ToolSection>
         <ToolSection>
@@ -101,6 +108,7 @@ export function TilemapEditorView() {
               setShowSettings(true)
             }}
             icon="gear"
+            isDisabled={!currentLayer}
           />
         </ToolSection>
       </Tools>

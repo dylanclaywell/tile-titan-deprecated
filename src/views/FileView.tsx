@@ -5,7 +5,8 @@ import { ResourceList } from '../components/ResourceList/ResourceList'
 import { ResourceListItem } from '../components/ResourceList/ResourceListItem'
 
 export function FileView() {
-  const [{ files, selectedFileId }, { selectFile }] = useContext(EditorContext)
+  const [{ files, selectedFileId }, { selectFile, deleteFile }] =
+    useContext(EditorContext)
 
   return (
     <div className="p-2 basis-[20vw] border-black">
@@ -24,8 +25,7 @@ export function FileView() {
               onDragEnd={() => undefined}
               onDrop={() => undefined}
               isSelected={selectedFileId === file.id}
-              onDelete={() => undefined}
-              onRename={() => undefined}
+              onDelete={() => deleteFile(file.id)}
               sortOrder={file.sortOrder}
             />
           ))}

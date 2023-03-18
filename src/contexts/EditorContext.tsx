@@ -12,6 +12,7 @@ import {
   ObjectLayer,
   ObjectLayerType,
   TileLayerType,
+  Type,
 } from '../types/layer'
 import { generateMap } from '../utils/generateMap'
 import { ObjectType } from '../types/object'
@@ -61,7 +62,7 @@ export type Actions = {
   setCursorRef: (cursorRef: HTMLDivElement | null) => void
   setZoomLevel: (level: number) => void
   setSelectedLayerId: (id: string) => void
-  addLayer: (type: 'tilelayer' | 'objectlayer') => void
+  addLayer: (type: Type) => void
   addObject: (args: {
     x: number
     y: number
@@ -69,12 +70,6 @@ export type Actions = {
     y2: number
     width: number
     height: number
-  }) => void
-  updateTilemapSettings: (args: {
-    width: number
-    height: number
-    tileWidth: number
-    tileHeight: number
   }) => void
   updateObjectSettings: (
     layerId: string,
@@ -86,6 +81,14 @@ export type Actions = {
   regenerateMap: (layerId: string, width: number, height: number) => void
   addFile: () => void
   selectFile: (id: string) => void
+  updateFileSettings: (args: {
+    name: string
+    width: number
+    height: number
+    tileWidth: number
+    tileHeight: number
+  }) => void
+  deleteFile: (id: string) => void
 }
 
 const tileCanvas = document.createElement('canvas')
@@ -116,7 +119,7 @@ export const EditorContext = createContext<[State, Actions]>([
     setSelectedLayerId: () => undefined,
     updateLayerSettings: () => undefined,
     addLayer: () => undefined,
-    updateTilemapSettings: () => undefined,
+    updateFileSettings: () => undefined,
     removeLayer: () => undefined,
     addObject: () => undefined,
     updateObjectSettings: () => undefined,
@@ -124,6 +127,7 @@ export const EditorContext = createContext<[State, Actions]>([
     regenerateMap: () => undefined,
     addFile: () => undefined,
     selectFile: () => undefined,
+    deleteFile: () => undefined,
   },
 ])
 
@@ -396,12 +400,14 @@ export function EditorProvider({ children }: { children: React.ReactNode }) {
     })
   }
 
-  function updateTilemapSettings({
+  function updateFileSettings({
+    name,
     width,
     height,
     tileWidth,
     tileHeight,
   }: {
+    name: string
     width: number
     height: number
     tileWidth: number
@@ -428,6 +434,7 @@ export function EditorProvider({ children }: { children: React.ReactNode }) {
           ...state.files.filter((file) => file.id !== currentFile.id),
           {
             ...currentFile,
+            name,
             layers,
             width,
             height,
@@ -439,7 +446,7 @@ export function EditorProvider({ children }: { children: React.ReactNode }) {
     })
   }
 
-  function addLayer(type: 'tilelayer' | 'objectlayer') {
+  function addLayer(type: Type) {
     setState((state) => {
       const selectedFile = state.files.find(
         (file) => file.id === state.selectedFileId
@@ -468,7 +475,7 @@ export function EditorProvider({ children }: { children: React.ReactNode }) {
             },
           ],
         }
-      } else {
+      } else if (type === 'objectlayer') {
         const layer: ObjectLayerType = {
           id: generateId(),
           type,
@@ -487,6 +494,8 @@ export function EditorProvider({ children }: { children: React.ReactNode }) {
             },
           ],
         }
+      } else {
+        return state
       }
     })
   }
@@ -709,6 +718,15 @@ export function EditorProvider({ children }: { children: React.ReactNode }) {
     })
   }
 
+  function deleteFile(id: string) {
+    setState((state) => {
+      return {
+        ...state,
+        files: state.files.filter((f) => f.id !== id),
+      }
+    })
+  }
+
   useEffect(
     function updateTileImagesWithLayerData() {
       const selectedFile = state.files.find(
@@ -745,7 +763,6 @@ export function EditorProvider({ children }: { children: React.ReactNode }) {
     setSelectedLayerId,
     updateLayerSettings,
     addLayer,
-    updateTilemapSettings,
     updateObjectSettings,
     removeLayer,
     addObject,
@@ -753,6 +770,8 @@ export function EditorProvider({ children }: { children: React.ReactNode }) {
     regenerateMap,
     addFile,
     selectFile,
+    updateFileSettings,
+    deleteFile,
   }
 
   return (

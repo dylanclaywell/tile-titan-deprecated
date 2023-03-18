@@ -8,6 +8,7 @@ import { useKey } from '../../hooks/useKey'
 import { zodStringToNumber } from '../../utils/zodStringToNumber'
 
 const Form = z.object({
+  name: z.string().min(1),
   width: z.string().min(1).transform(zodStringToNumber),
   height: z.string().min(1).transform(zodStringToNumber),
   tileWidth: z.string().min(1).transform(zodStringToNumber),
@@ -25,7 +26,7 @@ export function SettingsModal({ isOpen, onClose }: Props) {
   }, [])
   useKey('Escape', close)
 
-  const [{ files, selectedFileId }, { updateTilemapSettings }] =
+  const [{ files, selectedFileId }, { updateFileSettings }] =
     useContext(EditorContext)
   const [errors, setErrors] = useState<z.ZodIssue[]>()
 
@@ -49,7 +50,8 @@ export function SettingsModal({ isOpen, onClose }: Props) {
 
     try {
       const form = Form.parse(formData)
-      updateTilemapSettings({
+      updateFileSettings({
+        name: form.name,
         width: form.width,
         height: form.height,
         tileWidth: form.tileWidth,
@@ -67,7 +69,7 @@ export function SettingsModal({ isOpen, onClose }: Props) {
 
   if (!currentFile) return null
 
-  const { width, height, tileWidth, tileHeight } = currentFile
+  const { width, height, tileWidth, tileHeight, name } = currentFile
 
   return (
     <>
@@ -78,6 +80,12 @@ export function SettingsModal({ isOpen, onClose }: Props) {
       >
         <h1>Tilemap Settings</h1>
         <div className="flex flex-col gap-4">
+          <TextField
+            label="File Name"
+            hasError={hasError('name')}
+            hintText={getErrorText('name')}
+            inputProps={{ name: 'name', defaultValue: name }}
+          />
           <TextField
             label="Width"
             hasError={hasError('width')}

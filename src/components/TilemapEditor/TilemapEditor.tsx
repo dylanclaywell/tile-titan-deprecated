@@ -181,7 +181,8 @@ export function TilemapEditor({ layers, onTileClick }: Props) {
           e.target instanceof HTMLDivElement &&
           (e.target?.id === 'tilemap-editor' ||
             e.target?.id === 'tilemap-grid' ||
-            e.target.dataset?.['type'] === 'tile')
+            e.target.dataset?.['type'] === 'tile' ||
+            e.target.parentElement?.id === 'tilemap-editor')
         ) {
           const delta = e.deltaY
 

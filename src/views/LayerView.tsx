@@ -36,11 +36,19 @@ export function LayerView() {
             onClick={() => addLayer('tilelayer')}
             icon="image"
             name="Add tile layer"
+            isDisabled={!currentFile}
           />
           <Tool
             onClick={() => addLayer('objectlayer')}
             icon="object-group"
             name="Add object layer"
+            isDisabled={!currentFile}
+          />
+          <Tool
+            onClick={() => addLayer('structurelayer')}
+            icon="cubes"
+            name="Add structure layer"
+            isDisabled={!currentFile}
           />
         </ToolSection>
       </Tools>

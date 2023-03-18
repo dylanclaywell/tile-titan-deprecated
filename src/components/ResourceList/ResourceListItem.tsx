@@ -12,7 +12,7 @@ export interface Props {
   isVisible?: boolean
   name: string
   onClick: () => void
-  onRename: (id: string) => void
+  onRename?: (id: string) => void
   draggedId: string | null
   onDragStart: React.DragEventHandler<HTMLDivElement>
   onDragEnd: React.DragEventHandler<HTMLDivElement>
@@ -72,15 +72,17 @@ export function ResourceListItem({
         <span>{name}</span>
       </button>
       <div className="flex justify-end gap-2 p-2">
-        <Button
-          name="Rename"
-          classes={clsx({
-            'hover:text-green-600': !isSelected,
-            'hover:text-green-700': isSelected,
-          })}
-          iconName="pencil"
-          onClick={() => onRename(id)}
-        />
+        {onRename && (
+          <Button
+            name="Rename"
+            classes={clsx({
+              'hover:text-green-600': !isSelected,
+              'hover:text-green-700': isSelected,
+            })}
+            iconName="pencil"
+            onClick={() => onRename(id)}
+          />
+        )}
         {onHide && (
           <Button
             name={isVisible ? 'Hide' : 'Show'}

@@ -16,10 +16,21 @@ export function MetadataView() {
     return selectedFile?.layers.find((layer) => layer.id === selectedLayerId)
   }, [selectedLayerId, selectedFile])
 
+  const meta = (() => {
+    if (!selectedLayer) return
+
+    switch (selectedLayer.type) {
+      case 'tilelayer':
+        return <TilesetView />
+      case 'objectlayer':
+        return <ObjectView />
+    }
+  })()
+
   return (
     <div className="overflow-hidden flex flex-col basis-[20vw] divide-y border-gray-600">
       <LayerView />
-      {selectedLayer?.type === 'tilelayer' ? <TilesetView /> : <ObjectView />}
+      {meta}
     </div>
   )
 }
