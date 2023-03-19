@@ -629,6 +629,7 @@ const reducer = (state: State, action: Actions): State => {
             height,
             tileWidth,
             tileHeight,
+            isStructure,
           },
         ],
       }

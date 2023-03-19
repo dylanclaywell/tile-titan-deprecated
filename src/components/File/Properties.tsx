@@ -69,7 +69,7 @@ export function Properties() {
               ...values,
             })
           } catch (error) {
-            console.log(error)
+            console.error(error)
 
             if (error instanceof z.ZodError) {
               const errors: Errors = {}
