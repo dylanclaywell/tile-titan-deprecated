@@ -224,8 +224,7 @@ export function TilemapEditor({ layers, onTileClick }: Props) {
     <div
       id="tilemap-editor"
       className="items-center flex justify-center bg-gray-200 relative h-[calc(100%-3.5rem-1px)]"
-      onClick={(e) => {
-        console.log(tool.type)
+      onClick={() => {
         if (tool.type === 'structure') {
           if (!structureRef.current) return
 
@@ -354,8 +353,6 @@ export function TilemapEditor({ layers, onTileClick }: Props) {
                         left: x,
                       }}
                       onClick={() => {
-                        console.log('beep')
-
                         dispatch({
                           type: 'REMOVE_STRUCTURE',
                           id: structure.id,
