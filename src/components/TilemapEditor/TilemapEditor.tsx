@@ -231,7 +231,7 @@ export function TilemapEditor({ layers, onTileClick }: Props) {
         )}
         ref={gridRef}
         style={{
-          zoom: zoomLevel,
+          transform: `scale(${zoomLevel})`,
           width: width * 32,
           height: height * 32,
         }}
@@ -296,6 +296,7 @@ export function TilemapEditor({ layers, onTileClick }: Props) {
               ))
             )
           )}
+          })}
       </div>
     </div>
   )

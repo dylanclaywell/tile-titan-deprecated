@@ -43,10 +43,12 @@ export function TileCursor({ anchor }: Props) {
             ? anchor.current?.getBoundingClientRect() ?? { x: 0, y: 0 }
             : anchor.getBoundingClientRect()
 
+        console.log({ offsetX, offsetY })
+
         const top =
-          tileHeight * Math.floor((clientY / zoomLevel - offsetY) / tileHeight)
+          tileHeight * Math.floor((clientY - offsetY) / zoomLevel / tileHeight)
         const left =
-          tileWidth * Math.floor((clientX / zoomLevel - offsetX) / tileWidth)
+          tileWidth * Math.floor((clientX - offsetX) / zoomLevel / tileWidth)
 
         if (isHoveringTilemapEditor) {
           cursorRef.current.classList.remove('hidden')
