@@ -4,13 +4,36 @@ import { ResourceList } from '../components/ResourceList/ResourceList'
 import { ResourceListItem } from '../components/ResourceList/ResourceListItem'
 import { EditorContext } from '../contexts/EditorContext'
 import { FileType } from '../types/file'
+import { convertFileToImageData } from '../utils/convertFileToImageData'
 
 export function StructureView() {
-  const [{ files, selectedFileId }] = useContext(EditorContext)
+  const [{ files, selectedFileId, structureRef }] = useContext(EditorContext)
+  const [selectedStructureId, setSelectedStructureId] = React.useState<
+    string | null
+  >(null)
 
   const availableStructures: FileType[] = files.filter(
     (f) => f.id !== selectedFileId && f.isStructure
   )
+
+  function updateStructureRefImage(id: string) {
+    if (!structureRef.current) return
+
+    const imageRef = structureRef.current.querySelector('img')
+    if (!imageRef) return
+
+    const structure = files.find((f) => f.id === id)
+    if (!structure) return
+
+    imageRef.src = convertFileToImageData(structure)
+    structureRef.current.style.display = 'block'
+    structureRef.current.dataset.id = structure.id
+  }
+
+  function onStructureClick(id: string) {
+    setSelectedStructureId(id)
+    updateStructureRefImage(id)
+  }
 
   return (
     <div className="flex flex-col basis-[30vw] border-gray-600 flex-grow">
@@ -25,11 +48,11 @@ export function StructureView() {
                 key={`object-${structure.id}`}
                 id={structure.id}
                 sortOrder={structure.sortOrder}
-                isSelected={false}
+                isSelected={selectedStructureId === structure.id}
                 isVisible
                 name={structure.name}
                 onClick={() => {
-                  // TODO
+                  onStructureClick(structure.id)
                 }}
                 onDragStart={() => {
                   // TODO

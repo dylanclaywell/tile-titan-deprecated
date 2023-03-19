@@ -11,6 +11,7 @@ export function Toolbar() {
   return (
     <Tools classes="grow shrink-0 border-black">
       <ToolSection>
+        <Tool name="Save" icon="floppy-disk" onClick={() => undefined} />
         <Tool
           name="New File"
           icon="file-circle-plus"

@@ -31,6 +31,10 @@ export function LayerView() {
     (layer) => layer.id === selectedLayerId
   )
 
+  const renamingLayer = currentFile?.layers.find(
+    (layer) => layer.id === renamingLayerId
+  )
+
   return (
     <div>
       <Tools>
@@ -124,7 +128,7 @@ export function LayerView() {
       <RenameLayerModal
         isOpen={Boolean(renamingLayerId)}
         onClose={() => setRenamingLayerId(null)}
-        currentLayerName={currentLayer?.name ?? ''}
+        currentLayerName={renamingLayer?.name ?? ''}
         onSubmit={(name) => {
           if (!renamingLayerId) return
 

@@ -18,6 +18,7 @@ import {
 import { generateMap } from '../utils/generateMap'
 import { ObjectType } from '../types/object'
 import { FileType } from '../types/file'
+import { StructureType } from '../types/structure'
 
 export type ToolType = 'select' | 'tile' | 'eraser' | 'grid' | 'object'
 
@@ -33,6 +34,7 @@ export type State = {
   files: FileType[]
   tool: Tool
   cursorRef: React.MutableRefObject<HTMLDivElement | null>
+  structureRef: React.MutableRefObject<HTMLDivElement | null>
   zoomLevel: number
   showGrid: boolean
   selectedLayerId: string | null
@@ -96,6 +98,12 @@ export type Actions =
       isStructure: boolean
     }
   | { type: 'DELETE_FILE'; id: string }
+  | {
+      type: 'ADD_STRUCTURE'
+      fileId: string
+      x: number
+      y: number
+    }
 
 const tileCanvas = document.createElement('canvas')
 tileCanvas.width = 32
@@ -109,6 +117,7 @@ const initialState: State = {
   },
   zoomLevel: 1,
   cursorRef: { current: null },
+  structureRef: { current: null },
   showGrid: true,
   selectedFileId: null,
   selectedLayerId: null,
@@ -120,9 +129,17 @@ export const EditorContext = createContext<
     {
       dispatch: Dispatch<Actions>
       setCursorRef: (cursorRef: HTMLDivElement | null) => void
+      setStructureRef: (structureRef: HTMLDivElement | null) => void
     }
   ]
->([initialState, { dispatch: () => null, setCursorRef: () => null }])
+>([
+  initialState,
+  {
+    dispatch: () => null,
+    setCursorRef: () => null,
+    setStructureRef: () => null,
+  },
+])
 
 const reducer = (state: State, action: Actions): State => {
   switch (action.type) {
@@ -610,7 +627,13 @@ const reducer = (state: State, action: Actions): State => {
       if (!currentFile) return state
 
       const layers = currentFile.layers.map((layer) => {
-        if (layer.type === 'tilelayer') {
+        if (
+          layer.type === 'tilelayer' &&
+          (currentFile.width !== width ||
+            currentFile.height !== height ||
+            currentFile.tileWidth !== tileWidth ||
+            currentFile.tileHeight !== tileHeight)
+        ) {
           layer.data = generateMap(width, height)
         }
 
@@ -634,6 +657,42 @@ const reducer = (state: State, action: Actions): State => {
         ],
       }
     }
+    case 'ADD_STRUCTURE': {
+      const { x, y, fileId } = action
+
+      const currentFile = state.files.find((f) => f.id === state.selectedFileId)
+      if (!currentFile) return state
+
+      const currentLayer = currentFile.layers.find(
+        (l) => l.id === state.selectedLayerId
+      )
+      if (!currentLayer) return state
+
+      if (currentLayer.type !== 'structurelayer') return state
+
+      const newStructure: StructureType = {
+        fileId,
+        x,
+        y,
+      }
+
+      return {
+        ...state,
+        files: [
+          ...state.files.filter((f) => f.id !== currentFile.id),
+          {
+            ...currentFile,
+            layers: [
+              ...currentFile.layers.filter((l) => l.id !== currentLayer.id),
+              {
+                ...currentLayer,
+                data: [...currentLayer.data, newStructure],
+              },
+            ],
+          },
+        ],
+      }
+    }
     default:
       return state
   }
@@ -642,9 +701,14 @@ const reducer = (state: State, action: Actions): State => {
 export function EditorProvider({ children }: { children: React.ReactNode }) {
   const [state, dispatch] = useReducer(reducer, initialState)
   const cursorRef = useRef<HTMLDivElement | null>(null)
+  const structureRef = useRef<HTMLDivElement | null>(null)
 
   function setCursorRef(ref: HTMLDivElement | null) {
     cursorRef.current = ref
+  }
+
+  function setStructureRef(ref: HTMLDivElement | null) {
+    structureRef.current = ref
   }
 
   useEffect(
@@ -677,10 +741,13 @@ export function EditorProvider({ children }: { children: React.ReactNode }) {
   const actions = {
     dispatch,
     setCursorRef,
+    setStructureRef,
   }
 
   return (
-    <EditorContext.Provider value={[{ ...state, cursorRef }, actions]}>
+    <EditorContext.Provider
+      value={[{ ...state, cursorRef, structureRef }, actions]}
+    >
       {children}
     </EditorContext.Provider>
   )

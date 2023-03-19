@@ -43,8 +43,6 @@ export function TileCursor({ anchor }: Props) {
             ? anchor.current?.getBoundingClientRect() ?? { x: 0, y: 0 }
             : anchor.getBoundingClientRect()
 
-        console.log({ offsetX, offsetY })
-
         const top =
           tileHeight * Math.floor((clientY - offsetY) / zoomLevel / tileHeight)
         const left =

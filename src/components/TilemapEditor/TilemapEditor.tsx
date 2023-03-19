@@ -8,6 +8,8 @@ import { clamp } from '../../utils/clamp'
 import { Tile } from './Tile'
 import { LayerType } from '../../types/layer'
 import { GridOverlay } from './GridOverlay'
+import { StructureCursor } from '../StructureCursor'
+import { convertFileToImageData } from '../../utils/convertFileToImageData'
 
 export interface Props {
   layers: LayerType[]
@@ -238,8 +240,15 @@ export function TilemapEditor({ layers, onTileClick }: Props) {
       >
         {currentLayer && (
           <>
-            <TileCursor anchor={gridRef} layer={currentLayer} />
-            <ObjectCursor anchor={gridRef} layer={currentLayer} />
+            {currentLayer.type === 'tilelayer' && (
+              <TileCursor anchor={gridRef} layer={currentLayer} />
+            )}
+            {currentLayer.type === 'objectlayer' && (
+              <ObjectCursor anchor={gridRef} layer={currentLayer} />
+            )}
+            {currentLayer.type === 'structurelayer' && (
+              <StructureCursor anchor={gridRef} />
+            )}
           </>
         )}
         <GridOverlay
@@ -251,51 +260,81 @@ export function TilemapEditor({ layers, onTileClick }: Props) {
         />
         {layers
           .sort((a, b) => (a.sortOrder < b.sortOrder ? -1 : 1))
-          .map((layer, i) =>
-            layer.type === 'tilelayer' ? (
-              <div
-                key={`layer-${layer.id}`}
-                id="tilemap-grid"
-                className={clsx('grid absolute', {
-                  'pointer-events-none': currentLayer?.id !== layer.id,
-                  hidden: !layer.isVisible,
-                })}
-                style={{
-                  gridTemplateColumns: `repeat(${width}, ${tileWidth}px)`,
-                  gridTemplateRows: `repeat(${height}, ${tileHeight}px)`,
-                  zIndex: i,
-                }}
-              >
-                {layer.data.map((row, y) => {
-                  return row.map((tile, x) => {
-                    return (
-                      <Tile
-                        key={`${x}-${y}`}
-                        x={x}
-                        y={y}
-                        tileWidth={tileWidth}
-                        tileHeight={tileHeight}
-                        showGrid={showGrid}
-                      />
-                    )
-                  })
-                })}
-              </div>
-            ) : (
-              layer.data.map((object, j) => (
-                <div
-                  key={`object-${layer.id}-${j}`}
-                  className="absolute border border-black pointer-events-none"
-                  style={{
-                    top: object.y2 > object.y ? object.y : object.y2,
-                    left: object.x2 > object.x ? object.x : object.x2,
-                    width: object.width,
-                    height: object.height,
-                  }}
-                ></div>
-              ))
-            )
-          )}
+          .map((layer, i) => {
+            switch (layer.type) {
+              case 'tilelayer':
+                return (
+                  <div
+                    key={`layer-${layer.id}`}
+                    id="tilemap-grid"
+                    className={clsx('grid absolute', {
+                      'pointer-events-none': currentLayer?.id !== layer.id,
+                      hidden: !layer.isVisible,
+                    })}
+                    style={{
+                      gridTemplateColumns: `repeat(${width}, ${tileWidth}px)`,
+                      gridTemplateRows: `repeat(${height}, ${tileHeight}px)`,
+                      zIndex: i,
+                    }}
+                  >
+                    {layer.data.map((row, y) => {
+                      return row.map((tile, x) => {
+                        return (
+                          <Tile
+                            key={`${x}-${y}`}
+                            x={x}
+                            y={y}
+                            tileWidth={tileWidth}
+                            tileHeight={tileHeight}
+                            showGrid={showGrid}
+                          />
+                        )
+                      })
+                    })}
+                  </div>
+                )
+              case 'objectlayer':
+                return layer.data.map((object, j) => (
+                  <div
+                    key={`object-${layer.id}-${j}`}
+                    className={clsx(
+                      'absolute border border-black pointer-events-none',
+                      {
+                        hidden: !layer.isVisible,
+                      }
+                    )}
+                    style={{
+                      top: object.y2 > object.y ? object.y : object.y2,
+                      left: object.x2 > object.x ? object.x : object.x2,
+                      width: object.width,
+                      height: object.height,
+                    }}
+                  ></div>
+                ))
+              case 'structurelayer':
+                return layer.data.map((structure, j) => {
+                  const { x, y, fileId } = structure
+                  const file = files.find((f) => f.id === fileId)
+
+                  if (!file) return null
+
+                  const src = convertFileToImageData(file)
+
+                  return (
+                    <img
+                      key={`structure-${j}`}
+                      className={clsx('absolute pointer-events-none', {
+                        hidden: !layer.isVisible,
+                      })}
+                      src={src}
+                      style={{
+                        top: y,
+                        left: x,
+                      }}
+                    />
+                  )
+                })
+            }
           })}
       </div>
     </div>

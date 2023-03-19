@@ -49,8 +49,8 @@ export function ObjectCursor({ anchor }: Props) {
 
         const { x: offsetX, y: offsetY } = getAnchorOffset()
 
-        const x = clientX / zoomLevel - offsetX
-        const y = clientY / zoomLevel - offsetY
+        const x = (clientX - offsetX) / zoomLevel
+        const y = (clientY - offsetY) / zoomLevel
 
         if (objectToolPreviewRef.current) {
           objectToolPreviewRef.current.style.visibility = 'visible'
@@ -86,11 +86,11 @@ export function ObjectCursor({ anchor }: Props) {
 
         const { x: offsetX, y: offsetY } = getAnchorOffset()
 
-        const x = objectToolMouseRef.current.x / zoomLevel - offsetX
-        const y = objectToolMouseRef.current.y / zoomLevel - offsetY
+        const x = (objectToolMouseRef.current.x - offsetX) / zoomLevel
+        const y = (objectToolMouseRef.current.y - offsetY) / zoomLevel
 
-        const x2 = objectToolMouseRef.current.x2 / zoomLevel - offsetX
-        const y2 = objectToolMouseRef.current.y2 / zoomLevel - offsetY
+        const x2 = (objectToolMouseRef.current.x2 - offsetX) / zoomLevel
+        const y2 = (objectToolMouseRef.current.y2 - offsetY) / zoomLevel
 
         const width = Math.abs(x2 - x)
         const height = Math.abs(y2 - y)
@@ -125,8 +125,8 @@ export function ObjectCursor({ anchor }: Props) {
 
           const { x: offsetX, y: offsetY } = getAnchorOffset()
 
-          const x = clientX / zoomLevel - offsetX
-          const y = clientY / zoomLevel - offsetY
+          const x = (clientX - offsetX) / zoomLevel
+          const y = (clientY - offsetY) / zoomLevel
 
           if (movementY < 0) {
             objectToolPreviewRef.current.style.top = `${y}px`
