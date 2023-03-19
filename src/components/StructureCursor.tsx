@@ -19,7 +19,7 @@ function isHoveringTilemapEditor(event: MouseEvent) {
 
 export function StructureCursor({ anchor }: Props) {
   const [
-    { structureRef, zoomLevel, selectedFileId, files },
+    { structureRef, zoomLevel, selectedFileId, files, tool },
     { setStructureRef, dispatch },
   ] = useContext(EditorContext)
 
@@ -61,31 +61,10 @@ export function StructureCursor({ anchor }: Props) {
         }
       }
 
-      function handleMouseDown(event: MouseEvent) {
-        if (!structureRef.current) return
-
-        if (!structureRef.current.dataset.id) return
-
-        if (!isHoveringTilemapEditor(event)) return
-
-        const { top, left } = structureRef.current.style
-        const x = parseInt(left)
-        const y = parseInt(top)
-
-        dispatch({
-          type: 'ADD_STRUCTURE',
-          fileId: structureRef.current.dataset.id,
-          x,
-          y,
-        })
-      }
-
       window.addEventListener('mousemove', handleMouseMove)
-      window.addEventListener('mousedown', handleMouseDown)
 
       return function unregisterEventListeners() {
         window.removeEventListener('mousemove', handleMouseMove)
-        window.removeEventListener('mousedown', handleMouseDown)
       }
     },
     [currentFile, zoomLevel]

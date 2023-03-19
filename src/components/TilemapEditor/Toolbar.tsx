@@ -91,9 +91,9 @@ export function Toolbar() {
             <Tool
               name="Structure"
               onClick={() =>
-                dispatch({ type: 'HANDLE_TOOL_CLICK', tool: 'object' })
+                dispatch({ type: 'HANDLE_TOOL_CLICK', tool: 'structure' })
               }
-              isSelected={tool.type === 'object'}
+              isSelected={tool.type === 'structure'}
               icon="cubes"
               isDisabled={!currentLayer}
             />

@@ -36,6 +36,7 @@ export function TilemapEditor({ layers, onTileClick }: Props) {
       showGrid,
       cursorRef,
       zoomLevel,
+      structureRef,
     },
     { dispatch },
   ] = useContext(EditorContext)
@@ -223,6 +224,25 @@ export function TilemapEditor({ layers, onTileClick }: Props) {
     <div
       id="tilemap-editor"
       className="items-center flex justify-center bg-gray-200 relative h-[calc(100%-3.5rem-1px)]"
+      onClick={(e) => {
+        console.log(tool.type)
+        if (tool.type === 'structure') {
+          if (!structureRef.current) return
+
+          if (!structureRef.current.dataset.id) return
+
+          const { top, left } = structureRef.current.style
+          const x = parseInt(left)
+          const y = parseInt(top)
+
+          dispatch({
+            type: 'ADD_STRUCTURE',
+            fileId: structureRef.current.dataset.id,
+            x,
+            y,
+          })
+        }
+      }}
     >
       <div
         className={clsx(
@@ -323,13 +343,23 @@ export function TilemapEditor({ layers, onTileClick }: Props) {
                   return (
                     <img
                       key={`structure-${j}`}
-                      className={clsx('absolute pointer-events-none', {
+                      className={clsx('absolute', {
                         hidden: !layer.isVisible,
                       })}
+                      data-type="structure"
+                      data-id={structure.id}
                       src={src}
                       style={{
                         top: y,
                         left: x,
+                      }}
+                      onClick={() => {
+                        console.log('beep')
+
+                        dispatch({
+                          type: 'REMOVE_STRUCTURE',
+                          id: structure.id,
+                        })
                       }}
                     />
                   )

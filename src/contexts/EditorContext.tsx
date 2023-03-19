@@ -20,7 +20,13 @@ import { ObjectType } from '../types/object'
 import { FileType } from '../types/file'
 import { StructureType } from '../types/structure'
 
-export type ToolType = 'select' | 'tile' | 'eraser' | 'grid' | 'object'
+export type ToolType =
+  | 'select'
+  | 'tile'
+  | 'eraser'
+  | 'grid'
+  | 'object'
+  | 'structure'
 
 export type Tool = {
   type: ToolType
@@ -103,6 +109,10 @@ export type Actions =
       fileId: string
       x: number
       y: number
+    }
+  | {
+      type: 'REMOVE_STRUCTURE'
+      id: string
     }
 
 const tileCanvas = document.createElement('canvas')
@@ -290,6 +300,16 @@ const reducer = (state: State, action: Actions): State => {
             ...state,
             showGrid: !state.showGrid,
           }
+        case 'structure':
+          return {
+            ...state,
+            tool: {
+              ...state.tool,
+              type,
+            },
+          }
+        default:
+          return state
       }
       break
     }
@@ -671,6 +691,7 @@ const reducer = (state: State, action: Actions): State => {
       if (currentLayer.type !== 'structurelayer') return state
 
       const newStructure: StructureType = {
+        id: generateId(),
         fileId,
         x,
         y,
@@ -687,6 +708,34 @@ const reducer = (state: State, action: Actions): State => {
               {
                 ...currentLayer,
                 data: [...currentLayer.data, newStructure],
+              },
+            ],
+          },
+        ],
+      }
+    }
+    case 'REMOVE_STRUCTURE': {
+      const { id } = action
+
+      const currentFile = state.files.find((f) => f.id === state.selectedFileId)
+      if (!currentFile) return state
+
+      const currentLayer = currentFile.layers.find(
+        (l) => l.id === state.selectedLayerId
+      )
+      if (!currentLayer || currentLayer.type !== 'structurelayer') return state
+
+      return {
+        ...state,
+        files: [
+          ...state.files.filter((f) => f.id !== currentFile.id),
+          {
+            ...currentFile,
+            layers: [
+              ...currentFile.layers.filter((l) => l.id !== currentLayer.id),
+              {
+                ...currentLayer,
+                data: [...currentLayer.data.filter((s) => s.id !== id)],
               },
             ],
           },
