@@ -9,21 +9,14 @@ export interface Props {
   anchor: (HTMLElement | null) | MutableRefObject<HTMLDivElement | null>
 }
 
-export function TileCursor({ anchor }: Props) {
-  const [
-    { cursorRef, tool, zoomLevel, selectedFileId, selectedLayerId, files },
-    { setCursorRef },
-  ] = useContext(EditorContext)
+export function Cursor() {
+  const [{ tool, selectedFileId, files }, { setCursorRef }] =
+    useContext(EditorContext)
 
   const currentFile = useMemo(
     () => files.find((file) => file.id === selectedFileId),
     [selectedFileId]
   )
-
-  const { tileWidth, tileHeight } = currentFile ?? {
-    tileWidth: 0,
-    tileHeight: 0,
-  }
 
   return (
     <div
@@ -35,8 +28,18 @@ export function TileCursor({ anchor }: Props) {
         }
       )}
       ref={(el) => setCursorRef(el)}
+      style={{
+        width: tool.width,
+        height: tool.height,
+      }}
     >
-      <img className="absolute top-0 left-0" src={tool.canvas.toDataURL()} />
+      <img
+        className="absolute top-0 left-0"
+        src={tool.src}
+        alt="cursor"
+        width={tool.width}
+        height={tool.height}
+      />
     </div>
   )
 }

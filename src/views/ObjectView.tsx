@@ -19,7 +19,7 @@ export function ObjectView() {
     (layer) => layer.id === selectedLayerId
   )
 
-  if (!currentLayer || currentLayer.type !== 'objectlayer') return null
+  if (!currentLayer || currentLayer.type !== 'object') return null
 
   const selectedObject = currentLayer.data.find(
     (object) => object.id === selectedObjectId

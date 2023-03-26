@@ -1,15 +1,14 @@
-import React, { useContext, useEffect, useMemo, useRef, useState } from 'react'
+import React, { useContext, useMemo, useRef, useState } from 'react'
 import clsx from 'clsx'
 
 import { EditorContext } from '../../contexts/EditorContext'
-import { TileCursor } from './TileCursor'
-import { ObjectCursor } from './ObjectCursor'
 import { clamp } from '../../utils/clamp'
 import { Tile } from './Tile'
 import { LayerType } from '../../types/layer'
 import { GridOverlay } from './GridOverlay'
-import { StructureCursor } from '../StructureCursor'
 import { convertFileToImageData } from '../../utils/convertFileToImageData'
+import { tools } from '../../tools'
+import { Cursor } from './Cursor'
 
 export interface Props {
   layers: LayerType[]
@@ -27,6 +26,10 @@ export interface Props {
 
 export function TilemapEditor({ layers, onTileClick }: Props) {
   const gridRef = useRef<HTMLDivElement | null>(null)
+  const [previousPosition, setPreviousPosition] = useState({
+    x: 0,
+    y: 0,
+  })
   const [
     {
       files,
@@ -36,7 +39,6 @@ export function TilemapEditor({ layers, onTileClick }: Props) {
       showGrid,
       cursorRef,
       zoomLevel,
-      structureRef,
     },
     { dispatch },
   ] = useContext(EditorContext)
@@ -44,12 +46,6 @@ export function TilemapEditor({ layers, onTileClick }: Props) {
     leftMouseButtonIsDown: false,
     middleMouseButtonIsDown: false,
   })
-  const mouseStateRef = useRef(mouseState)
-
-  function setMouseStateRef(state: Partial<typeof mouseState>) {
-    mouseStateRef.current = { ...mouseStateRef.current, ...state }
-    setMouseState((currentState) => ({ ...currentState, ...state }))
-  }
 
   const currentFile = files.find((file) => file.id === selectedFileId)
   const currentLayerId = useMemo(() => selectedLayerId, [selectedLayerId])
@@ -65,178 +61,160 @@ export function TilemapEditor({ layers, onTileClick }: Props) {
     tileHeight: 0,
   }
 
-  useEffect(
-    function registerEventListeners() {
-      let prevX = 0
-      let prevY = 0
+  function handleLeftMouseButtonClick(
+    e: React.MouseEvent<HTMLDivElement, MouseEvent>
+  ) {
+    if (
+      e.target instanceof HTMLDivElement &&
+      e.target.dataset.type === 'tile'
+    ) {
+      const img = e.target.querySelector('img')
 
-      function handleMouseDown(e: MouseEvent) {
-        if (e.button === 0) {
-          setMouseStateRef({
-            leftMouseButtonIsDown: true,
+      if (!img || !currentLayerId) return
+
+      const cursorX = Math.ceil((cursorRef.current?.offsetLeft ?? 0) / 32)
+      const cursorY = Math.ceil((cursorRef.current?.offsetTop ?? 0) / 32)
+
+      if (
+        cursorX < 0 ||
+        cursorX > width - 1 ||
+        cursorY < 0 ||
+        cursorY > height - 1
+      )
+        return
+
+      if (tool.type === 'tile') {
+        img.src = tool.src
+
+        onTileClick({
+          layerId: currentLayerId,
+          tileX: cursorX,
+          tileY: cursorY,
+          tilesetX: tool.tilesetX ?? -1,
+          tilesetY: tool.tilesetY ?? -1,
+          tilesetName: tool.tilesetName ?? 'unknown',
+          tileData: img.src,
+        })
+      } else if (tool.type === 'eraser') {
+        onTileClick({
+          layerId: currentLayerId,
+          tileX: cursorX,
+          tileY: cursorY,
+          tilesetX: -1,
+          tilesetY: -1,
+          tilesetName: '',
+          tileData: '',
+        })
+
+        img.src = ''
+      }
+    }
+  }
+
+  return (
+    <div
+      id="tilemap-editor"
+      onWheel={(e) => {
+        const delta = e.deltaY
+
+        if (delta > 0) {
+          dispatch({
+            type: 'SET_ZOOM_LEVEL',
+            level: zoomLevel - 0.1 * zoomLevel,
           })
-        } else if (e.button === 1) {
-          prevX = e.x
-          prevY = e.y
-          setMouseStateRef({
-            middleMouseButtonIsDown: true,
+        } else if (delta < 0) {
+          dispatch({
+            type: 'SET_ZOOM_LEVEL',
+            level: zoomLevel + 0.1 * zoomLevel,
           })
         }
-      }
+      }}
+      onMouseMove={(e) => {
+        if (!currentLayer) return
 
-      function handleMouseUp(e: MouseEvent) {
-        if (e.button === 0) {
-          setMouseStateRef({
-            leftMouseButtonIsDown: false,
-          })
-        } else if (e.button === 1) {
-          setMouseStateRef({
-            middleMouseButtonIsDown: false,
+        if (gridRef.current && mouseState.middleMouseButtonIsDown) {
+          const top = Number(
+            gridRef.current.style.top?.split('px')?.[0] ||
+              gridRef.current.offsetTop
+          )
+          const left = Number(
+            gridRef.current.style.left?.split('px')?.[0] ||
+              gridRef.current.offsetLeft
+          )
+
+          const deltaX = -clamp(previousPosition.x - e.clientX, -10, 10)
+          const deltaY = -clamp(previousPosition.y - e.clientY, -10, 10)
+
+          gridRef.current.style.left = `${left + deltaX}px`
+          gridRef.current.style.top = `${top + deltaY}px`
+
+          setPreviousPosition({
+            x: e.clientX ?? 0,
+            y: e.clientY ?? 0,
           })
         }
-      }
 
-      function handleMouseMove(e: MouseEvent) {
-        const { leftMouseButtonIsDown, middleMouseButtonIsDown } =
-          mouseStateRef.current
+        tools[tool.type][currentLayer.type]?.move?.({
+          e,
+          anchor: gridRef,
+          cursorRef,
+          tileHeight,
+          tileWidth,
+          zoomLevel,
+        })
 
         if (
-          leftMouseButtonIsDown &&
+          mouseState.leftMouseButtonIsDown &&
           e.target instanceof HTMLDivElement &&
           e.target.dataset.type === 'tile'
         ) {
           handleLeftMouseButtonClick(e)
         }
-
-        if (middleMouseButtonIsDown) {
-          if (gridRef.current) {
-            const top = Number(
-              gridRef.current.style.top?.split('px')?.[0] ||
-                gridRef.current.offsetTop
-            )
-            const left = Number(
-              gridRef.current.style.left?.split('px')?.[0] ||
-                gridRef.current.offsetLeft
-            )
-
-            const deltaX = -clamp(prevX - e.x, -10, 10)
-            const deltaY = -clamp(prevY - e.y, -10, 10)
-
-            gridRef.current.style.left = `${left + deltaX}px`
-            gridRef.current.style.top = `${top + deltaY}px`
-
-            prevX = e.x
-            prevY = e.y
-          }
-        }
-      }
-
-      function handleLeftMouseButtonClick(e: MouseEvent) {
-        if (
-          e.target instanceof HTMLDivElement &&
-          e.target.dataset.type === 'tile'
-        ) {
-          const img = e.target.querySelector('img')
-
-          if (!img || !currentLayerId) return
-
-          const cursorX = Math.ceil((cursorRef.current?.offsetLeft ?? 0) / 32)
-          const cursorY = Math.ceil((cursorRef.current?.offsetTop ?? 0) / 32)
-
-          if (
-            cursorX < 0 ||
-            cursorX > width - 1 ||
-            cursorY < 0 ||
-            cursorY > height - 1
-          )
-            return
-
-          if (tool.type === 'tile') {
-            img.src = tool.canvas.toDataURL()
-
-            onTileClick({
-              layerId: currentLayerId,
-              tileX: cursorX,
-              tileY: cursorY,
-              tilesetX: tool.tilesetX ?? -1,
-              tilesetY: tool.tilesetY ?? -1,
-              tilesetName: tool.tilesetName ?? 'unknown',
-              tileData: img.src,
-            })
-          } else if (tool.type === 'eraser') {
-            onTileClick({
-              layerId: currentLayerId,
-              tileX: cursorX,
-              tileY: cursorY,
-              tilesetX: -1,
-              tilesetY: -1,
-              tilesetName: '',
-              tileData: '',
-            })
-
-            img.src = ''
-          }
-        }
-      }
-
-      function handleMouseWheel(e: WheelEvent) {
-        if (
-          e.target instanceof HTMLDivElement &&
-          (e.target?.id === 'tilemap-editor' ||
-            e.target?.id === 'tilemap-grid' ||
-            e.target.dataset?.['type'] === 'tile' ||
-            e.target.parentElement?.id === 'tilemap-editor')
-        ) {
-          const delta = e.deltaY
-
-          if (delta > 0) {
-            dispatch({
-              type: 'SET_ZOOM_LEVEL',
-              level: zoomLevel - 0.1 * zoomLevel,
-            })
-          } else if (delta < 0) {
-            dispatch({
-              type: 'SET_ZOOM_LEVEL',
-              level: zoomLevel + 0.1 * zoomLevel,
-            })
-          }
-        }
-      }
-
-      document.addEventListener('click', handleLeftMouseButtonClick)
-      document.addEventListener('mousedown', handleMouseDown)
-      document.addEventListener('mouseup', handleMouseUp)
-      document.addEventListener('mousemove', handleMouseMove)
-      document.addEventListener('wheel', handleMouseWheel)
-
-      return () => {
-        document.removeEventListener('click', handleLeftMouseButtonClick)
-        document.removeEventListener('mousedown', handleMouseDown)
-        document.removeEventListener('mouseup', handleMouseUp)
-        document.removeEventListener('mousemove', handleMouseMove)
-        document.removeEventListener('wheel', handleMouseWheel)
-      }
-    },
-    [tool, zoomLevel, currentLayerId, width, height]
-  )
-
-  return (
-    <div
-      id="tilemap-editor"
+      }}
       className="items-center flex justify-center bg-gray-200 relative h-[calc(100%-3.5rem-1px)]"
-      onClick={() => {
+      onMouseDown={(e) => {
+        if (e.button === 0) {
+          setMouseState((state) => ({
+            ...state,
+            leftMouseButtonIsDown: true,
+          }))
+        } else if (e.button === 1) {
+          setPreviousPosition({
+            x: e.clientX ?? 0,
+            y: e.clientY ?? 0,
+          })
+          setMouseState((state) => ({
+            ...state,
+            middleMouseButtonIsDown: true,
+          }))
+        }
+      }}
+      onMouseUp={(e) => {
+        if (e.button === 0) {
+          setMouseState((state) => ({
+            ...state,
+            leftMouseButtonIsDown: false,
+          }))
+        } else if (e.button === 1) {
+          setMouseState((state) => ({
+            ...state,
+            middleMouseButtonIsDown: false,
+          }))
+        }
+      }}
+      onClick={(e) => {
         if (tool.type === 'structure') {
-          if (!structureRef.current) return
+          if (!cursorRef.current) return
 
-          if (!structureRef.current.dataset.id) return
+          if (!cursorRef.current.dataset.id) return
 
-          const { top, left } = structureRef.current.style
+          const { top, left } = cursorRef.current.style
           const x = parseInt(left)
           const y = parseInt(top)
 
           dispatch({
             type: 'ADD_STRUCTURE',
-            fileId: structureRef.current.dataset.id,
+            fileId: cursorRef.current.dataset.id,
             x,
             y,
           })
@@ -257,19 +235,7 @@ export function TilemapEditor({ layers, onTileClick }: Props) {
           height: height * 32,
         }}
       >
-        {currentLayer && (
-          <>
-            {currentLayer.type === 'tilelayer' && (
-              <TileCursor anchor={gridRef} layer={currentLayer} />
-            )}
-            {currentLayer.type === 'objectlayer' && (
-              <ObjectCursor anchor={gridRef} layer={currentLayer} />
-            )}
-            {currentLayer.type === 'structurelayer' && (
-              <StructureCursor anchor={gridRef} />
-            )}
-          </>
-        )}
+        {currentLayer && <Cursor />}
         <GridOverlay
           tileHeight={tileHeight}
           tileWidth={tileWidth}
@@ -281,7 +247,7 @@ export function TilemapEditor({ layers, onTileClick }: Props) {
           .sort((a, b) => (a.sortOrder < b.sortOrder ? -1 : 1))
           .map((layer, i) => {
             switch (layer.type) {
-              case 'tilelayer':
+              case 'tile':
                 return (
                   <div
                     key={`layer-${layer.id}`}
@@ -312,7 +278,7 @@ export function TilemapEditor({ layers, onTileClick }: Props) {
                     })}
                   </div>
                 )
-              case 'objectlayer':
+              case 'object':
                 return layer.data.map((object, j) => (
                   <div
                     key={`object-${layer.id}-${j}`}
@@ -330,7 +296,7 @@ export function TilemapEditor({ layers, onTileClick }: Props) {
                     }}
                   ></div>
                 ))
-              case 'structurelayer':
+              case 'structure':
                 return layer.data.map((structure, j) => {
                   const { x, y, fileId } = structure
                   const file = files.find((f) => f.id === fileId)
@@ -353,10 +319,12 @@ export function TilemapEditor({ layers, onTileClick }: Props) {
                         left: x,
                       }}
                       onClick={() => {
-                        dispatch({
-                          type: 'REMOVE_STRUCTURE',
-                          id: structure.id,
-                        })
+                        if (tool.type === 'eraser') {
+                          dispatch({
+                            type: 'REMOVE_STRUCTURE',
+                            id: structure.id,
+                          })
+                        }
                       }}
                     />
                   )

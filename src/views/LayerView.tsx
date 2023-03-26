@@ -11,11 +11,11 @@ import { ResourceList } from '../components/ResourceList/ResourceList'
 
 function getLayerIcon(layerType: Type) {
   switch (layerType) {
-    case 'tilelayer':
+    case 'tile':
       return 'fa-image'
-    case 'objectlayer':
+    case 'object':
       return 'fa-object-group'
-    case 'structurelayer':
+    case 'structure':
       return 'fa-cubes'
   }
 }
@@ -40,24 +40,20 @@ export function LayerView() {
       <Tools>
         <ToolSection>
           <Tool
-            onClick={() =>
-              dispatch({ type: 'ADD_LAYER', layerType: 'tilelayer' })
-            }
+            onClick={() => dispatch({ type: 'ADD_LAYER', layerType: 'tile' })}
             icon="image"
             name="Add tile layer"
             isDisabled={!currentFile}
           />
           <Tool
-            onClick={() =>
-              dispatch({ type: 'ADD_LAYER', layerType: 'objectlayer' })
-            }
+            onClick={() => dispatch({ type: 'ADD_LAYER', layerType: 'object' })}
             icon="object-group"
             name="Add object layer"
             isDisabled={!currentFile}
           />
           <Tool
             onClick={() =>
-              dispatch({ type: 'ADD_LAYER', layerType: 'structurelayer' })
+              dispatch({ type: 'ADD_LAYER', layerType: 'structure' })
             }
             icon="cubes"
             name="Add structure layer"

@@ -2,7 +2,6 @@ import React, { useContext } from 'react'
 import clsx from 'clsx'
 
 import { TilemapEditor } from '../components/TilemapEditor/TilemapEditor'
-import { SettingsModal } from '../components/TilemapEditor/SettingsModal'
 import { EditorContext } from '../contexts/EditorContext'
 import { Toolbar } from '../components/TilemapEditor/Toolbar'
 
@@ -30,14 +29,6 @@ export function TilemapEditorView() {
           dispatch({ type: 'UPDATE_TILEMAP', ...args })
         }}
       />
-      {currentFile !== undefined && (
-        <SettingsModal
-          isOpen={showSettings}
-          onClose={() => {
-            setShowSettings(false)
-          }}
-        />
-      )}
     </div>
   )
 }

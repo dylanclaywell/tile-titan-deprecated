@@ -21,11 +21,11 @@ export function MetadataView() {
     if (!selectedLayer) return
 
     switch (selectedLayer.type) {
-      case 'tilelayer':
+      case 'tile':
         return <TilesetView />
-      case 'objectlayer':
+      case 'object':
         return <ObjectView />
-      case 'structurelayer':
+      case 'structure':
         return <StructureView />
     }
   })()

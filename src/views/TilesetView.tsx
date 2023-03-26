@@ -12,6 +12,7 @@ import { SelectField } from '../components/SelectField'
 import { ToolSection } from '../components/Tools/ToolSection'
 import { Tools } from '../components/Tools/Tools'
 import { TilesetSettingsModal } from '../components/TilesetSettingsModal'
+import { LayerType } from '../tools'
 
 function TilesetViewBase({
   updateToolCanvas,
@@ -23,7 +24,7 @@ function TilesetViewBase({
     tilesetY: number
     tilesetName: string
   }) => void
-  layerType: 'tilelayer' | 'objectlayer'
+  layerType: LayerType
 }) {
   const [tilesetSettingsIsOpen, setTilesetSettingsIsOpen] = useState(false)
   const [tilesets, setTilesets] = useState<TilesetType[]>([])
@@ -78,7 +79,7 @@ function TilesetViewBase({
   ) {
     e.preventDefault()
 
-    if (layerType === 'objectlayer') {
+    if (layerType === 'object') {
       return
     }
 
@@ -206,10 +207,16 @@ export function TilesetView() {
       updateToolCanvas={(args) => {
         dispatch({
           type: 'UPDATE_CANVAS',
-          ...args,
+          src: args.canvas.toDataURL(),
+          tilesetX: args.tilesetX,
+          tilesetY: args.tilesetY,
+          tilesetName: args.tilesetName,
+          width: args.canvas.width,
+          height: args.canvas.height,
+          toolType: 'tile',
         })
       }}
-      layerType={layer?.type ?? 'tilelayer'}
+      layerType={layer?.type ?? 'tile'}
     />
   )
 }

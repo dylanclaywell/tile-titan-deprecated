@@ -30,10 +30,12 @@ export type ToolType =
 
 export type Tool = {
   type: ToolType
-  canvas: HTMLCanvasElement
+  src: string
   tilesetX?: number
   tilesetY?: number
   tilesetName?: string
+  width: number
+  height: number
 }
 
 export type State = {
@@ -50,10 +52,21 @@ export type State = {
 export type Actions =
   | {
       type: 'UPDATE_CANVAS'
-      canvas: HTMLCanvasElement
+      src: string
       tilesetX: number
       tilesetY: number
-      tilesetName: string
+      tilesetName?: string
+      width: number
+      height: number
+      toolType: ToolType
+    }
+  | {
+      type: 'UPDATE_CANVAS'
+      src: string
+      fileId: string
+      width: number
+      height: number
+      toolType: ToolType
     }
   | {
       type: 'UPDATE_TILEMAP'
@@ -115,15 +128,13 @@ export type Actions =
       id: string
     }
 
-const tileCanvas = document.createElement('canvas')
-tileCanvas.width = 32
-tileCanvas.height = 32
-
 const initialState: State = {
   files: [],
   tool: {
     type: 'tile',
-    canvas: tileCanvas,
+    src: '',
+    width: 32,
+    height: 32,
   },
   zoomLevel: 1,
   cursorRef: { current: null },
@@ -154,16 +165,12 @@ export const EditorContext = createContext<
 const reducer = (state: State, action: Actions): State => {
   switch (action.type) {
     case 'UPDATE_CANVAS': {
-      const { canvas, tilesetX, tilesetY, tilesetName } = action
       return {
         ...state,
         tool: {
           ...state.tool,
-          type: 'tile',
-          canvas,
-          tilesetX,
-          tilesetY,
-          tilesetName,
+          ...action,
+          type: action.toolType,
         },
       }
     }
@@ -189,7 +196,7 @@ const reducer = (state: State, action: Actions): State => {
 
       if (!selectedLayer) return state
 
-      if (selectedLayer.type !== 'tilelayer') return state
+      if (selectedLayer.type !== 'tile') return state
 
       const newTilemap = selectedLayer.data
       newTilemap[tileY][tileX] = {
@@ -200,7 +207,7 @@ const reducer = (state: State, action: Actions): State => {
       }
 
       const newLayers: LayerType[] = selectedFile.layers.map((layer) => {
-        return layer.id === selectedLayer.id && layer.type === 'tilelayer'
+        return layer.id === selectedLayer.id && layer.type === 'tile'
           ? {
               ...layer,
               data: newTilemap,
@@ -287,9 +294,6 @@ const reducer = (state: State, action: Actions): State => {
             ...state.tool,
             type,
           }
-          const canvas = tool.canvas
-          const context = canvas.getContext('2d')
-          context?.clearRect(0, 0, canvas.width, canvas.height)
           return {
             ...state,
             tool,
@@ -391,7 +395,7 @@ const reducer = (state: State, action: Actions): State => {
       const sortOrder = selectedFile.layers.length + 1
 
       switch (layerType) {
-        case 'tilelayer': {
+        case 'tile': {
           const layer: TileLayerType = {
             id: generateId(),
             type: layerType,
@@ -411,7 +415,7 @@ const reducer = (state: State, action: Actions): State => {
             ],
           }
         }
-        case 'objectlayer': {
+        case 'object': {
           const layer: ObjectLayerType = {
             id: generateId(),
             type: layerType,
@@ -431,7 +435,7 @@ const reducer = (state: State, action: Actions): State => {
             ],
           }
         }
-        case 'structurelayer': {
+        case 'structure': {
           const layer: StructureLayerType = {
             id: generateId(),
             type: layerType,
@@ -468,7 +472,7 @@ const reducer = (state: State, action: Actions): State => {
         (layer) => layer.id === state.selectedLayerId
       )
 
-      if (!selectedLayer || selectedLayer.type !== 'objectlayer') return state
+      if (!selectedLayer || selectedLayer.type !== 'object') return state
 
       const newObject: ObjectType = {
         id: generateId(),
@@ -484,7 +488,7 @@ const reducer = (state: State, action: Actions): State => {
       }
 
       const newLayers = selectedFile.layers.map((layer) => {
-        return layer.id === selectedLayer.id && layer.type === 'objectlayer'
+        return layer.id === selectedLayer.id && layer.type === 'object'
           ? {
               ...layer,
               data: [...layer.data, newObject],
@@ -579,10 +583,10 @@ const reducer = (state: State, action: Actions): State => {
 
       if (!selectedLayer) return state
 
-      if (selectedLayer.type === 'tilelayer') {
+      if (selectedLayer.type === 'tile') {
         const newTilemap = generateMap(width, height)
         const newLayers: LayerType[] = selectedFile.layers.map((layer) => {
-          return layer.id === selectedLayer.id && layer.type === 'tilelayer'
+          return layer.id === selectedLayer.id && layer.type === 'tile'
             ? {
                 ...layer,
                 data: newTilemap,
@@ -648,7 +652,7 @@ const reducer = (state: State, action: Actions): State => {
 
       const layers = currentFile.layers.map((layer) => {
         if (
-          layer.type === 'tilelayer' &&
+          layer.type === 'tile' &&
           (currentFile.width !== width ||
             currentFile.height !== height ||
             currentFile.tileWidth !== tileWidth ||
@@ -688,7 +692,7 @@ const reducer = (state: State, action: Actions): State => {
       )
       if (!currentLayer) return state
 
-      if (currentLayer.type !== 'structurelayer') return state
+      if (currentLayer.type !== 'structure') return state
 
       const newStructure: StructureType = {
         id: generateId(),
@@ -723,7 +727,7 @@ const reducer = (state: State, action: Actions): State => {
       const currentLayer = currentFile.layers.find(
         (l) => l.id === state.selectedLayerId
       )
-      if (!currentLayer || currentLayer.type !== 'structurelayer') return state
+      if (!currentLayer || currentLayer.type !== 'structure') return state
 
       return {
         ...state,
@@ -770,7 +774,7 @@ export function EditorProvider({ children }: { children: React.ReactNode }) {
 
       const tileImages = document.querySelectorAll('.tile')
       const layers = selectedFile.layers.filter(
-        (l): l is TileLayerType => l.type === 'tilelayer'
+        (l): l is TileLayerType => l.type === 'tile'
       )
 
       layers.forEach((layer) => {

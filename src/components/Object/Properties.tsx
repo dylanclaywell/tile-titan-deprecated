@@ -54,7 +54,7 @@ export function Properties({ object }: Props) {
 
   useKey('Enter', onEnter)
 
-  if (!currentLayer || currentLayer.type !== 'objectlayer') return null
+  if (!currentLayer || currentLayer.type !== 'object') return null
 
   return (
     <div className="p-2 border-t border-gray-300 space-y-2 basis-1/2 flex-1 overflow-y-auto">

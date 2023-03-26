@@ -7,7 +7,7 @@ import { LayerType } from '../../types/layer'
 
 export interface Props {
   id: string
-  type: 'tilelayer' | 'objectlayer'
+  type: 'tile' | 'object'
   sortOrder: number
   isSelected: boolean
   isVisible: boolean
@@ -81,8 +81,8 @@ export function Layer({
       <button onClick={onClick} className="flex-grow pl-2 text-left space-x-2">
         <i
           className={clsx('fa-solid text-gray-600', {
-            'fa-image': type === 'tilelayer',
-            'fa-object-group': type === 'objectlayer',
+            'fa-image': type === 'tile',
+            'fa-object-group': type === 'object',
           })}
         ></i>
         <span>{name}</span>

@@ -10,7 +10,7 @@ export function convertFileToImageData(file: FileType) {
   const context = canvas.getContext('2d')
 
   for (const layer of file.layers) {
-    if (layer.type === 'tilelayer') {
+    if (layer.type === 'tile') {
       for (let y = 0; y < layer.data.length; y++) {
         const row = layer.data[y]
         for (let x = 0; x < row.length; x++) {

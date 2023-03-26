@@ -7,7 +7,8 @@ import { FileType } from '../types/file'
 import { convertFileToImageData } from '../utils/convertFileToImageData'
 
 export function StructureView() {
-  const [{ files, selectedFileId, structureRef }] = useContext(EditorContext)
+  const [{ files, selectedFileId, cursorRef }, { dispatch }] =
+    useContext(EditorContext)
   const [selectedStructureId, setSelectedStructureId] = React.useState<
     string | null
   >(null)
@@ -17,17 +18,26 @@ export function StructureView() {
   )
 
   function updateStructureRefImage(id: string) {
-    if (!structureRef.current) return
+    if (!cursorRef.current) return
 
-    const imageRef = structureRef.current.querySelector('img')
+    const imageRef = cursorRef.current.querySelector('img')
     if (!imageRef) return
 
     const structure = files.find((f) => f.id === id)
     if (!structure) return
 
     imageRef.src = convertFileToImageData(structure)
-    structureRef.current.style.display = 'block'
-    structureRef.current.dataset.id = structure.id
+
+    dispatch({
+      type: 'UPDATE_CANVAS',
+      src: convertFileToImageData(structure),
+      fileId: structure.id,
+      width: structure.width * structure.tileWidth,
+      height: structure.height * structure.tileHeight,
+      toolType: 'structure',
+    })
+    cursorRef.current.style.display = 'block'
+    cursorRef.current.dataset.id = structure.id
   }
 
   function onStructureClick(id: string) {

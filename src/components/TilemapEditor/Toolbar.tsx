@@ -21,7 +21,7 @@ export function Toolbar() {
 
   const tools = (() => {
     switch (layerType) {
-      case 'tilelayer':
+      case 'tile':
         return (
           <>
             <Tool
@@ -44,7 +44,7 @@ export function Toolbar() {
             />
           </>
         )
-      case 'objectlayer':
+      case 'object':
         return (
           <>
             <Tool
@@ -76,7 +76,7 @@ export function Toolbar() {
             />
           </>
         )
-      case 'structurelayer':
+      case 'structure':
         return (
           <>
             <Tool
