@@ -11,7 +11,7 @@ export type LayerType = 'tile' | 'object' | 'structure'
 export type MoveArgs = {
   e: React.MouseEvent<HTMLDivElement, MouseEvent>
   anchor: HTMLElement | React.MutableRefObject<HTMLDivElement | null>
-  cursorRef: React.MutableRefObject<HTMLDivElement | null>
+  cursor: HTMLDivElement | null
   tileHeight: number
   tileWidth: number
   zoomLevel: number
@@ -33,7 +33,7 @@ export type Tools = Record<
 function defaultMove({
   e,
   anchor,
-  cursorRef,
+  cursor,
   tileHeight,
   tileWidth,
   zoomLevel,
@@ -42,7 +42,7 @@ function defaultMove({
 
   if (!(e.target instanceof HTMLDivElement)) return
 
-  if (!cursorRef.current || !anchor) return
+  if (!cursor || !anchor) return
 
   const { x: offsetX, y: offsetY } =
     'current' in anchor
@@ -54,9 +54,9 @@ function defaultMove({
   const left =
     tileWidth * Math.floor((clientX - offsetX) / zoomLevel / tileWidth)
 
-  cursorRef.current.classList.remove('hidden')
-  cursorRef.current.style.top = `${top}px`
-  cursorRef.current.style.left = `${left}px`
+  cursor.classList.remove('hidden')
+  cursor.style.top = `${top}px`
+  cursor.style.left = `${left}px`
 }
 
 export const tools: Tools = {

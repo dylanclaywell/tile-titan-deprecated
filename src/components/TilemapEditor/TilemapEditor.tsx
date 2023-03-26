@@ -26,6 +26,10 @@ export interface Props {
 
 export function TilemapEditor({ layers, onTileClick }: Props) {
   const gridRef = useRef<HTMLDivElement | null>(null)
+  const [gridPosition, setGridPosition] = useState({
+    x: 0,
+    y: 0,
+  })
   const [previousPosition, setPreviousPosition] = useState({
     x: 0,
     y: 0,
@@ -130,34 +134,28 @@ export function TilemapEditor({ layers, onTileClick }: Props) {
         }
       }}
       onMouseMove={(e) => {
-        if (!currentLayer) return
-
-        if (gridRef.current && mouseState.middleMouseButtonIsDown) {
-          const top = Number(
-            gridRef.current.style.top?.split('px')?.[0] ||
-              gridRef.current.offsetTop
-          )
-          const left = Number(
-            gridRef.current.style.left?.split('px')?.[0] ||
-              gridRef.current.offsetLeft
-          )
+        if (mouseState.middleMouseButtonIsDown) {
+          const { x, y } = gridPosition
 
           const deltaX = -clamp(previousPosition.x - e.clientX, -10, 10)
           const deltaY = -clamp(previousPosition.y - e.clientY, -10, 10)
 
-          gridRef.current.style.left = `${left + deltaX}px`
-          gridRef.current.style.top = `${top + deltaY}px`
-
+          setGridPosition({
+            x: x + deltaX,
+            y: y + deltaY,
+          })
           setPreviousPosition({
             x: e.clientX ?? 0,
             y: e.clientY ?? 0,
           })
         }
 
+        if (!currentLayer) return
+
         tools[tool.type][currentLayer.type]?.move?.({
           e,
           anchor: gridRef,
-          cursorRef,
+          cursor: cursorRef.current,
           tileHeight,
           tileWidth,
           zoomLevel,
@@ -202,7 +200,7 @@ export function TilemapEditor({ layers, onTileClick }: Props) {
           }))
         }
       }}
-      onClick={(e) => {
+      onClick={() => {
         if (tool.type === 'structure') {
           if (!cursorRef.current) return
 
@@ -233,6 +231,8 @@ export function TilemapEditor({ layers, onTileClick }: Props) {
           transform: `scale(${zoomLevel})`,
           width: width * 32,
           height: height * 32,
+          top: gridPosition.y,
+          left: gridPosition.x,
         }}
       >
         {currentLayer && <Cursor />}
