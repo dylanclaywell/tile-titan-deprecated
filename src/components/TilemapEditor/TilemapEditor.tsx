@@ -7,8 +7,9 @@ import { Tile } from './Tile'
 import { LayerType } from '../../types/layer'
 import { GridOverlay } from './GridOverlay'
 import { convertFileToImageData } from '../../utils/convertFileToImageData'
-import { tools } from '../../tools'
+import { addStructure, addTile, moveCursor, removeTile } from '../../tools'
 import { Cursor } from './Cursor'
+import { Structure } from '../Structure/Structure'
 
 export interface Props {
   layers: LayerType[]
@@ -52,10 +53,9 @@ export function TilemapEditor({ layers, onTileClick }: Props) {
   })
 
   const currentFile = files.find((file) => file.id === selectedFileId)
-  const currentLayerId = useMemo(() => selectedLayerId, [selectedLayerId])
   const currentLayer = useMemo(
-    () => currentFile?.layers.find((layer) => layer.id === currentLayerId),
-    [currentFile, currentLayerId]
+    () => currentFile?.layers.find((layer) => layer.id === selectedLayerId),
+    [currentFile, selectedLayerId]
   )
 
   const { width, height, tileWidth, tileHeight } = currentFile || {
@@ -65,52 +65,39 @@ export function TilemapEditor({ layers, onTileClick }: Props) {
     tileHeight: 0,
   }
 
-  function handleLeftMouseButtonClick(
-    e: React.MouseEvent<HTMLDivElement, MouseEvent>
+  function handleLeftMouseButtonWithDrag(
+    e:
+      | React.MouseEvent<HTMLDivElement, MouseEvent>
+      | React.MouseEvent<HTMLImageElement, MouseEvent>
   ) {
-    if (
-      e.target instanceof HTMLDivElement &&
-      e.target.dataset.type === 'tile'
-    ) {
-      const img = e.target.querySelector('img')
+    const cursor = cursorRef.current
+    if (!currentLayer || !cursor) return
 
-      if (!img || !currentLayerId) return
-
-      const cursorX = Math.ceil((cursorRef.current?.offsetLeft ?? 0) / 32)
-      const cursorY = Math.ceil((cursorRef.current?.offsetTop ?? 0) / 32)
-
-      if (
-        cursorX < 0 ||
-        cursorX > width - 1 ||
-        cursorY < 0 ||
-        cursorY > height - 1
-      )
-        return
-
-      if (tool.type === 'tile') {
-        img.src = tool.src
-
-        onTileClick({
-          layerId: currentLayerId,
-          tileX: cursorX,
-          tileY: cursorY,
-          tilesetX: tool.tilesetX ?? -1,
-          tilesetY: tool.tilesetY ?? -1,
-          tilesetName: tool.tilesetName ?? 'unknown',
-          tileData: img.src,
+    if (tool.type === 'tile') {
+      addTile({
+        e,
+        currentLayerId: currentLayer.id,
+        cursor,
+        onTileClick,
+        tool,
+        tileHeight,
+        tilemapHeight: height,
+        tilemapWidth: width,
+        tileWidth,
+      })
+    } else if (tool.type === 'eraser') {
+      if (currentLayer.type === 'tile') {
+        removeTile({
+          e,
+          currentLayerId: currentLayer.id,
+          cursor,
+          tileWidth,
+          tileHeight,
+          tool,
+          tilemapHeight: height,
+          tilemapWidth: width,
+          onTileClick,
         })
-      } else if (tool.type === 'eraser') {
-        onTileClick({
-          layerId: currentLayerId,
-          tileX: cursorX,
-          tileY: cursorY,
-          tilesetX: -1,
-          tilesetY: -1,
-          tilesetName: '',
-          tileData: '',
-        })
-
-        img.src = ''
       }
     }
   }
@@ -118,6 +105,17 @@ export function TilemapEditor({ layers, onTileClick }: Props) {
   return (
     <div
       id="tilemap-editor"
+      onClick={() => {
+        const cursor = cursorRef.current
+        if (!cursor) return
+
+        if (tool.type === 'structure') {
+          addStructure({
+            cursor,
+            dispatch,
+          })
+        }
+      }}
       onWheel={(e) => {
         const delta = e.deltaY
 
@@ -152,7 +150,7 @@ export function TilemapEditor({ layers, onTileClick }: Props) {
 
         if (!currentLayer) return
 
-        tools[tool.type][currentLayer.type]?.move?.({
+        moveCursor({
           e,
           anchor: gridRef,
           cursor: cursorRef.current,
@@ -161,12 +159,8 @@ export function TilemapEditor({ layers, onTileClick }: Props) {
           zoomLevel,
         })
 
-        if (
-          mouseState.leftMouseButtonIsDown &&
-          e.target instanceof HTMLDivElement &&
-          e.target.dataset.type === 'tile'
-        ) {
-          handleLeftMouseButtonClick(e)
+        if (mouseState.leftMouseButtonIsDown) {
+          handleLeftMouseButtonWithDrag(e)
         }
       }}
       className="items-center flex justify-center bg-gray-200 relative h-[calc(100%-3.5rem-1px)]"
@@ -176,6 +170,8 @@ export function TilemapEditor({ layers, onTileClick }: Props) {
             ...state,
             leftMouseButtonIsDown: true,
           }))
+
+          handleLeftMouseButtonWithDrag(e)
         } else if (e.button === 1) {
           setPreviousPosition({
             x: e.clientX ?? 0,
@@ -200,24 +196,6 @@ export function TilemapEditor({ layers, onTileClick }: Props) {
           }))
         }
       }}
-      onClick={() => {
-        if (tool.type === 'structure') {
-          if (!cursorRef.current) return
-
-          if (!cursorRef.current.dataset.id) return
-
-          const { top, left } = cursorRef.current.style
-          const x = parseInt(left)
-          const y = parseInt(top)
-
-          dispatch({
-            type: 'ADD_STRUCTURE',
-            fileId: cursorRef.current.dataset.id,
-            x,
-            y,
-          })
-        }
-      }}
     >
       <div
         className={clsx(
@@ -229,8 +207,8 @@ export function TilemapEditor({ layers, onTileClick }: Props) {
         ref={gridRef}
         style={{
           transform: `scale(${zoomLevel})`,
-          width: width * 32,
-          height: height * 32,
+          width: width * tileWidth,
+          height: height * tileHeight,
           top: gridPosition.y,
           left: gridPosition.x,
         }}
@@ -297,32 +275,49 @@ export function TilemapEditor({ layers, onTileClick }: Props) {
                   ></div>
                 ))
               case 'structure':
-                return layer.data.map((structure, j) => {
+                return layer.data.map((structure) => {
                   const { x, y, fileId } = structure
                   const file = files.find((f) => f.id === fileId)
 
-                  if (!file) return null
+                  if (!file) {
+                    return null
+                  }
 
                   const src = convertFileToImageData(file)
 
                   return (
-                    <img
-                      key={`structure-${j}`}
-                      className={clsx('absolute', {
-                        hidden: !layer.isVisible,
-                      })}
-                      data-type="structure"
-                      data-id={structure.id}
+                    <Structure
+                      key={`structure-${structure.id}`}
+                      x={x}
+                      y={y}
                       src={src}
-                      style={{
-                        top: y,
-                        left: x,
-                      }}
+                      id={structure.id}
+                      isVisible={layer.isVisible}
                       onClick={() => {
-                        if (tool.type === 'eraser') {
+                        if (
+                          currentLayer?.type === 'structure' &&
+                          tool.type === 'eraser'
+                        ) {
                           dispatch({
                             type: 'REMOVE_STRUCTURE',
                             id: structure.id,
+                          })
+                        } else if (
+                          currentLayer?.type === 'structure' &&
+                          tool.type === 'structure'
+                        ) {
+                          const cursor = cursorRef.current
+                          if (!cursor) return
+
+                          const { top, left } = cursor.style
+                          const x = parseInt(left)
+                          const y = parseInt(top)
+
+                          dispatch({
+                            type: 'ADD_STRUCTURE',
+                            fileId,
+                            x,
+                            y,
                           })
                         }
                       }}

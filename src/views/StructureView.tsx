@@ -17,7 +17,7 @@ export function StructureView() {
     (f) => f.id !== selectedFileId && f.isStructure
   )
 
-  function updateStructureRefImage(id: string) {
+  async function updateStructureRefImage(id: string) {
     if (!cursorRef.current) return
 
     const imageRef = cursorRef.current.querySelector('img')
@@ -26,11 +26,12 @@ export function StructureView() {
     const structure = files.find((f) => f.id === id)
     if (!structure) return
 
-    imageRef.src = convertFileToImageData(structure)
+    const src = convertFileToImageData(structure)
+    imageRef.src = src
 
     dispatch({
       type: 'UPDATE_CANVAS',
-      src: convertFileToImageData(structure),
+      src,
       fileId: structure.id,
       width: structure.width * structure.tileWidth,
       height: structure.height * structure.tileHeight,

@@ -1,3 +1,5 @@
+import { Actions, Tool } from './contexts/EditorContext'
+
 export type ToolType =
   | 'select'
   | 'tile'
@@ -17,20 +19,177 @@ export type MoveArgs = {
   zoomLevel: number
 }
 
-export type Tools = Record<
-  ToolType,
-  Partial<
-    Record<
-      LayerType,
-      Partial<{
-        move: (args: MoveArgs) => void
-        click: () => void
-      }>
-    >
-  >
->
+export type TileUpdateArgs = {
+  e: React.MouseEvent<HTMLDivElement, MouseEvent>
+  currentLayerId: string
+  cursor: HTMLDivElement | null
+  tileWidth: number
+  tileHeight: number
+  tilemapWidth: number
+  tilemapHeight: number
+  tool: Tool
+  onTileClick: (args: {
+    layerId: string
+    tileX: number
+    tileY: number
+    tilesetX: number
+    tilesetY: number
+    tilesetName: string
+    tileData: string
+  }) => void
+}
 
-function defaultMove({
+export type StructureAddArgs = {
+  cursor: HTMLDivElement | null
+  dispatch: React.Dispatch<Actions>
+}
+
+export type StructureRemoveArgs = {
+  structure: HTMLImageElement | null
+  dispatch: React.Dispatch<Actions>
+}
+
+function getTileImage(e: React.MouseEvent<HTMLDivElement, MouseEvent>) {
+  if (!(e.target instanceof HTMLDivElement) || e.target.dataset.type !== 'tile')
+    return
+
+  const image = e.target.querySelector('img')
+
+  if (!image) return
+
+  return image
+}
+
+function getCursorPosition({
+  cursor,
+  tileWidth,
+  tileHeight,
+  tilemapWidth,
+  tilemapHeight,
+}: {
+  cursor: HTMLDivElement | null
+  tileWidth: number
+  tileHeight: number
+  tilemapWidth: number
+  tilemapHeight: number
+}) {
+  const cursorX = Math.ceil((cursor?.offsetLeft ?? 0) / tileWidth)
+  const cursorY = Math.ceil((cursor?.offsetTop ?? 0) / tileHeight)
+
+  if (
+    cursorX < 0 ||
+    cursorX > tilemapWidth - 1 ||
+    cursorY < 0 ||
+    cursorY > tilemapHeight - 1
+  )
+    return
+
+  return { cursorX, cursorY }
+}
+
+export function addTile({
+  e,
+  currentLayerId,
+  cursor,
+  tileWidth,
+  tileHeight,
+  tilemapWidth,
+  tilemapHeight,
+  tool,
+  onTileClick,
+}: TileUpdateArgs) {
+  const image = getTileImage(e)
+
+  if (!image) return
+
+  const position = getCursorPosition({
+    cursor,
+    tileWidth,
+    tileHeight,
+    tilemapWidth,
+    tilemapHeight,
+  })
+
+  if (!position) return
+
+  image.src = tool.src
+
+  onTileClick({
+    layerId: currentLayerId,
+    tileX: position.cursorX,
+    tileY: position.cursorY,
+    tilesetX: tool.tilesetX ?? -1,
+    tilesetY: tool.tilesetY ?? -1,
+    tilesetName: tool.tilesetName ?? 'unknown',
+    tileData: image.src,
+  })
+}
+
+export function removeTile({
+  e,
+  currentLayerId,
+  cursor,
+  tileWidth,
+  tileHeight,
+  tilemapWidth,
+  tilemapHeight,
+  onTileClick,
+}: TileUpdateArgs) {
+  const image = getTileImage(e)
+
+  if (!image) return
+
+  const position = getCursorPosition({
+    cursor,
+    tileWidth,
+    tileHeight,
+    tilemapWidth,
+    tilemapHeight,
+  })
+
+  if (!position) return
+
+  onTileClick({
+    layerId: currentLayerId,
+    tileX: position.cursorX,
+    tileY: position.cursorY,
+    tilesetX: -1,
+    tilesetY: -1,
+    tilesetName: '',
+    tileData: '',
+  })
+
+  image.src = ''
+}
+
+export function addStructure({ cursor, dispatch }: StructureAddArgs) {
+  if (!cursor) return
+
+  const fileId = cursor.dataset.id
+
+  if (!fileId) return
+
+  const { top, left } = cursor.style
+  const x = parseInt(left)
+  const y = parseInt(top)
+
+  dispatch({
+    type: 'ADD_STRUCTURE',
+    fileId,
+    x,
+    y,
+  })
+}
+
+export function removeStructure({ structure, dispatch }: StructureRemoveArgs) {
+  if (!structure) return
+
+  const fileId = structure.dataset.id
+
+  if (!fileId) return
+}
+
+export function moveCursor({
   e,
   anchor,
   cursor,
@@ -39,8 +198,6 @@ function defaultMove({
   zoomLevel,
 }: MoveArgs) {
   const { clientX, clientY } = e
-
-  if (!(e.target instanceof HTMLDivElement)) return
 
   if (!cursor || !anchor) return
 
@@ -57,25 +214,4 @@ function defaultMove({
   cursor.classList.remove('hidden')
   cursor.style.top = `${top}px`
   cursor.style.left = `${left}px`
-}
-
-export const tools: Tools = {
-  select: {},
-  tile: {
-    tile: {
-      move: defaultMove,
-    },
-  },
-  object: {},
-  structure: {
-    structure: {
-      move: defaultMove,
-    },
-  },
-  grid: {},
-  eraser: {
-    tile: {
-      move: defaultMove,
-    },
-  },
 }
