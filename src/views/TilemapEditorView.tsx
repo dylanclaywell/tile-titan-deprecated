@@ -1,14 +1,21 @@
-import React, { useContext } from 'react'
+import React from 'react'
 import clsx from 'clsx'
 
 import { TilemapEditor } from '../components/TilemapEditor/TilemapEditor'
-import { EditorContext } from '../contexts/EditorContext'
 import { Toolbar } from '../components/TilemapEditor/Toolbar'
+import { updateTilemap } from '../features/editor/editorSlice'
+import { useAppDispatch, useAppSelector } from '../hooks/redux'
 
 export function TilemapEditorView() {
-  const [{ files, selectedLayerId, tool, selectedFileId }, { dispatch }] =
-    useContext(EditorContext)
-  const [showSettings, setShowSettings] = React.useState(false)
+  const dispatch = useAppDispatch()
+  const { files, selectedLayerId, tool, selectedFileId } = useAppSelector(
+    (state) => ({
+      files: state.editor.files,
+      selectedLayerId: state.editor.selectedLayerId,
+      tool: state.editor.tool,
+      selectedFileId: state.editor.selectedFileId,
+    })
+  )
 
   const currentFile = files.find((file) => file.id === selectedFileId)
   const currentLayer = currentFile?.layers.find(
@@ -26,7 +33,7 @@ export function TilemapEditorView() {
         layers={currentFile?.layers ?? []}
         currentLayer={currentLayer}
         onTileClick={(args) => {
-          dispatch({ type: 'UPDATE_TILEMAP', ...args })
+          dispatch(updateTilemap(args))
         }}
       />
     </div>

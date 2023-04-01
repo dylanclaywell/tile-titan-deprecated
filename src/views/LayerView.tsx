@@ -1,6 +1,5 @@
-import React, { useContext, useState } from 'react'
+import React, { useState } from 'react'
 
-import { EditorContext } from '../contexts/EditorContext'
 import { Tool } from '../components/Tool'
 import { Tools } from '../components/Tools/Tools'
 import { ToolSection } from '../components/Tools/ToolSection'
@@ -8,6 +7,14 @@ import { RenameLayerModal } from '../components/Layer/RenameLayerModal'
 import { LayerType, Type } from '../types/layer'
 import { ResourceListItem } from '../components/ResourceList/ResourceListItem'
 import { ResourceList } from '../components/ResourceList/ResourceList'
+import { useAppDispatch, useAppSelector } from '../hooks/redux'
+import {
+  addLayer,
+  handleToolClick,
+  removeLayer,
+  setSelectedLayerId,
+  updateLayerSettings,
+} from '../features/editor/editorSlice'
 
 function getLayerIcon(layerType: Type) {
   switch (layerType) {
@@ -23,10 +30,16 @@ function getLayerIcon(layerType: Type) {
 export function LayerView() {
   const [draggedLayer, setDraggedLayer] = useState<LayerType | null>(null)
   const [renamingLayerId, setRenamingLayerId] = useState<string | null>(null)
-  const [{ files, selectedLayerId, selectedFileId }, { dispatch }] =
-    useContext(EditorContext)
+  const { files, selectedFileId, selectedLayerId } = useAppSelector(
+    (state) => ({
+      files: state.editor.files,
+      selectedFileId: state.editor.selectedFileId,
+      selectedLayerId: state.editor.selectedLayerId,
+    })
+  )
+  const dispatch = useAppDispatch()
 
-  const currentFile = files.find((file) => file.id === selectedFileId)
+  const currentFile = [...files].find((file) => file.id === selectedFileId)
   const currentLayer = currentFile?.layers.find(
     (layer) => layer.id === selectedLayerId
   )
@@ -40,21 +53,19 @@ export function LayerView() {
       <Tools>
         <ToolSection>
           <Tool
-            onClick={() => dispatch({ type: 'ADD_LAYER', layerType: 'tile' })}
+            onClick={() => dispatch(addLayer({ type: 'tile' }))}
             icon="image"
             name="Add tile layer"
             isDisabled={!currentFile}
           />
           <Tool
-            onClick={() => dispatch({ type: 'ADD_LAYER', layerType: 'object' })}
+            onClick={() => dispatch(addLayer({ type: 'object' }))}
             icon="object-group"
             name="Add object layer"
             isDisabled={!currentFile}
           />
           <Tool
-            onClick={() =>
-              dispatch({ type: 'ADD_LAYER', layerType: 'structure' })
-            }
+            onClick={() => dispatch(addLayer({ type: 'structure' }))}
             icon="cubes"
             name="Add structure layer"
             isDisabled={!currentFile}
@@ -63,7 +74,7 @@ export function LayerView() {
       </Tools>
       <h1 className="m-2 mb-0 text-xl text-gray-400">Layers</h1>
       <ResourceList>
-        {currentFile?.layers
+        {[...(currentFile?.layers ?? [])]
           .sort((a, b) => (a.sortOrder > b.sortOrder ? -1 : 1))
           .map((layer) => (
             <ResourceListItem
@@ -76,10 +87,10 @@ export function LayerView() {
               name={layer.name}
               onClick={() => {
                 if (layer.type !== currentLayer?.type) {
-                  dispatch({ type: 'HANDLE_TOOL_CLICK', tool: 'select' })
+                  dispatch(handleToolClick({ type: 'select' }))
                 }
 
-                dispatch({ type: 'SET_SELECTED_LAYER_ID', id: layer.id })
+                dispatch(setSelectedLayerId({ id: layer.id }))
               }}
               onRename={() => setRenamingLayerId(layer.id)}
               onDragStart={() => {
@@ -94,29 +105,32 @@ export function LayerView() {
                 if (!draggedLayer) return
                 if (draggedLayer?.id === layer.id) return
 
-                dispatch({
-                  type: 'UPDATE_LAYER_SETTINGS',
-                  id: draggedLayer.id,
-                  layer: {
-                    sortOrder: layer.sortOrder,
-                  },
-                })
-                dispatch({
-                  type: 'UPDATE_LAYER_SETTINGS',
-                  id: layer.id,
-                  layer: {
-                    sortOrder: draggedLayer.sortOrder,
-                  },
-                })
+                dispatch(
+                  updateLayerSettings({
+                    id: draggedLayer.id,
+                    layer: {
+                      sortOrder: layer.sortOrder,
+                    },
+                  })
+                )
+                dispatch(
+                  updateLayerSettings({
+                    id: layer.id,
+                    layer: {
+                      sortOrder: draggedLayer.sortOrder,
+                    },
+                  })
+                )
               }}
               onHide={() =>
-                dispatch({
-                  type: 'UPDATE_LAYER_SETTINGS',
-                  id: layer.id,
-                  layer: { isVisible: !layer.isVisible },
-                })
+                dispatch(
+                  updateLayerSettings({
+                    id: layer.id,
+                    layer: { isVisible: !layer.isVisible },
+                  })
+                )
               }
-              onDelete={() => dispatch({ type: 'REMOVE_LAYER', id: layer.id })}
+              onDelete={() => dispatch(removeLayer({ id: layer.id }))}
               draggedId={draggedLayer?.id ?? null}
             />
           ))}
@@ -128,11 +142,12 @@ export function LayerView() {
         onSubmit={(name) => {
           if (!renamingLayerId) return
 
-          dispatch({
-            type: 'UPDATE_LAYER_SETTINGS',
-            id: renamingLayerId,
-            layer: { name },
-          })
+          dispatch(
+            updateLayerSettings({
+              id: renamingLayerId,
+              layer: { name },
+            })
+          )
           setRenamingLayerId(null)
         }}
       />

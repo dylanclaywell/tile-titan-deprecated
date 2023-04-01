@@ -1,11 +1,12 @@
-import React, { useContext, useState } from 'react'
+import React, { useState } from 'react'
 import z from 'zod'
 
-import { EditorContext } from '../../contexts/EditorContext'
 import { ObjectType } from '../../types/object'
 import { TextField } from '../TextField'
 import { useKey } from '../../hooks/useKey'
 import { zodStringToNumber } from '../../utils/zodStringToNumber'
+import { useAppDispatch, useAppSelector } from '../../hooks/redux'
+import { updateObjectSettings } from '../../features/editor/editorSlice'
 
 export interface Props {
   object: ObjectType
@@ -33,9 +34,15 @@ type Errors = {
 }
 
 export function Properties({ object }: Props) {
-  const [{ selectedLayerId, selectedFileId, files }, { dispatch }] =
-    useContext(EditorContext)
   const [errors, setErrors] = useState<Errors>({})
+  const { selectedLayerId, selectedFileId, files } = useAppSelector(
+    (state) => ({
+      selectedLayerId: state.editor.selectedLayerId,
+      selectedFileId: state.editor.selectedFileId,
+      files: state.editor.files,
+    })
+  )
+  const dispatch = useAppDispatch()
 
   const currentFile = files.find((file) => file.id === selectedFileId)
   const currentLayer = currentFile?.layers.find(
@@ -72,12 +79,13 @@ export function Properties({ object }: Props) {
             const values = Form.parse(rawValues)
             setErrors({})
 
-            dispatch({
-              type: 'UPDATE_OBJECT_SETTINGS',
-              layerId: currentLayer.id,
-              objectId: object.id,
-              object: values,
-            })
+            dispatch(
+              updateObjectSettings({
+                layerId: currentLayer.id,
+                objectId: object.id,
+                object: values,
+              })
+            )
           } catch (error) {
             console.log(error)
 

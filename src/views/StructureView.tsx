@@ -2,13 +2,22 @@ import React, { useContext } from 'react'
 
 import { ResourceList } from '../components/ResourceList/ResourceList'
 import { ResourceListItem } from '../components/ResourceList/ResourceListItem'
-import { EditorContext } from '../contexts/EditorContext'
 import { FileType } from '../types/file'
 import { convertFileToImageData } from '../utils/convertFileToImageData'
+import { useAppDispatch, useAppSelector } from '../hooks/redux'
+import { updateCanvas } from '../features/editor/editorSlice'
+import { CursorContext } from '../contexts/CursorContext'
 
 export function StructureView() {
-  const [{ files, selectedFileId, cursorRef }, { dispatch }] =
-    useContext(EditorContext)
+  const [cursorRef] = useContext(CursorContext)
+  const dispatch = useAppDispatch()
+  const { files, selectedFileId } = useAppSelector((state) => {
+    return {
+      files: state.editor.files,
+      selectedFileId: state.editor.selectedFileId,
+    }
+  })
+
   const [selectedStructureId, setSelectedStructureId] = React.useState<
     string | null
   >(null)
@@ -18,9 +27,9 @@ export function StructureView() {
   )
 
   async function updateStructureRefImage(id: string) {
-    if (!cursorRef.current) return
+    if (!cursorRef) return
 
-    const imageRef = cursorRef.current.querySelector('img')
+    const imageRef = cursorRef.querySelector('img')
     if (!imageRef) return
 
     const structure = files.find((f) => f.id === id)
@@ -29,16 +38,17 @@ export function StructureView() {
     const src = convertFileToImageData(structure)
     imageRef.src = src
 
-    dispatch({
-      type: 'UPDATE_CANVAS',
-      src,
-      fileId: structure.id,
-      width: structure.width * structure.tileWidth,
-      height: structure.height * structure.tileHeight,
-      toolType: 'structure',
-    })
-    cursorRef.current.style.display = 'block'
-    cursorRef.current.dataset.id = structure.id
+    dispatch(
+      updateCanvas({
+        src,
+        fileId: structure.id,
+        width: structure.width * structure.tileWidth,
+        height: structure.height * structure.tileHeight,
+        toolType: 'structure',
+      })
+    )
+    cursorRef.style.display = 'block'
+    cursorRef.dataset.id = structure.id
   }
 
   function onStructureClick(id: string) {

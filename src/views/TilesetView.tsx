@@ -1,4 +1,4 @@
-import React, { useContext, useState, useEffect } from 'react'
+import React, { useState, useEffect } from 'react'
 
 import { TilesetUploader } from '../components/TilesetUploader'
 import {
@@ -6,13 +6,14 @@ import {
   changeTilesetName,
   getTilesets,
 } from '../indexedDB/tileset'
-import { EditorContext } from '../contexts/EditorContext'
 import { Tool } from '../components/Tool'
 import { SelectField } from '../components/SelectField'
 import { ToolSection } from '../components/Tools/ToolSection'
 import { Tools } from '../components/Tools/Tools'
 import { TilesetSettingsModal } from '../components/TilesetSettingsModal'
 import { LayerType } from '../tools'
+import { useAppDispatch, useAppSelector } from '../hooks/redux'
+import { updateCanvas } from '../features/editor/editorSlice'
 
 function TilesetViewBase({
   updateToolCanvas,
@@ -196,8 +197,14 @@ function TilesetViewBase({
 const TilesetViewMemoized = React.memo(TilesetViewBase)
 
 export function TilesetView() {
-  const [{ selectedLayerId, selectedFileId, files }, { dispatch }] =
-    useContext(EditorContext)
+  const dispatch = useAppDispatch()
+  const { selectedLayerId, selectedFileId, files } = useAppSelector(
+    (state) => ({
+      selectedLayerId: state.editor.selectedLayerId,
+      selectedFileId: state.editor.selectedFileId,
+      files: state.editor.files,
+    })
+  )
 
   const file = files.find((file) => file.id === selectedFileId)
   const layer = file?.layers.find((layer) => layer.id === selectedLayerId)
@@ -205,16 +212,17 @@ export function TilesetView() {
   return (
     <TilesetViewMemoized
       updateToolCanvas={(args) => {
-        dispatch({
-          type: 'UPDATE_CANVAS',
-          src: args.canvas.toDataURL(),
-          tilesetX: args.tilesetX,
-          tilesetY: args.tilesetY,
-          tilesetName: args.tilesetName,
-          width: args.canvas.width,
-          height: args.canvas.height,
-          toolType: 'tile',
-        })
+        dispatch(
+          updateCanvas({
+            src: args.canvas.toDataURL(),
+            tilesetX: args.tilesetX,
+            tilesetY: args.tilesetY,
+            tilesetName: args.tilesetName,
+            width: args.canvas.width,
+            height: args.canvas.height,
+            type: 'tile',
+          })
+        )
       }}
       layerType={layer?.type ?? 'tile'}
     />

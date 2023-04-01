@@ -1,13 +1,14 @@
-import React, { useContext, useState } from 'react'
+import React, { useState } from 'react'
 import z from 'zod'
 
-import { EditorContext } from '../../contexts/EditorContext'
 import { TextField } from '../TextField'
 import { useKey } from '../../hooks/useKey'
 import {
   zodCheckboxValueToBoolean,
   zodStringToNumber,
 } from '../../utils/zodStringToNumber'
+import { updateFileSettings } from '../../features/editor/editorSlice'
+import { useAppDispatch, useAppSelector } from '../../hooks/redux'
 
 function isPropertiesFormElement(
   element: HTMLElement | null | undefined
@@ -30,8 +31,12 @@ type Errors = {
 }
 
 export function Properties() {
-  const [{ selectedFileId, files }, { dispatch }] = useContext(EditorContext)
+  const { selectedFileId, files } = useAppSelector((state) => ({
+    selectedFileId: state.editor.selectedFileId,
+    files: state.editor.files,
+  }))
   const [errors, setErrors] = useState<Errors>({})
+  const dispatch = useAppDispatch()
 
   const currentFile = files.find((file) => file.id === selectedFileId)
 
@@ -64,10 +69,7 @@ export function Properties() {
             const values = Form.parse(rawValues)
             setErrors({})
 
-            dispatch({
-              type: 'UPDATE_FILE_SETTINGS',
-              ...values,
-            })
+            dispatch(updateFileSettings(values))
           } catch (error) {
             console.error(error)
 

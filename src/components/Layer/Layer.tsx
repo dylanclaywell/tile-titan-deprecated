@@ -1,9 +1,13 @@
-import React, { useContext, useState } from 'react'
+import React, { useState } from 'react'
 import clsx from 'clsx'
 
 import { LayerButton } from './LayerButton'
-import { EditorContext } from '../../contexts/EditorContext'
 import { LayerType } from '../../types/layer'
+import {
+  removeLayer,
+  updateLayerSettings,
+} from '../../features/editor/editorSlice'
+import { useAppDispatch } from '../../hooks/redux'
 
 export interface Props {
   id: string
@@ -33,7 +37,7 @@ export function Layer({
   onDragEnd,
 }: Props) {
   const [isHoveredWhileDragging, setIsHoveredWhileDragging] = useState(false)
-  const [, { dispatch }] = useContext(EditorContext)
+  const dispatch = useAppDispatch()
 
   const isDragging = draggedLayer?.id === id
 
@@ -51,16 +55,18 @@ export function Layer({
         if (!draggedLayer) return
         if (draggedLayer?.id === id) return
 
-        dispatch({
-          type: 'UPDATE_LAYER_SETTINGS',
-          id: draggedLayer.id,
-          layer: { sortOrder },
-        })
-        dispatch({
-          type: 'UPDATE_LAYER_SETTINGS',
-          id,
-          layer: { sortOrder: draggedLayer.sortOrder },
-        })
+        dispatch(
+          updateLayerSettings({
+            id: draggedLayer.id,
+            layer: { sortOrder },
+          })
+        )
+        dispatch(
+          updateLayerSettings({
+            id,
+            layer: { sortOrder: draggedLayer.sortOrder },
+          })
+        )
         setIsHoveredWhileDragging(false)
       }}
       onDragStart={onDragStart}
@@ -105,11 +111,9 @@ export function Layer({
           })}
           iconName={isVisible ? 'eye' : 'eye-slash'}
           onClick={() =>
-            dispatch({
-              type: 'UPDATE_LAYER_SETTINGS',
-              id,
-              layer: { isVisible: !isVisible },
-            })
+            dispatch(
+              updateLayerSettings({ id, layer: { isVisible: !isVisible } })
+            )
           }
         />
         <LayerButton
@@ -119,7 +123,7 @@ export function Layer({
             'hover:text-red-600': isSelected,
           })}
           iconName="trash-can"
-          onClick={() => dispatch({ type: 'REMOVE_LAYER', id })}
+          onClick={() => dispatch(removeLayer({ id }))}
         />
       </div>
     </div>

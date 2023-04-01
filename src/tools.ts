@@ -1,4 +1,8 @@
-import { Actions, Tool } from './contexts/EditorContext'
+import { store } from './store'
+import {
+  Tool,
+  addStructure as addStructureReducer,
+} from './features/editor/editorSlice'
 
 export type ToolType =
   | 'select'
@@ -41,12 +45,10 @@ export type TileUpdateArgs = {
 
 export type StructureAddArgs = {
   cursor: HTMLDivElement | null
-  dispatch: React.Dispatch<Actions>
 }
 
 export type StructureRemoveArgs = {
   structure: HTMLImageElement | null
-  dispatch: React.Dispatch<Actions>
 }
 
 function getTileImage(e: React.MouseEvent<HTMLDivElement, MouseEvent>) {
@@ -162,7 +164,7 @@ export function removeTile({
   image.src = ''
 }
 
-export function addStructure({ cursor, dispatch }: StructureAddArgs) {
+export function addStructure({ cursor }: StructureAddArgs) {
   if (!cursor) return
 
   const fileId = cursor.dataset.id
@@ -173,15 +175,16 @@ export function addStructure({ cursor, dispatch }: StructureAddArgs) {
   const x = parseInt(left)
   const y = parseInt(top)
 
-  dispatch({
-    type: 'ADD_STRUCTURE',
-    fileId,
-    x,
-    y,
-  })
+  store.dispatch(
+    addStructureReducer({
+      fileId,
+      x,
+      y,
+    })
+  )
 }
 
-export function removeStructure({ structure, dispatch }: StructureRemoveArgs) {
+export function removeStructure({ structure }: StructureRemoveArgs) {
   if (!structure) return
 
   const fileId = structure.dataset.id

@@ -1,32 +1,19 @@
-import React, {
-  Dispatch,
-  createContext,
-  useEffect,
-  useReducer,
-  useRef,
-} from 'react'
+import { PayloadAction, createSlice } from '@reduxjs/toolkit'
 import { v4 as generateId } from 'uuid'
 
+import { ToolType } from '../../tools'
 import {
+  Type,
   LayerType,
   ObjectLayer,
   ObjectLayerType,
   StructureLayerType,
   TileLayerType,
-  Type,
-} from '../types/layer'
-import { generateMap } from '../utils/generateMap'
-import { ObjectType } from '../types/object'
-import { FileType } from '../types/file'
-import { StructureType } from '../types/structure'
-
-export type ToolType =
-  | 'select'
-  | 'tile'
-  | 'eraser'
-  | 'grid'
-  | 'object'
-  | 'structure'
+} from '../../types/layer'
+import { generateMap } from '../../utils/generateMap'
+import { ObjectType } from '../../types/object'
+import { StructureType } from '../../types/structure'
+import { FileType } from '../../types/file'
 
 export type Tool = {
   type: ToolType
@@ -38,95 +25,14 @@ export type Tool = {
   height: number
 }
 
-export type State = {
+type State = {
   files: FileType[]
   tool: Tool
-  cursorRef: React.MutableRefObject<HTMLDivElement | null>
-  structureRef: React.MutableRefObject<HTMLDivElement | null>
   zoomLevel: number
   showGrid: boolean
   selectedLayerId: string | null
   selectedFileId: string | null
 }
-
-export type Actions =
-  | {
-      type: 'UPDATE_CANVAS'
-      src: string
-      tilesetX: number
-      tilesetY: number
-      tilesetName?: string
-      width: number
-      height: number
-      toolType: ToolType
-    }
-  | {
-      type: 'UPDATE_CANVAS'
-      src: string
-      fileId: string
-      width: number
-      height: number
-      toolType: ToolType
-    }
-  | {
-      type: 'UPDATE_TILEMAP'
-      layerId: string
-      tileX: number
-      tileY: number
-      tilesetX: number
-      tilesetY: number
-      tilesetName: string
-      tileData: string
-    }
-  | {
-      type: 'UPDATE_LAYER_SETTINGS'
-      id: string
-      layer: Partial<Omit<LayerType, 'data' | 'type'>>
-    }
-  | { type: 'HANDLE_TOOL_CLICK'; tool: ToolType }
-  | { type: 'SET_ZOOM_LEVEL'; level: number }
-  | { type: 'SET_SELECTED_LAYER_ID'; id: string }
-  | { type: 'ADD_LAYER'; layerType: Type }
-  | {
-      type: 'ADD_OBJECT'
-      x: number
-      y: number
-      x2: number
-      y2: number
-      width: number
-      height: number
-    }
-  | {
-      type: 'UPDATE_OBJECT_SETTINGS'
-      layerId: string
-      objectId: string
-      object: Partial<ObjectType>
-    }
-  | { type: 'REMOVE_LAYER'; id: string }
-  | { type: 'REMOVE_OBJECT'; layerId: string; objectId: string }
-  | { type: 'REGENERATE_MAP'; layerId: string; width: number; height: number }
-  | { type: 'ADD_FILE' }
-  | { type: 'SELECT_FILE'; id: string }
-  | {
-      type: 'UPDATE_FILE_SETTINGS'
-      name: string
-      width: number
-      height: number
-      tileWidth: number
-      tileHeight: number
-      isStructure: boolean
-    }
-  | { type: 'DELETE_FILE'; id: string }
-  | {
-      type: 'ADD_STRUCTURE'
-      fileId: string
-      x: number
-      y: number
-    }
-  | {
-      type: 'REMOVE_STRUCTURE'
-      id: string
-    }
 
 const initialState: State = {
   files: [],
@@ -137,44 +43,43 @@ const initialState: State = {
     height: 32,
   },
   zoomLevel: 1,
-  cursorRef: { current: null },
-  structureRef: { current: null },
   showGrid: true,
   selectedFileId: null,
   selectedLayerId: null,
 }
 
-export const EditorContext = createContext<
-  [
-    State,
-    {
-      dispatch: Dispatch<Actions>
-      setCursorRef: (cursorRef: HTMLDivElement | null) => void
-      setStructureRef: (structureRef: HTMLDivElement | null) => void
-    }
-  ]
->([
+export const editorSlice = createSlice({
+  name: 'editor',
   initialState,
-  {
-    dispatch: () => null,
-    setCursorRef: () => null,
-    setStructureRef: () => null,
-  },
-])
-
-const reducer = (state: State, action: Actions): State => {
-  switch (action.type) {
-    case 'UPDATE_CANVAS': {
-      return {
-        ...state,
-        tool: {
-          ...state.tool,
-          ...action,
-          type: action.toolType,
-        },
+  reducers: {
+    updateCanvas: (
+      state,
+      action: PayloadAction<{
+        src: string
+        tilesetX: number
+        tilesetY: number
+        tilesetName?: string
+        width: number
+        height: number
+        type: ToolType
+      }>
+    ) => {
+      state.tool = {
+        ...action.payload,
       }
-    }
-    case 'UPDATE_TILEMAP': {
+    },
+    updateTilemap: (
+      state,
+      action: PayloadAction<{
+        layerId: string
+        tileX: number
+        tileY: number
+        tilesetX: number
+        tilesetY: number
+        tilesetName: string
+        tileData: string
+      }>
+    ) => {
       const {
         layerId,
         tileX,
@@ -183,7 +88,7 @@ const reducer = (state: State, action: Actions): State => {
         tilesetY,
         tilesetName,
         tileData,
-      } = action
+      } = action.payload
       const selectedFile = state.files.find(
         (file) => file.id === state.selectedFileId
       )
@@ -224,9 +129,15 @@ const reducer = (state: State, action: Actions): State => {
           },
         ],
       }
-    }
-    case 'UPDATE_LAYER_SETTINGS': {
-      const { id, layer: layerType } = action
+    },
+    updateLayerSettings: (
+      state,
+      action: PayloadAction<{
+        id: string
+        layer: Partial<Omit<LayerType, 'data' | 'type'>>
+      }>
+    ) => {
+      const { id, layer: layerType } = action.payload
       const selectedFile = state.files.find(
         (file) => file.id === state.selectedFileId
       )
@@ -255,70 +166,19 @@ const reducer = (state: State, action: Actions): State => {
           },
         ],
       }
-    }
-    case 'HANDLE_TOOL_CLICK': {
-      const { tool: type } = action
-      switch (type) {
-        case 'select': {
-          const tool: Tool = {
-            ...state.tool,
-            type,
-          }
-          return {
-            ...state,
-            tool,
-          }
-        }
-        case 'object': {
-          const tool: Tool = {
-            ...state.tool,
-            type,
-          }
-          return {
-            ...state,
-            tool,
-          }
-        }
-        case 'tile': {
-          const tool: Tool = {
-            ...state.tool,
-            type,
-          }
-          return {
-            ...state,
-            tool,
-          }
-        }
-        case 'eraser': {
-          const tool: Tool = {
-            ...state.tool,
-            type,
-          }
-          return {
-            ...state,
-            tool,
-          }
-        }
-        case 'grid':
-          return {
-            ...state,
-            showGrid: !state.showGrid,
-          }
-        case 'structure':
-          return {
-            ...state,
-            tool: {
-              ...state.tool,
-              type,
-            },
-          }
-        default:
-          return state
-      }
-      break
-    }
-    case 'UPDATE_OBJECT_SETTINGS': {
-      const { layerId, objectId, object: newObject } = action
+    },
+    handleToolClick: (state, action: PayloadAction<{ type: ToolType }>) => {
+      state.tool.type = action.payload.type
+    },
+    updateObjectSettings: (
+      state,
+      action: PayloadAction<{
+        layerId: string
+        objectId: string
+        object: Partial<Omit<ObjectType, 'id'>>
+      }>
+    ) => {
+      const { layerId, objectId, object: newObject } = action.payload
       const selectedFile = state.files.find(
         (file) => file.id === state.selectedFileId
       )
@@ -369,23 +229,18 @@ const reducer = (state: State, action: Actions): State => {
           },
         ],
       }
-    }
-    case 'SET_ZOOM_LEVEL': {
-      const { level } = action
-      return {
-        ...state,
-        zoomLevel: level,
-      }
-    }
-    case 'SET_SELECTED_LAYER_ID': {
-      const { id } = action
-      return {
-        ...state,
-        selectedLayerId: id,
-      }
-    }
-    case 'ADD_LAYER': {
-      const { layerType } = action
+    },
+    zoomIn: (state) => {
+      state.zoomLevel = state.zoomLevel + 0.1 * state.zoomLevel
+    },
+    zoomOut: (state) => {
+      state.zoomLevel = state.zoomLevel - 0.1 * state.zoomLevel
+    },
+    setSelectedLayerId: (state, action: PayloadAction<{ id: string }>) => {
+      state.selectedLayerId = action.payload.id
+    },
+    addLayer: (state, action: PayloadAction<{ type: Type }>) => {
+      const { type } = action.payload
       const selectedFile = state.files.find(
         (file) => file.id === state.selectedFileId
       )
@@ -394,11 +249,11 @@ const reducer = (state: State, action: Actions): State => {
 
       const sortOrder = selectedFile.layers.length + 1
 
-      switch (layerType) {
+      switch (type) {
         case 'tile': {
           const layer: TileLayerType = {
             id: generateId(),
-            type: layerType,
+            type: type,
             name: `Layer ${selectedFile.layers.length + 1}`,
             data: generateMap(selectedFile.width, selectedFile.height),
             isVisible: true,
@@ -418,7 +273,7 @@ const reducer = (state: State, action: Actions): State => {
         case 'object': {
           const layer: ObjectLayerType = {
             id: generateId(),
-            type: layerType,
+            type: type,
             name: `Layer ${selectedFile.layers.length + 1}`,
             data: [],
             isVisible: true,
@@ -438,7 +293,7 @@ const reducer = (state: State, action: Actions): State => {
         case 'structure': {
           const layer: StructureLayerType = {
             id: generateId(),
-            type: layerType,
+            type: type,
             name: `Layer ${selectedFile.layers.length + 1}`,
             data: [],
             isVisible: true,
@@ -459,9 +314,19 @@ const reducer = (state: State, action: Actions): State => {
           return state
         }
       }
-    }
-    case 'ADD_OBJECT': {
-      const { x, y, x2, y2, width, height } = action
+    },
+    addObject: (
+      state,
+      action: PayloadAction<{
+        x: number
+        y: number
+        x2: number
+        y2: number
+        width: number
+        height: number
+      }>
+    ) => {
+      const { x, y, x2, y2, width, height } = action.payload
       const selectedFile = state.files.find(
         (file) => file.id === state.selectedFileId
       )
@@ -506,9 +371,9 @@ const reducer = (state: State, action: Actions): State => {
           },
         ],
       }
-    }
-    case 'REMOVE_LAYER': {
-      const { id } = action
+    },
+    removeLayer: (state, action: PayloadAction<{ id: string }>) => {
+      const { id } = action.payload
       const selectedFile = state.files.find(
         (file) => file.id === state.selectedFileId
       )
@@ -526,9 +391,12 @@ const reducer = (state: State, action: Actions): State => {
           },
         ],
       }
-    }
-    case 'REMOVE_OBJECT': {
-      const { layerId, objectId } = action
+    },
+    removeObject: (
+      state,
+      action: PayloadAction<{ objectId: string; layerId: string }>
+    ) => {
+      const { layerId, objectId } = action.payload
       const selectedFile = state.files.find(
         (file) => file.id === state.selectedFileId
       )
@@ -568,9 +436,12 @@ const reducer = (state: State, action: Actions): State => {
           },
         ],
       }
-    }
-    case 'REGENERATE_MAP': {
-      const { layerId, width, height } = action
+    },
+    regenerateMap: (
+      state,
+      action: PayloadAction<{ layerId: string; width: number; height: number }>
+    ) => {
+      const { layerId, width, height } = action.payload
       const selectedFile = state.files.find(
         (file) => file.id === state.selectedFileId
       )
@@ -608,8 +479,8 @@ const reducer = (state: State, action: Actions): State => {
       } else {
         return state
       }
-    }
-    case 'ADD_FILE': {
+    },
+    addFile: (state) => {
       const newFile: FileType = {
         id: generateId(),
         width: 10,
@@ -627,23 +498,34 @@ const reducer = (state: State, action: Actions): State => {
         files: [...state.files, newFile],
         selectedFileId: newFile.id,
       }
-    }
-    case 'DELETE_FILE': {
-      const { id } = action
+    },
+    deleteFile: (state, action: PayloadAction<{ id: string }>) => {
+      const { id } = action.payload
       return {
         ...state,
-        files: state.files.filter((f) => f.id !== id),
+        files: state.files.filter((file) => file.id !== id),
       }
-    }
-    case 'SELECT_FILE': {
-      const { id } = action
+    },
+    selectFile: (state, action: PayloadAction<{ id: string }>) => {
+      const { id } = action.payload
       return {
         ...state,
         selectedFileId: id,
       }
-    }
-    case 'UPDATE_FILE_SETTINGS': {
-      const { name, width, height, tileWidth, tileHeight, isStructure } = action
+    },
+    updateFileSettings: (
+      state,
+      action: PayloadAction<{
+        name: string
+        width: number
+        height: number
+        tileWidth: number
+        tileHeight: number
+        isStructure: boolean
+      }>
+    ) => {
+      const { name, width, height, tileWidth, tileHeight, isStructure } =
+        action.payload
       const currentFile = state.files.find(
         (file) => file.id === state.selectedFileId
       )
@@ -680,9 +562,12 @@ const reducer = (state: State, action: Actions): State => {
           },
         ],
       }
-    }
-    case 'ADD_STRUCTURE': {
-      const { x, y, fileId } = action
+    },
+    addStructure: (
+      state,
+      action: PayloadAction<{ fileId: string; x: number; y: number }>
+    ) => {
+      const { x, y, fileId } = action.payload
 
       const currentFile = state.files.find((f) => f.id === state.selectedFileId)
       if (!currentFile) return state
@@ -717,9 +602,9 @@ const reducer = (state: State, action: Actions): State => {
           },
         ],
       }
-    }
-    case 'REMOVE_STRUCTURE': {
-      const { id } = action
+    },
+    removeStructure: (state, action: PayloadAction<{ id: string }>) => {
+      const { id } = action.payload
 
       const currentFile = state.files.find((f) => f.id === state.selectedFileId)
       if (!currentFile) return state
@@ -745,63 +630,35 @@ const reducer = (state: State, action: Actions): State => {
           },
         ],
       }
-    }
-    default:
-      return state
-  }
-}
-
-export function EditorProvider({ children }: { children: React.ReactNode }) {
-  const [state, dispatch] = useReducer(reducer, initialState)
-  const cursorRef = useRef<HTMLDivElement | null>(null)
-  const structureRef = useRef<HTMLDivElement | null>(null)
-
-  function setCursorRef(ref: HTMLDivElement | null) {
-    cursorRef.current = ref
-  }
-
-  function setStructureRef(ref: HTMLDivElement | null) {
-    structureRef.current = ref
-  }
-
-  useEffect(
-    function updateTileImagesWithLayerData() {
-      const selectedFile = state.files.find(
-        (file) => file.id === state.selectedFileId
-      )
-
-      if (!selectedFile) return
-
-      const tileImages = document.querySelectorAll('.tile')
-      const layers = selectedFile.layers.filter(
-        (l): l is TileLayerType => l.type === 'tile'
-      )
-
-      layers.forEach((layer) => {
-        layer.data.forEach((row, j) => {
-          row.forEach((tile, k) => {
-            const tileImage = tileImages[j * row.length + k]
-            if (!tileImage || !(tileImage instanceof HTMLImageElement)) return
-
-            tileImage.src = tile.tileData ?? ''
-          })
-        })
-      })
     },
-    [state.selectedFileId]
-  )
+  },
+})
 
-  const actions = {
-    dispatch,
-    setCursorRef,
-    setStructureRef,
-  }
+export const {
+  updateCanvas,
+  addLayer,
+  removeLayer,
+  setSelectedLayerId,
+  updateLayerSettings,
+  regenerateMap,
+  addFile,
+  addObject,
+  removeObject,
+  updateObjectSettings,
+  deleteFile,
+  selectFile,
+  updateFileSettings,
+  addStructure,
+  removeStructure,
+  zoomIn,
+  zoomOut,
+  handleToolClick,
+  updateTilemap,
+} = editorSlice.actions
 
-  return (
-    <EditorContext.Provider
-      value={[{ ...state, cursorRef, structureRef }, actions]}
-    >
-      {children}
-    </EditorContext.Provider>
-  )
-}
+// The function below is called a selector and allows us to select a value from
+// the state. Selectors can also be defined inline where they're used instead of
+// in the slice file. For example: `useSelector((state) => state.editor.value)`
+// export const selectCount = (state) => state.editor.value
+
+export default editorSlice.reducer

@@ -1,7 +1,8 @@
-import React, { useEffect, useContext, MutableRefObject, useRef } from 'react'
+import React, { useEffect, MutableRefObject, useRef } from 'react'
 
-import { EditorContext } from '../../contexts/EditorContext'
 import { LayerType } from '../../types/layer'
+import { useAppDispatch, useAppSelector } from '../../hooks/redux'
+import { addObject } from '../../features/editor/editorSlice'
 
 export interface Props {
   layer: LayerType
@@ -16,8 +17,14 @@ export function ObjectCursor({ anchor }: Props) {
     x2: number
     y2: number
   } | null>(null)
-  const [{ tool, zoomLevel, selectedLayerId }, { dispatch }] =
-    useContext(EditorContext)
+  const { tool, zoomLevel, selectedLayerId } = useAppSelector((state) => {
+    return {
+      tool: state.editor.tool,
+      zoomLevel: state.editor.zoomLevel,
+      selectedLayerId: state.editor.selectedLayerId,
+    }
+  })
+  const dispatch = useAppDispatch()
 
   function getAnchorOffset() {
     if (!anchor) return { x: 0, y: 0 }
@@ -99,7 +106,7 @@ export function ObjectCursor({ anchor }: Props) {
           objectToolPreviewRef.current.style.visibility = 'hidden'
         }
 
-        dispatch({ type: 'ADD_OBJECT', x, y, x2, y2, width, height })
+        dispatch(addObject({ x, y, x2, y2, width, height }))
         objectToolMouseRef.current = null
       }
 

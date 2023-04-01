@@ -1,12 +1,13 @@
-import React, { useContext } from 'react'
+import React from 'react'
 
-import { EditorContext } from '../contexts/EditorContext'
 import { Tools } from './Tools/Tools'
 import { ToolSection } from './Tools/ToolSection'
 import { Tool } from './Tool'
+import { addFile } from '../features/editor/editorSlice'
+import { useAppDispatch } from '../hooks/redux'
 
 export function Toolbar() {
-  const [, { dispatch }] = useContext(EditorContext)
+  const dispatch = useAppDispatch()
 
   return (
     <Tools classes="grow shrink-0 border-black">
@@ -16,7 +17,7 @@ export function Toolbar() {
           name="New File"
           icon="file-circle-plus"
           onClick={() => {
-            dispatch({ type: 'ADD_FILE' })
+            dispatch(addFile())
           }}
         />
       </ToolSection>

@@ -1,7 +1,6 @@
 import React, { useContext, useMemo, useRef, useState } from 'react'
 import clsx from 'clsx'
 
-import { EditorContext } from '../../contexts/EditorContext'
 import { clamp } from '../../utils/clamp'
 import { Tile } from './Tile'
 import { LayerType } from '../../types/layer'
@@ -10,6 +9,13 @@ import { convertFileToImageData } from '../../utils/convertFileToImageData'
 import { addStructure, addTile, moveCursor, removeTile } from '../../tools'
 import { Cursor } from './Cursor'
 import { Structure } from '../Structure/Structure'
+import { useAppDispatch, useAppSelector } from '../../hooks/redux'
+import {
+  removeStructure,
+  zoomIn,
+  zoomOut,
+} from '../../features/editor/editorSlice'
+import { CursorContext } from '../../contexts/CursorContext'
 
 export interface Props {
   layers: LayerType[]
@@ -26,6 +32,8 @@ export interface Props {
 }
 
 export function TilemapEditor({ layers, onTileClick }: Props) {
+  const [cursor] = useContext(CursorContext)
+  const dispatch = useAppDispatch()
   const gridRef = useRef<HTMLDivElement | null>(null)
   const [gridPosition, setGridPosition] = useState({
     x: 0,
@@ -35,18 +43,15 @@ export function TilemapEditor({ layers, onTileClick }: Props) {
     x: 0,
     y: 0,
   })
-  const [
-    {
-      files,
-      selectedFileId,
-      selectedLayerId,
-      tool,
-      showGrid,
-      cursorRef,
-      zoomLevel,
-    },
-    { dispatch },
-  ] = useContext(EditorContext)
+  const { files, selectedFileId, selectedLayerId, tool, showGrid, zoomLevel } =
+    useAppSelector((state) => ({
+      files: state.editor.files,
+      selectedFileId: state.editor.selectedFileId,
+      selectedLayerId: state.editor.selectedLayerId,
+      tool: state.editor.tool,
+      showGrid: state.editor.showGrid,
+      zoomLevel: state.editor.zoomLevel,
+    }))
   const [mouseState, setMouseState] = useState({
     leftMouseButtonIsDown: false,
     middleMouseButtonIsDown: false,
@@ -70,7 +75,6 @@ export function TilemapEditor({ layers, onTileClick }: Props) {
       | React.MouseEvent<HTMLDivElement, MouseEvent>
       | React.MouseEvent<HTMLImageElement, MouseEvent>
   ) {
-    const cursor = cursorRef.current
     if (!currentLayer || !cursor) return
 
     if (tool.type === 'tile') {
@@ -106,13 +110,11 @@ export function TilemapEditor({ layers, onTileClick }: Props) {
     <div
       id="tilemap-editor"
       onClick={() => {
-        const cursor = cursorRef.current
         if (!cursor) return
 
         if (tool.type === 'structure') {
           addStructure({
             cursor,
-            dispatch,
           })
         }
       }}
@@ -120,15 +122,9 @@ export function TilemapEditor({ layers, onTileClick }: Props) {
         const delta = e.deltaY
 
         if (delta > 0) {
-          dispatch({
-            type: 'SET_ZOOM_LEVEL',
-            level: zoomLevel - 0.1 * zoomLevel,
-          })
+          dispatch(zoomOut())
         } else if (delta < 0) {
-          dispatch({
-            type: 'SET_ZOOM_LEVEL',
-            level: zoomLevel + 0.1 * zoomLevel,
-          })
+          dispatch(zoomIn())
         }
       }}
       onMouseMove={(e) => {
@@ -153,7 +149,7 @@ export function TilemapEditor({ layers, onTileClick }: Props) {
         moveCursor({
           e,
           anchor: gridRef,
-          cursor: cursorRef.current,
+          cursor,
           tileHeight,
           tileWidth,
           zoomLevel,
@@ -221,7 +217,7 @@ export function TilemapEditor({ layers, onTileClick }: Props) {
           height={height}
           show={showGrid}
         />
-        {layers
+        {[...layers]
           .sort((a, b) => (a.sortOrder < b.sortOrder ? -1 : 1))
           .map((layer, i) => {
             switch (layer.type) {
@@ -298,27 +294,7 @@ export function TilemapEditor({ layers, onTileClick }: Props) {
                           currentLayer?.type === 'structure' &&
                           tool.type === 'eraser'
                         ) {
-                          dispatch({
-                            type: 'REMOVE_STRUCTURE',
-                            id: structure.id,
-                          })
-                        } else if (
-                          currentLayer?.type === 'structure' &&
-                          tool.type === 'structure'
-                        ) {
-                          const cursor = cursorRef.current
-                          if (!cursor) return
-
-                          const { top, left } = cursor.style
-                          const x = parseInt(left)
-                          const y = parseInt(top)
-
-                          dispatch({
-                            type: 'ADD_STRUCTURE',
-                            fileId,
-                            x,
-                            y,
-                          })
+                          dispatch(removeStructure({ id: structure.id }))
                         }
                       }}
                     />

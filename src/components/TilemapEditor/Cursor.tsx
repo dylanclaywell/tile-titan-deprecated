@@ -1,8 +1,9 @@
-import React, { useEffect, useContext, MutableRefObject, useMemo } from 'react'
+import React, { useContext, MutableRefObject, useMemo } from 'react'
 import clsx from 'clsx'
 
-import { EditorContext } from '../../contexts/EditorContext'
 import { LayerType } from '../../types/layer'
+import { useAppSelector } from '../../hooks/redux'
+import { CursorContext } from '../../contexts/CursorContext'
 
 export interface Props {
   layer: LayerType
@@ -10,8 +11,12 @@ export interface Props {
 }
 
 export function Cursor() {
-  const [{ tool, selectedFileId, files }, { setCursorRef }] =
-    useContext(EditorContext)
+  const [, setCursorRef] = useContext(CursorContext)
+  const { tool, selectedFileId, files } = useAppSelector((state) => ({
+    tool: state.editor.tool,
+    selectedFileId: state.editor.selectedFileId,
+    files: state.editor.files,
+  }))
 
   const currentFile = useMemo(
     () => files.find((file) => file.id === selectedFileId),

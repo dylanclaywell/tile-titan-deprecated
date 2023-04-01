@@ -1,13 +1,19 @@
-import React, { useContext, useMemo } from 'react'
+import React, { useMemo } from 'react'
 
 import { LayerView } from './LayerView'
 import { TilesetView } from './TilesetView'
-import { EditorContext } from '../contexts/EditorContext'
 import { ObjectView } from './ObjectView'
 import { StructureView } from './StructureView'
+import { useAppSelector } from '../hooks/redux'
 
 export function MetadataView() {
-  const [{ selectedLayerId, selectedFileId, files }] = useContext(EditorContext)
+  const { selectedLayerId, selectedFileId, files } = useAppSelector((state) => {
+    return {
+      selectedLayerId: state.editor.selectedLayerId,
+      selectedFileId: state.editor.selectedFileId,
+      files: state.editor.files,
+    }
+  })
 
   const selectedFile = useMemo(
     () => files.find((file) => file.id === selectedFileId),
