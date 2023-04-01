@@ -6,7 +6,7 @@ import { Tile } from './Tile'
 import { LayerType } from '../../types/layer'
 import { GridOverlay } from './GridOverlay'
 import { convertFileToImageData } from '../../utils/convertFileToImageData'
-import { addStructure, addTile, moveCursor, removeTile } from '../../tools'
+import { addStructure, addTile, removeTile } from '../../tools'
 import { Cursor } from './Cursor'
 import { Structure } from '../Structure/Structure'
 import { useAppDispatch, useAppSelector } from '../../hooks/redux'
@@ -15,7 +15,9 @@ import {
   zoomIn,
   zoomOut,
 } from '../../features/editor/editorSlice'
+import { moveCursor } from '../../features/cursor/cursorSlice'
 import { CursorContext } from '../../contexts/CursorContext'
+import { calculateNewCursorPosition } from '../../features/cursor/calculateNewCursorPosition'
 
 export interface Props {
   layers: LayerType[]
@@ -146,7 +148,7 @@ export function TilemapEditor({ layers, onTileClick }: Props) {
 
         if (!currentLayer) return
 
-        moveCursor({
+        const position = calculateNewCursorPosition({
           e,
           anchor: gridRef,
           cursor,
@@ -154,6 +156,8 @@ export function TilemapEditor({ layers, onTileClick }: Props) {
           tileWidth,
           zoomLevel,
         })
+
+        dispatch(moveCursor({ x: position?.x ?? 0, y: position?.y ?? 0 }))
 
         if (mouseState.leftMouseButtonIsDown) {
           handleLeftMouseButtonWithDrag(e)
