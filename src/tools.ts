@@ -51,7 +51,7 @@ export type StructureRemoveArgs = {
   structure: HTMLImageElement | null
 }
 
-function getTileImage(e: React.MouseEvent<HTMLDivElement, MouseEvent>) {
+export function getTileImage(e: React.MouseEvent<HTMLDivElement, MouseEvent>) {
   if (!(e.target instanceof HTMLDivElement) || e.target.dataset.type !== 'tile')
     return
 
@@ -62,7 +62,7 @@ function getTileImage(e: React.MouseEvent<HTMLDivElement, MouseEvent>) {
   return image
 }
 
-function getCursorPosition({
+export function getCursorPosition({
   cursor,
   tileWidth,
   tileHeight,
@@ -87,81 +87,6 @@ function getCursorPosition({
     return
 
   return { cursorX, cursorY }
-}
-
-export function addTile({
-  e,
-  currentLayerId,
-  cursor,
-  tileWidth,
-  tileHeight,
-  tilemapWidth,
-  tilemapHeight,
-  tool,
-  onTileClick,
-}: TileUpdateArgs) {
-  const image = getTileImage(e)
-
-  if (!image) return
-
-  const position = getCursorPosition({
-    cursor,
-    tileWidth,
-    tileHeight,
-    tilemapWidth,
-    tilemapHeight,
-  })
-
-  if (!position) return
-
-  image.src = tool.src
-
-  onTileClick({
-    layerId: currentLayerId,
-    tileX: position.cursorX,
-    tileY: position.cursorY,
-    tilesetX: tool.tilesetX ?? -1,
-    tilesetY: tool.tilesetY ?? -1,
-    tilesetName: tool.tilesetName ?? 'unknown',
-    tileData: image.src,
-  })
-}
-
-export function removeTile({
-  e,
-  currentLayerId,
-  cursor,
-  tileWidth,
-  tileHeight,
-  tilemapWidth,
-  tilemapHeight,
-  onTileClick,
-}: TileUpdateArgs) {
-  const image = getTileImage(e)
-
-  if (!image) return
-
-  const position = getCursorPosition({
-    cursor,
-    tileWidth,
-    tileHeight,
-    tilemapWidth,
-    tilemapHeight,
-  })
-
-  if (!position) return
-
-  onTileClick({
-    layerId: currentLayerId,
-    tileX: position.cursorX,
-    tileY: position.cursorY,
-    tilesetX: -1,
-    tilesetY: -1,
-    tilesetName: '',
-    tileData: '',
-  })
-
-  image.src = ''
 }
 
 export function addStructure({ cursor }: StructureAddArgs) {

@@ -103,31 +103,11 @@ export const editorSlice = createSlice({
 
       if (selectedLayer.type !== 'tile') return state
 
-      const newTilemap = selectedLayer.data
-      newTilemap[tileY][tileX] = {
+      selectedLayer.data[tileY][tileX] = {
         tilesetName,
         tilesetX,
         tilesetY,
         tileData,
-      }
-
-      const newLayers: LayerType[] = selectedFile.layers.map((layer) => {
-        return layer.id === selectedLayer.id && layer.type === 'tile'
-          ? {
-              ...layer,
-              data: newTilemap,
-            }
-          : layer
-      })
-      return {
-        ...state,
-        files: [
-          ...state.files.filter((file) => file.id !== selectedFile.id),
-          {
-            ...selectedFile,
-            layers: newLayers,
-          },
-        ],
       }
     },
     updateLayerSettings: (

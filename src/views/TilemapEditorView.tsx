@@ -3,24 +3,15 @@ import clsx from 'clsx'
 
 import { TilemapEditor } from '../components/TilemapEditor/TilemapEditor'
 import { Toolbar } from '../components/TilemapEditor/Toolbar'
-import { updateTilemap } from '../features/editor/editorSlice'
-import { useAppDispatch, useAppSelector } from '../hooks/redux'
+import { useAppSelector } from '../hooks/redux'
 
 export function TilemapEditorView() {
-  const dispatch = useAppDispatch()
-  const { files, selectedLayerId, tool, selectedFileId } = useAppSelector(
-    (state) => ({
-      files: state.editor.files,
-      selectedLayerId: state.editor.selectedLayerId,
-      tool: state.editor.tool,
-      selectedFileId: state.editor.selectedFileId,
-    })
-  )
-
-  const currentFile = files.find((file) => file.id === selectedFileId)
-  const currentLayer = currentFile?.layers.find(
-    (layer) => layer.id === selectedLayerId
-  )
+  const { tool } = useAppSelector((state) => ({
+    files: state.editor.files,
+    selectedLayerId: state.editor.selectedLayerId,
+    tool: state.editor.tool,
+    selectedFileId: state.editor.selectedFileId,
+  }))
 
   return (
     <div
@@ -29,13 +20,7 @@ export function TilemapEditorView() {
       })}
     >
       <Toolbar />
-      <TilemapEditor
-        layers={currentFile?.layers ?? []}
-        currentLayer={currentLayer}
-        onTileClick={(args) => {
-          dispatch(updateTilemap(args))
-        }}
-      />
+      <TilemapEditor />
     </div>
   )
 }

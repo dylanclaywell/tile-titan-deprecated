@@ -1,14 +1,6 @@
-import {
-  Selector,
-  TypedUseSelectorHook,
-  useDispatch,
-  useSelector,
-} from 'react-redux'
-import { createSelector } from 'reselect'
+import { TypedUseSelectorHook, useDispatch, useSelector } from 'react-redux'
 
 import type { RootState, AppDispatch } from '../store'
-
-type ValueOf<T> = T[keyof T]
 
 // Use throughout your app instead of plain `useDispatch` and `useSelector`
 type DispatchFunc = () => AppDispatch

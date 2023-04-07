@@ -11,28 +11,18 @@ export interface Props {
 }
 
 export function Cursor() {
-  const [, setCursorRef] = useContext(CursorContext)
-  const { tool, selectedFileId, files } = useAppSelector((state) => ({
-    tool: state.editor.tool,
-    selectedFileId: state.editor.selectedFileId,
-    files: state.editor.files,
-  }))
-
-  const currentFile = useMemo(
-    () => files.find((file) => file.id === selectedFileId),
-    [selectedFileId]
-  )
+  const [, { setCursor }] = useContext(CursorContext)
+  const tool = useAppSelector((state) => state.editor.tool)
 
   return (
     <div
-      className={clsx(
-        'p-4 absolute pointer-events-none bg-opacity-75 opacity-75 z-50',
-        {
-          'bg-blue-600': tool.type !== 'object',
-          'bg-transparent': tool.type === 'object',
-        }
-      )}
-      ref={(el) => setCursorRef(el)}
+      className={clsx({
+        'bg-blue-600 p-4 absolute pointer-events-none bg-opacity-75 opacity-75 z-50':
+          tool.type !== 'object',
+        'bg-transparent absolute pointer-events-none border border-black':
+          tool.type === 'object',
+      })}
+      ref={(el) => setCursor(el)}
       style={{
         width: tool.width,
         height: tool.height,

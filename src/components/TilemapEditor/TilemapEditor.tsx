@@ -3,15 +3,15 @@ import clsx from 'clsx'
 
 import { clamp } from '../../utils/clamp'
 import { Tile } from './Tile'
-import { LayerType } from '../../types/layer'
 import { GridOverlay } from './GridOverlay'
 import { convertFileToImageData } from '../../utils/convertFileToImageData'
-import { addStructure, addTile, removeTile } from '../../tools'
+import { addStructure, getCursorPosition, getTileImage } from '../../tools'
 import { Cursor } from './Cursor'
 import { Structure } from '../Structure/Structure'
 import { useAppDispatch, useAppSelector } from '../../hooks/redux'
 import {
   removeStructure,
+  updateTilemap,
   zoomIn,
   zoomOut,
 } from '../../features/editor/editorSlice'
@@ -19,22 +19,9 @@ import { moveCursor } from '../../features/cursor/cursorSlice'
 import { CursorContext } from '../../contexts/CursorContext'
 import { calculateNewCursorPosition } from '../../features/cursor/calculateNewCursorPosition'
 
-export interface Props {
-  layers: LayerType[]
-  currentLayer: LayerType | undefined
-  onTileClick: (args: {
-    layerId: string
-    tileX: number
-    tileY: number
-    tilesetX: number
-    tilesetY: number
-    tilesetName: string
-    tileData: string
-  }) => void
-}
-
-export function TilemapEditor({ layers, onTileClick }: Props) {
-  const [cursor] = useContext(CursorContext)
+export function TilemapEditor() {
+  const [cursor, { handleMouseDown, handleMouseUp, handleMouseMove }] =
+    useContext(CursorContext)
   const dispatch = useAppDispatch()
   const gridRef = useRef<HTMLDivElement | null>(null)
   const [gridPosition, setGridPosition] = useState({
@@ -64,6 +51,7 @@ export function TilemapEditor({ layers, onTileClick }: Props) {
     () => currentFile?.layers.find((layer) => layer.id === selectedLayerId),
     [currentFile, selectedLayerId]
   )
+  const layers = currentFile?.layers ?? []
 
   const { width, height, tileWidth, tileHeight } = currentFile || {
     width: 0,
@@ -79,31 +67,49 @@ export function TilemapEditor({ layers, onTileClick }: Props) {
   ) {
     if (!currentLayer || !cursor) return
 
+    const position = getCursorPosition({
+      cursor,
+      tileWidth,
+      tileHeight,
+      tilemapWidth: width,
+      tilemapHeight: height,
+    })
+
+    if (!position) return
+
     if (tool.type === 'tile') {
-      addTile({
-        e,
-        currentLayerId: currentLayer.id,
-        cursor,
-        onTileClick,
-        tool,
-        tileHeight,
-        tilemapHeight: height,
-        tilemapWidth: width,
-        tileWidth,
-      })
+      const image = getTileImage(e)
+      if (!image) return
+      image.src = tool.src
+
+      dispatch(
+        updateTilemap({
+          layerId: currentLayer.id,
+          tileX: position.cursorX,
+          tileY: position.cursorY,
+          tilesetX: tool.tilesetX ?? -1,
+          tilesetY: tool.tilesetY ?? -1,
+          tilesetName: tool.tilesetName ?? 'unknown',
+          tileData: image.src,
+        })
+      )
     } else if (tool.type === 'eraser') {
       if (currentLayer.type === 'tile') {
-        removeTile({
-          e,
-          currentLayerId: currentLayer.id,
-          cursor,
-          tileWidth,
-          tileHeight,
-          tool,
-          tilemapHeight: height,
-          tilemapWidth: width,
-          onTileClick,
-        })
+        const image = getTileImage(e)
+        if (!image) return
+        image.src = ''
+
+        dispatch(
+          updateTilemap({
+            layerId: currentLayer.id,
+            tileX: position.cursorX,
+            tileY: position.cursorY,
+            tilesetX: -1,
+            tilesetY: -1,
+            tilesetName: '',
+            tileData: '',
+          })
+        )
       }
     }
   }
@@ -159,9 +165,11 @@ export function TilemapEditor({ layers, onTileClick }: Props) {
 
         dispatch(moveCursor({ x: position?.x ?? 0, y: position?.y ?? 0 }))
 
-        if (mouseState.leftMouseButtonIsDown) {
+        if (mouseState.leftMouseButtonIsDown && tool.type !== 'object') {
           handleLeftMouseButtonWithDrag(e)
         }
+
+        handleMouseMove(e, gridRef)
       }}
       className="items-center flex justify-center bg-gray-200 relative h-[calc(100%-3.5rem-1px)]"
       onMouseDown={(e) => {
@@ -182,6 +190,8 @@ export function TilemapEditor({ layers, onTileClick }: Props) {
             middleMouseButtonIsDown: true,
           }))
         }
+
+        handleMouseDown(e, gridRef)
       }}
       onMouseUp={(e) => {
         if (e.button === 0) {
@@ -195,6 +205,8 @@ export function TilemapEditor({ layers, onTileClick }: Props) {
             middleMouseButtonIsDown: false,
           }))
         }
+
+        handleMouseUp(e, gridRef)
       }}
     >
       <div
