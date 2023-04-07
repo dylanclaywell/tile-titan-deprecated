@@ -5,7 +5,6 @@ import { ResourceListItem } from '../components/ResourceList/ResourceListItem'
 import { FileType } from '../types/file'
 import { convertFileToImageData } from '../utils/convertFileToImageData'
 import { useAppDispatch, useAppSelector } from '../hooks/redux'
-import { updateCanvas } from '../features/editor/editorSlice'
 import { CursorContext } from '../contexts/CursorContext'
 
 export function StructureView() {
@@ -38,15 +37,15 @@ export function StructureView() {
     const src = convertFileToImageData(structure)
     imageRef.src = src
 
-    dispatch(
-      updateCanvas({
-        src,
-        fileId: structure.id,
-        width: structure.width * structure.tileWidth,
-        height: structure.height * structure.tileHeight,
-        toolType: 'structure',
-      })
-    )
+    // dispatch(
+    //   updateCanvas({
+    //     src,
+    //     fileId: structure.id,
+    //     width: structure.width * structure.tileWidth,
+    //     height: structure.height * structure.tileHeight,
+    //     toolType: 'structure',
+    //   })
+    // )
     cursorRef.style.display = 'block'
     cursorRef.dataset.id = structure.id
   }

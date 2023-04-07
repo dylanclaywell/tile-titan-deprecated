@@ -10,11 +10,11 @@ import { ResourceList } from '../components/ResourceList/ResourceList'
 import { useAppDispatch, useAppSelector } from '../hooks/redux'
 import {
   addLayer,
-  handleToolClick,
   removeLayer,
   setSelectedLayerId,
   updateLayerSettings,
 } from '../features/editor/editorSlice'
+import { changeToolType } from '../features/cursor/cursorSlice'
 
 function getLayerIcon(layerType: Type) {
   switch (layerType) {
@@ -87,7 +87,7 @@ export function LayerView() {
               name={layer.name}
               onClick={() => {
                 if (layer.type !== currentLayer?.type) {
-                  dispatch(handleToolClick({ type: 'select' }))
+                  dispatch(changeToolType('select'))
                 }
 
                 dispatch(setSelectedLayerId({ id: layer.id }))

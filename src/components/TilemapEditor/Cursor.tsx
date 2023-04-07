@@ -12,28 +12,39 @@ export interface Props {
 
 export function Cursor() {
   const [, { setCursor }] = useContext(CursorContext)
-  const tool = useAppSelector((state) => state.editor.tool)
+  const layerType = useAppSelector((state) => {
+    const currentFile = state.editor.files.find(
+      (file) => file.id === state.editor.selectedFileId
+    )
+    const currentLayer = currentFile?.layers.find(
+      (layer) => layer.id === state.editor.selectedLayerId
+    )
+    return currentLayer?.type
+  })
+  const cursorImage = useAppSelector((state) => state.cursor.image)
+  const width = useAppSelector((state) => state.cursor.width)
+  const height = useAppSelector((state) => state.cursor.height)
 
   return (
     <div
       className={clsx({
         'bg-blue-600 p-4 absolute pointer-events-none bg-opacity-75 opacity-75 z-50':
-          tool.type !== 'object',
+          layerType !== 'object',
         'bg-transparent absolute pointer-events-none border border-black':
-          tool.type === 'object',
+          layerType === 'object',
       })}
       ref={(el) => setCursor(el)}
       style={{
-        width: tool.width,
-        height: tool.height,
+        width: 32,
+        height: 32,
       }}
     >
       <img
-        className="absolute top-0 left-0"
-        src={tool.src}
+        className="absolute top-0 left-0 pointer-events-none"
+        src={cursorImage ?? ''}
         alt="cursor"
-        width={tool.width}
-        height={tool.height}
+        // width={width}
+        // height={height}
       />
     </div>
   )

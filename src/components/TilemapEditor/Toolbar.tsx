@@ -4,17 +4,18 @@ import { Tools } from '../Tools/Tools'
 import { ToolSection } from '../Tools/ToolSection'
 import { Tool } from '../Tool'
 import { useAppDispatch, useAppSelector } from '../../hooks/redux'
-import { handleToolClick } from '../../features/editor/editorSlice'
+import { changeToolType } from '../../features/cursor/cursorSlice'
 
 export function Toolbar() {
-  const { files, selectedFileId, selectedLayerId, tool, showGrid } =
-    useAppSelector((state) => ({
+  const toolType = useAppSelector((state) => state.cursor.toolType)
+  const { files, selectedFileId, selectedLayerId, showGrid } = useAppSelector(
+    (state) => ({
       files: state.editor.files,
       selectedFileId: state.editor.selectedFileId,
       selectedLayerId: state.editor.selectedLayerId,
-      tool: state.editor.tool,
       showGrid: state.editor.showGrid,
-    }))
+    })
+  )
   const dispatch = useAppDispatch()
 
   const currentFile = files.find((file) => file.id === selectedFileId)
@@ -31,16 +32,16 @@ export function Toolbar() {
         return (
           <>
             <Tool
-              name="Tile"
-              onClick={() => dispatch(handleToolClick({ type: 'tile' }))}
-              isSelected={tool.type === 'tile'}
+              name="Add Tile"
+              onClick={() => dispatch(changeToolType('add'))}
+              isSelected={toolType === 'add'}
               icon="image"
               isDisabled={!currentLayer}
             />
             <Tool
               name="Erase"
-              onClick={() => dispatch(handleToolClick({ type: 'eraser' }))}
-              isSelected={tool.type === 'eraser'}
+              onClick={() => dispatch(changeToolType('remove'))}
+              isSelected={toolType === 'remove'}
               icon="eraser"
               isDisabled={!currentLayer}
             />
@@ -51,22 +52,22 @@ export function Toolbar() {
           <>
             <Tool
               name="Select"
-              onClick={() => dispatch(handleToolClick({ type: 'select' }))}
-              isSelected={tool.type === 'select'}
+              onClick={() => dispatch(changeToolType('select'))}
+              isSelected={toolType === 'select'}
               icon="arrow-pointer"
               isDisabled={!currentLayer}
             />
             <Tool
-              name="Object"
-              onClick={() => dispatch(handleToolClick({ type: 'object' }))}
-              isSelected={tool.type === 'object'}
+              name="Add Object"
+              onClick={() => dispatch(changeToolType('add'))}
+              isSelected={toolType === 'add'}
               icon="vector-square"
               isDisabled={!currentLayer}
             />
             <Tool
               name="Erase"
-              onClick={() => dispatch(handleToolClick({ type: 'eraser' }))}
-              isSelected={tool.type === 'eraser'}
+              onClick={() => dispatch(changeToolType('remove'))}
+              isSelected={toolType === 'remove'}
               icon="eraser"
               isDisabled={!currentLayer}
             />
@@ -77,22 +78,22 @@ export function Toolbar() {
           <>
             <Tool
               name="Select"
-              onClick={() => dispatch(handleToolClick({ type: 'select' }))}
-              isSelected={tool.type === 'select'}
+              onClick={() => dispatch(changeToolType('select'))}
+              isSelected={toolType === 'select'}
               icon="arrow-pointer"
               isDisabled={!currentLayer}
             />
             <Tool
-              name="Structure"
-              onClick={() => dispatch(handleToolClick({ type: 'structure' }))}
-              isSelected={tool.type === 'structure'}
+              name="Add Structure"
+              onClick={() => dispatch(changeToolType('add'))}
+              isSelected={toolType === 'add'}
               icon="cubes"
               isDisabled={!currentLayer}
             />
             <Tool
               name="Erase"
-              onClick={() => dispatch(handleToolClick({ type: 'eraser' }))}
-              isSelected={tool.type === 'eraser'}
+              onClick={() => dispatch(changeToolType('remove'))}
+              isSelected={toolType === 'remove'}
               icon="eraser"
               isDisabled={!currentLayer}
             />

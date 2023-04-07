@@ -1,6 +1,7 @@
 import React, { MutableRefObject, useCallback, useEffect, useRef } from 'react'
 import { createSelector } from 'reselect'
 import { addObject } from '../features/editor/editorSlice'
+import { selectCurrentLayer } from '../features/editor/selectors'
 
 import { useAppDispatch, useAppSelector } from '../hooks/redux'
 import { RootState } from '../store'
@@ -52,34 +53,23 @@ function getAnchorOffset(
 const getState = createSelector(
   [
     (state: RootState) => ({
-      selectedLayerId: state.editor.selectedLayerId,
-      tool: state.editor.tool,
       zoomLevel: state.editor.zoomLevel,
     }),
-    (state, selectedLayerId, tool, zoomLevel) => ({
-      selectedLayerId,
-      tool,
+    (state, zoomLevel) => ({
       zoomLevel,
     }),
   ],
   (state) => ({
-    selectedLayerId: state.selectedLayerId,
-    tool: state.tool,
     zoomLevel: state.zoomLevel,
   })
 )
 
 export function CursorProvider({ children }: { children: React.ReactNode }) {
-  const { selectedLayerId, tool, zoomLevel } = useAppSelector((state) =>
-    getState(
-      state,
-      state.editor.selectedLayerId,
-      state.editor.tool,
-      state.editor.zoomLevel
-    )
+  const { zoomLevel } = useAppSelector((state) =>
+    getState(state, state.editor.zoomLevel)
   )
-
-  const objectToolPreviewRef = useRef<HTMLDivElement | null>(null)
+  const toolType = useAppSelector((state) => state.cursor.toolType)
+  const currentLayerType = useAppSelector(selectCurrentLayer)?.type
   const objectToolMouseRef = useRef<{
     x: number
     y: number
@@ -121,7 +111,7 @@ export function CursorProvider({ children }: { children: React.ReactNode }) {
     (e: React.MouseEvent<HTMLElement, MouseEvent>, anchor: Anchor) => {
       if (e.button !== 0) return
 
-      if (tool.type !== 'object') return
+      if (toolType !== 'add' || currentLayerType !== 'object') return
 
       const { clientX, clientY } = e
       objectToolMouseRef.current = {
@@ -146,14 +136,14 @@ export function CursorProvider({ children }: { children: React.ReactNode }) {
         cursor.style.height = '0px'
       }
     },
-    [tool.type, zoomLevel, cursor]
+    [toolType, zoomLevel, cursor, currentLayerType]
   )
 
   const handleObjectMouseUp = useCallback(
     (e: React.MouseEvent<HTMLElement, MouseEvent>, anchor: Anchor) => {
       if (
-        tool.type !== 'object' ||
-        !selectedLayerId ||
+        toolType !== 'add' ||
+        currentLayerType !== 'object' ||
         !anchor ||
         ('current' in anchor && !anchor.current) ||
         !objectToolMouseRef.current
@@ -190,7 +180,7 @@ export function CursorProvider({ children }: { children: React.ReactNode }) {
       editorDispatch(addObject({ x, y, x2, y2, width, height }))
       objectToolMouseRef.current = null
     },
-    [tool.type, zoomLevel, editorDispatch, selectedLayerId, cursor]
+    [toolType, zoomLevel, editorDispatch, cursor, currentLayerType]
   )
 
   const handleObjectMouseMove = useCallback(
@@ -243,29 +233,29 @@ export function CursorProvider({ children }: { children: React.ReactNode }) {
 
   const handleMouseDown = useCallback(
     (e: React.MouseEvent<HTMLElement, MouseEvent>, anchor: Anchor) => {
-      if (tool.type === 'object') {
+      if (toolType === 'add' && currentLayerType === 'object') {
         handleObjectMouseDown(e, anchor)
       }
     },
-    [tool.type, handleObjectMouseDown]
+    [toolType, handleObjectMouseDown, currentLayerType]
   )
 
   const handleMouseUp = useCallback(
     (e: React.MouseEvent<HTMLElement, MouseEvent>, anchor: Anchor) => {
-      if (tool.type === 'object') {
+      if (toolType === 'add' && currentLayerType === 'object') {
         handleObjectMouseUp(e, anchor)
       }
     },
-    [tool.type, handleObjectMouseUp]
+    [toolType, handleObjectMouseUp, currentLayerType]
   )
 
   const handleMouseMove = useCallback(
     (e: React.MouseEvent<HTMLElement, MouseEvent>, anchor: Anchor) => {
-      if (tool.type === 'object') {
+      if (toolType === 'add' && currentLayerType === 'object') {
         handleObjectMouseMove(e, anchor)
       }
     },
-    [tool.type, handleObjectMouseMove]
+    [toolType, handleObjectMouseMove, currentLayerType]
   )
 
   return (

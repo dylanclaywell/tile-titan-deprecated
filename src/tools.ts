@@ -1,18 +1,5 @@
 import { store } from './store'
-import {
-  Tool,
-  addStructure as addStructureReducer,
-} from './features/editor/editorSlice'
-
-export type ToolType =
-  | 'select'
-  | 'tile'
-  | 'eraser'
-  | 'grid'
-  | 'object'
-  | 'structure'
-
-export type LayerType = 'tile' | 'object' | 'structure'
+import { addStructure as addStructureReducer } from './features/editor/editorSlice'
 
 export type MoveArgs = {
   e: React.MouseEvent<HTMLDivElement, MouseEvent>
@@ -21,26 +8,6 @@ export type MoveArgs = {
   tileHeight: number
   tileWidth: number
   zoomLevel: number
-}
-
-export type TileUpdateArgs = {
-  e: React.MouseEvent<HTMLDivElement, MouseEvent>
-  currentLayerId: string
-  cursor: HTMLDivElement | null
-  tileWidth: number
-  tileHeight: number
-  tilemapWidth: number
-  tilemapHeight: number
-  tool: Tool
-  onTileClick: (args: {
-    layerId: string
-    tileX: number
-    tileY: number
-    tilesetX: number
-    tilesetY: number
-    tilesetName: string
-    tileData: string
-  }) => void
 }
 
 export type StructureAddArgs = {

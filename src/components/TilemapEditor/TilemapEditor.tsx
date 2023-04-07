@@ -18,6 +18,7 @@ import {
 import { moveCursor } from '../../features/cursor/cursorSlice'
 import { CursorContext } from '../../contexts/CursorContext'
 import { calculateNewCursorPosition } from '../../features/cursor/calculateNewCursorPosition'
+import { isTileCursorMetadata } from '../../features/cursor/helpers'
 
 export function TilemapEditor() {
   const [cursor, { handleMouseDown, handleMouseUp, handleMouseMove }] =
@@ -32,15 +33,17 @@ export function TilemapEditor() {
     x: 0,
     y: 0,
   })
-  const { files, selectedFileId, selectedLayerId, tool, showGrid, zoomLevel } =
+  const { files, selectedFileId, selectedLayerId, showGrid, zoomLevel } =
     useAppSelector((state) => ({
       files: state.editor.files,
       selectedFileId: state.editor.selectedFileId,
       selectedLayerId: state.editor.selectedLayerId,
-      tool: state.editor.tool,
       showGrid: state.editor.showGrid,
       zoomLevel: state.editor.zoomLevel,
     }))
+  const toolType = useAppSelector((state) => state.cursor.toolType)
+  const cursorMetadata = useAppSelector((state) => state.cursor.metadata)
+  const cursorImage = useAppSelector((state) => state.cursor.image)
   const [mouseState, setMouseState] = useState({
     leftMouseButtonIsDown: false,
     middleMouseButtonIsDown: false,
@@ -77,23 +80,27 @@ export function TilemapEditor() {
 
     if (!position) return
 
-    if (tool.type === 'tile') {
-      const image = getTileImage(e)
-      if (!image) return
-      image.src = tool.src
+    if (toolType === 'add') {
+      if (currentLayer.type === 'tile') {
+        const image = getTileImage(e)
+        if (!isTileCursorMetadata(cursorMetadata)) return
 
-      dispatch(
-        updateTilemap({
-          layerId: currentLayer.id,
-          tileX: position.cursorX,
-          tileY: position.cursorY,
-          tilesetX: tool.tilesetX ?? -1,
-          tilesetY: tool.tilesetY ?? -1,
-          tilesetName: tool.tilesetName ?? 'unknown',
-          tileData: image.src,
-        })
-      )
-    } else if (tool.type === 'eraser') {
+        if (!image) return
+        image.src = cursorImage ?? ''
+
+        dispatch(
+          updateTilemap({
+            layerId: currentLayer.id,
+            tileX: position.cursorX,
+            tileY: position.cursorY,
+            tilesetX: cursorMetadata.tilesetX ?? -1,
+            tilesetY: cursorMetadata.tilesetY ?? -1,
+            tilesetName: cursorMetadata.tilesetName ?? 'unknown',
+            tileData: image.src,
+          })
+        )
+      }
+    } else if (toolType === 'remove') {
       if (currentLayer.type === 'tile') {
         const image = getTileImage(e)
         if (!image) return
@@ -120,7 +127,7 @@ export function TilemapEditor() {
       onClick={() => {
         if (!cursor) return
 
-        if (tool.type === 'structure') {
+        if (toolType === 'add' && currentLayer?.type === 'structure') {
           addStructure({
             cursor,
           })
@@ -165,7 +172,10 @@ export function TilemapEditor() {
 
         dispatch(moveCursor({ x: position?.x ?? 0, y: position?.y ?? 0 }))
 
-        if (mouseState.leftMouseButtonIsDown && tool.type !== 'object') {
+        if (
+          mouseState.leftMouseButtonIsDown &&
+          currentLayer.type !== 'object'
+        ) {
           handleLeftMouseButtonWithDrag(e)
         }
 
@@ -308,7 +318,7 @@ export function TilemapEditor() {
                       onClick={() => {
                         if (
                           currentLayer?.type === 'structure' &&
-                          tool.type === 'eraser'
+                          toolType === 'remove'
                         ) {
                           dispatch(removeStructure({ id: structure.id }))
                         }

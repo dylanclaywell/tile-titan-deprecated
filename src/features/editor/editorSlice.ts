@@ -1,7 +1,6 @@
 import { PayloadAction, createSlice } from '@reduxjs/toolkit'
 import { v4 as generateId } from 'uuid'
 
-import { ToolType } from '../../tools'
 import {
   Type,
   LayerType,
@@ -15,19 +14,8 @@ import { ObjectType } from '../../types/object'
 import { StructureType } from '../../types/structure'
 import { FileType } from '../../types/file'
 
-export type Tool = {
-  type: ToolType
-  src: string
-  tilesetX?: number
-  tilesetY?: number
-  tilesetName?: string
-  width: number
-  height: number
-}
-
 type State = {
   files: FileType[]
-  tool: Tool
   zoomLevel: number
   showGrid: boolean
   selectedLayerId: string | null
@@ -36,12 +24,6 @@ type State = {
 
 const initialState: State = {
   files: [],
-  tool: {
-    type: 'tile',
-    src: '',
-    width: 32,
-    height: 32,
-  },
   zoomLevel: 1,
   showGrid: true,
   selectedFileId: null,
@@ -52,22 +34,6 @@ export const editorSlice = createSlice({
   name: 'editor',
   initialState,
   reducers: {
-    updateCanvas: (
-      state,
-      action: PayloadAction<{
-        src: string
-        tilesetX: number
-        tilesetY: number
-        tilesetName?: string
-        width: number
-        height: number
-        type: ToolType
-      }>
-    ) => {
-      state.tool = {
-        ...action.payload,
-      }
-    },
     updateTilemap: (
       state,
       action: PayloadAction<{
@@ -146,9 +112,6 @@ export const editorSlice = createSlice({
           },
         ],
       }
-    },
-    handleToolClick: (state, action: PayloadAction<{ type: ToolType }>) => {
-      state.tool.type = action.payload.type
     },
     updateObjectSettings: (
       state,
@@ -615,7 +578,6 @@ export const editorSlice = createSlice({
 })
 
 export const {
-  updateCanvas,
   addLayer,
   removeLayer,
   setSelectedLayerId,
@@ -632,7 +594,6 @@ export const {
   removeStructure,
   zoomIn,
   zoomOut,
-  handleToolClick,
   updateTilemap,
 } = editorSlice.actions
 

@@ -11,22 +11,17 @@ import { SelectField } from '../components/SelectField'
 import { ToolSection } from '../components/Tools/ToolSection'
 import { Tools } from '../components/Tools/Tools'
 import { TilesetSettingsModal } from '../components/TilesetSettingsModal'
-import { LayerType } from '../tools'
 import { useAppDispatch, useAppSelector } from '../hooks/redux'
-import { updateCanvas } from '../features/editor/editorSlice'
+import {
+  changeToolType,
+  setCursorMetadata,
+  setCursorSize,
+  setCursorSrc,
+} from '../features/cursor/cursorSlice'
+import { Type as LayerType } from '../types/layer'
 
-function TilesetViewBase({
-  updateToolCanvas,
-  layerType,
-}: {
-  updateToolCanvas: (canvas: {
-    canvas: HTMLCanvasElement
-    tilesetX: number
-    tilesetY: number
-    tilesetName: string
-  }) => void
-  layerType: LayerType
-}) {
+function TilesetViewBase({ layerType }: { layerType: LayerType }) {
+  const dispatch = useAppDispatch()
   const [tilesetSettingsIsOpen, setTilesetSettingsIsOpen] = useState(false)
   const [tilesets, setTilesets] = useState<TilesetType[]>([])
   const [cursorRef, setCursorRef] = useState<HTMLDivElement | null>(null)
@@ -100,7 +95,16 @@ function TilesetViewBase({
     canvas.height = height
     const context = canvas.getContext('2d')
     context?.drawImage(imageRef, x1, y1, width, height, 0, 0, width, height)
-    updateToolCanvas({ canvas, tilesetX, tilesetY, tilesetName })
+    dispatch(setCursorSrc(canvas.toDataURL()))
+    dispatch(
+      setCursorMetadata({
+        tilesetName,
+        tilesetX,
+        tilesetY,
+      })
+    )
+    dispatch(setCursorSize({ width, height }))
+    dispatch(changeToolType('add'))
   }
 
   const currentTileset = tilesets.find(
@@ -197,7 +201,6 @@ function TilesetViewBase({
 const TilesetViewMemoized = React.memo(TilesetViewBase)
 
 export function TilesetView() {
-  const dispatch = useAppDispatch()
   const { selectedLayerId, selectedFileId, files } = useAppSelector(
     (state) => ({
       selectedLayerId: state.editor.selectedLayerId,
@@ -209,22 +212,5 @@ export function TilesetView() {
   const file = files.find((file) => file.id === selectedFileId)
   const layer = file?.layers.find((layer) => layer.id === selectedLayerId)
 
-  return (
-    <TilesetViewMemoized
-      updateToolCanvas={(args) => {
-        dispatch(
-          updateCanvas({
-            src: args.canvas.toDataURL(),
-            tilesetX: args.tilesetX,
-            tilesetY: args.tilesetY,
-            tilesetName: args.tilesetName,
-            width: args.canvas.width,
-            height: args.canvas.height,
-            type: 'tile',
-          })
-        )
-      }}
-      layerType={layer?.type ?? 'tile'}
-    />
-  )
+  return <TilesetViewMemoized layerType={layer?.type ?? 'tile'} />
 }
