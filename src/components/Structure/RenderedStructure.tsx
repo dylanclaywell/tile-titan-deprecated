@@ -38,7 +38,7 @@ export function RenderedStructure({ structure }: { structure: StructureType }) {
       y={y}
       src={src ?? ''}
       id={structure.id}
-      isVisible={currentLayer?.isVisible ?? false}
+      isVisible={currentLayer?.isVisible ?? true}
       onClick={() => {
         if (currentLayer?.type === 'structure' && toolType === 'remove') {
           dispatch(removeStructure({ id: structure.id }))

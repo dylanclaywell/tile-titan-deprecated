@@ -1,9 +1,52 @@
 import { addFileImage, getFileImage } from '../indexedDB/fileImages'
 import { FileType } from '../types/file'
+import { LayerType } from '../types/layer'
+
+async function drawImages(
+  context: CanvasRenderingContext2D | null,
+  layers: LayerType[],
+  tileWidth: number,
+  tileHeight: number
+) {
+  const images: {
+    img: HTMLImageElement
+    x: number
+    y: number
+  }[] = []
+
+  for (const layer of layers) {
+    if (layer.type === 'tile') {
+      for (let y = 0; y < layer.data.length; y++) {
+        const row = layer.data[y]
+        for (let x = 0; x < row.length; x++) {
+          const tile = row[x]
+
+          if (tile.tileData) {
+            const image = new Image()
+            image.src = tile.tileData
+            images.push({
+              img: image,
+              x,
+              y,
+            })
+          }
+        }
+      }
+    }
+  }
+
+  await Promise.all(
+    images.map(
+      (image) => new Promise((resolve) => (image.img.onload = resolve))
+    )
+  )
+
+  for (const image of images) {
+    context?.drawImage(image.img, image.x * tileWidth, image.y * tileHeight)
+  }
+}
 
 export async function convertFileToImageData(file: FileType) {
-  // TODO this should use indexedDB to cache the images to improve performance
-
   const fileImage = await getFileImage(file.id)
 
   if (fileImage) {
@@ -16,22 +59,7 @@ export async function convertFileToImageData(file: FileType) {
 
   const context = canvas.getContext('2d')
 
-  for (const layer of file.layers) {
-    if (layer.type === 'tile') {
-      for (let y = 0; y < layer.data.length; y++) {
-        const row = layer.data[y]
-        for (let x = 0; x < row.length; x++) {
-          const tile = row[x]
-
-          if (tile.tileData) {
-            const image = new Image()
-            image.src = tile.tileData
-            context?.drawImage(image, x * file.tileWidth, y * file.tileHeight)
-          }
-        }
-      }
-    }
-  }
+  await drawImages(context, file.layers, file.tileWidth, file.tileHeight)
 
   const imageData = canvas.toDataURL()
 
