@@ -14,7 +14,7 @@ function StructureBase({ id, isVisible, src, x, y, onClick }: Props) {
   return (
     <img
       key={`structure-${id}`}
-      className={clsx('absolute select-none', {
+      className={clsx('absolute select-none hover:bg-blue-200', {
         hidden: !isVisible,
       })}
       data-type="structure"

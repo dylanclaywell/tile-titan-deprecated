@@ -7,7 +7,6 @@ export async function convertFileToImageData(file: FileType) {
   const fileImage = await getFileImage(file.id)
 
   if (fileImage) {
-    console.log('using cache')
     return fileImage.blob
   }
 

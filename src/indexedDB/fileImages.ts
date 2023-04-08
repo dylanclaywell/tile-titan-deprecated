@@ -16,7 +16,7 @@ export async function getFileImage(id: string) {
     .transaction('fileImages', 'readonly')
     .objectStore('fileImages')
 
-  return new Promise<FileImageType>((resolve, reject) => {
+  return new Promise<FileImageType | undefined>((resolve, reject) => {
     const request = fileImages.get(id)
 
     request.onsuccess = (event) => {
@@ -24,12 +24,12 @@ export async function getFileImage(id: string) {
         const result = FileImage.parse((event.target as any)?.result)
         resolve(result)
       } catch {
-        reject(event)
+        resolve(undefined)
       }
     }
 
-    request.onerror = (event) => {
-      reject(event)
+    request.onerror = () => {
+      resolve(undefined)
     }
   })
 }
