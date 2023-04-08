@@ -17,6 +17,7 @@ import {
 import { moveCursor } from '../../features/cursor/cursorSlice'
 import { CursorContext } from '../../contexts/CursorContext'
 import { calculateNewCursorPosition } from '../../features/cursor/calculateNewCursorPosition'
+import { RenderedStructure } from '../Structure/RenderedStructure'
 
 export function TilemapEditor() {
   const [cursor, { handleMouseDown, handleMouseUp, handleMouseMove }] =
@@ -235,31 +236,10 @@ export function TilemapEditor() {
                 ))
               case 'structure':
                 return layer.data.map((structure) => {
-                  const { x, y, fileId } = structure
-                  const file = files.find((f) => f.id === fileId)
-
-                  if (!file) {
-                    return null
-                  }
-
-                  const src = convertFileToImageData(file)
-
                   return (
-                    <Structure
-                      key={`structure-${structure.id}`}
-                      x={x}
-                      y={y}
-                      src={src}
-                      id={structure.id}
-                      isVisible={layer.isVisible}
-                      onClick={() => {
-                        if (
-                          currentLayer?.type === 'structure' &&
-                          toolType === 'remove'
-                        ) {
-                          dispatch(removeStructure({ id: structure.id }))
-                        }
-                      }}
+                    <RenderedStructure
+                      key={structure.id}
+                      structure={structure}
                     />
                   )
                 })

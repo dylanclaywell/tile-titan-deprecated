@@ -66,9 +66,21 @@ const getState = createSelector(
         tilemapHeight: selectedFile?.height ?? 0,
       }
     },
-    (state, zoomLevel, selectedFileId) => ({
+    (
+      state,
       zoomLevel,
       selectedFileId,
+      tileWidth,
+      tileHeight,
+      tilemapWidth,
+      tilemapHeight
+    ) => ({
+      zoomLevel,
+      selectedFileId,
+      tileWidth,
+      tileHeight,
+      tilemapWidth,
+      tilemapHeight,
     }),
   ],
   (state) => ({
@@ -82,9 +94,20 @@ const getState = createSelector(
 
 export function CursorProvider({ children }: { children: React.ReactNode }) {
   const { zoomLevel, tileWidth, tileHeight, tilemapWidth, tilemapHeight } =
-    useAppSelector((state) =>
-      getState(state, state.editor.zoomLevel, state.editor.selectedFileId)
-    )
+    useAppSelector((state) => {
+      const selectedFile = state.editor.files.find(
+        (file) => file.id === state.editor.selectedFileId
+      )
+      return getState(
+        state,
+        state.editor.zoomLevel,
+        state.editor.selectedFileId,
+        selectedFile?.tileWidth,
+        selectedFile?.tileHeight,
+        selectedFile?.width,
+        selectedFile?.height
+      )
+    })
   const toolType = useAppSelector((state) => state.cursor.toolType)
   const currentLayerType = useAppSelector(selectCurrentLayer)?.type
   const currentLayerId = useAppSelector(selectCurrentLayer)?.id

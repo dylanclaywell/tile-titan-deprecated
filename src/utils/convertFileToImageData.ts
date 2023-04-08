@@ -1,7 +1,15 @@
+import { addFileImage, getFileImage } from '../indexedDB/fileImages'
 import { FileType } from '../types/file'
 
-export function convertFileToImageData(file: FileType) {
+export async function convertFileToImageData(file: FileType) {
   // TODO this should use indexedDB to cache the images to improve performance
+
+  const fileImage = await getFileImage(file.id)
+
+  if (fileImage) {
+    console.log('using cache')
+    return fileImage.blob
+  }
 
   const canvas = document.createElement('canvas')
   canvas.width = file.width * file.tileWidth
@@ -26,5 +34,9 @@ export function convertFileToImageData(file: FileType) {
     }
   }
 
-  return canvas.toDataURL()
+  const imageData = canvas.toDataURL()
+
+  await addFileImage(file.id, imageData)
+
+  return imageData
 }

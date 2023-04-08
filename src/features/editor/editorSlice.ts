@@ -475,6 +475,18 @@ export const editorSlice = createSlice({
 
       if (!currentFile) return state
 
+      currentFile.layers.forEach((layer) => {
+        if (
+          layer.type === 'tile' &&
+          (currentFile.width !== width ||
+            currentFile.height !== height ||
+            currentFile.tileWidth !== tileWidth ||
+            currentFile.tileHeight !== tileHeight)
+        ) {
+          layer.data = generateMap(width, height)
+        }
+      })
+
       currentFile.height = height
       currentFile.width = width
       currentFile.tileHeight = tileHeight

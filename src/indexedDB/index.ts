@@ -1,11 +1,15 @@
-export type ObjectStoreName = 'tilesets'
+export type Databases = {
+  tilesets: 'tilesets'
+  fileImages: 'fileImages'
+}
+export type DatabaseName = 'tilesets' | 'fileImages'
 
-export function openDatabase(objectStoreName: ObjectStoreName) {
-  const request = indexedDB.open('tilemap-editor', 1)
+export function openDatabase(databaseName: DatabaseName, keyPath: string) {
+  const request = indexedDB.open(databaseName, 1)
 
   request.onupgradeneeded = (event) => {
     const database = (event.target as any)?.result
-    database.createObjectStore(objectStoreName, { keyPath: 'id' })
+    database.createObjectStore(databaseName, { keyPath })
   }
 
   return new Promise<IDBDatabase>((resolve, reject) => {

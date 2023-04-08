@@ -40,7 +40,7 @@ export function StructureView() {
     const structure = files.find((f) => f.id === id)
     if (!structure) return
 
-    const src = convertFileToImageData(structure)
+    const src = (await convertFileToImageData(structure)) ?? ''
     imageRef.src = src
 
     dispatch(changeToolType('add'))

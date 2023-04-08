@@ -32,6 +32,7 @@ function BaseTile({
     >
       <img
         className="pointer-events-none outline-none select-none tile"
+        draggable={false}
         src={src}
       />
     </div>

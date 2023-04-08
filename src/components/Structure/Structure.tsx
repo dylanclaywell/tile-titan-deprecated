@@ -14,7 +14,7 @@ function StructureBase({ id, isVisible, src, x, y, onClick }: Props) {
   return (
     <img
       key={`structure-${id}`}
-      className={clsx('absolute', {
+      className={clsx('absolute select-none', {
         hidden: !isVisible,
       })}
       data-type="structure"
@@ -24,6 +24,7 @@ function StructureBase({ id, isVisible, src, x, y, onClick }: Props) {
         top: y,
         left: x,
       }}
+      draggable={false}
       onClick={onClick}
     />
   )

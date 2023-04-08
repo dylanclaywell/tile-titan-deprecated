@@ -12,7 +12,7 @@ const Tileset = z.object({
 export type TilesetType = z.infer<typeof Tileset>
 
 export async function getTilesets() {
-  const database = await openDatabase('tilesets')
+  const database = await openDatabase('tilesets', 'id')
 
   const tilesets = database
     .transaction('tilesets', 'readonly')
@@ -35,7 +35,7 @@ export async function getTilesets() {
 export async function addTileset(
   blob: string | ArrayBuffer | null | undefined
 ) {
-  const database = await openDatabase('tilesets')
+  const database = await openDatabase('tilesets', 'id')
 
   const newTileset = Tileset.parse({
     name: 'New Tileset',
@@ -50,7 +50,7 @@ export async function addTileset(
 }
 
 export async function changeTilesetName(id: string, name: string) {
-  const database = await openDatabase('tilesets')
+  const database = await openDatabase('tilesets', 'id')
 
   const tileset = database
     .transaction('tilesets', 'readwrite')
