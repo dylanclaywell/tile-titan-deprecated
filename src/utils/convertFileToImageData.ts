@@ -14,7 +14,11 @@ async function drawImages(
     y: number
   }[] = []
 
-  for (const layer of layers) {
+  const sortedLayers = [...layers].sort((a, b) =>
+    a.sortOrder < b.sortOrder ? -1 : 1
+  )
+
+  for (const layer of sortedLayers) {
     if (layer.type === 'tile') {
       for (let y = 0; y < layer.data.length; y++) {
         const row = layer.data[y]

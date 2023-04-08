@@ -48,5 +48,5 @@ export async function addFileImage(
   const fileImageDB = database
     .transaction('fileImages', 'readwrite')
     .objectStore('fileImages')
-  fileImageDB.add(newImage)
+  fileImageDB.put(newImage)
 }
