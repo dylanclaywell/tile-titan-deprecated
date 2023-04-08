@@ -1,6 +1,7 @@
 import React, { MutableRefObject, useCallback, useEffect, useRef } from 'react'
 import { createSelector } from 'reselect'
-import { addObject } from '../features/editor/editorSlice'
+import { isTileCursorMetadata } from '../features/cursor/helpers'
+import { addObject, updateTilemap } from '../features/editor/editorSlice'
 import { selectCurrentLayer } from '../features/editor/selectors'
 
 import { useAppDispatch, useAppSelector } from '../hooks/redux'
@@ -52,24 +53,41 @@ function getAnchorOffset(
 
 const getState = createSelector(
   [
-    (state: RootState) => ({
-      zoomLevel: state.editor.zoomLevel,
-    }),
-    (state, zoomLevel) => ({
+    (state: RootState) => {
+      const selectedFile = state.editor.files.find(
+        (file) => file.id === state.editor.selectedFileId
+      )
+
+      return {
+        zoomLevel: state.editor.zoomLevel,
+        tileWidth: selectedFile?.tileWidth ?? 0,
+        tileHeight: selectedFile?.tileHeight ?? 0,
+        tilemapWidth: selectedFile?.width ?? 0,
+        tilemapHeight: selectedFile?.height ?? 0,
+      }
+    },
+    (state, zoomLevel, selectedFileId) => ({
       zoomLevel,
+      selectedFileId,
     }),
   ],
   (state) => ({
     zoomLevel: state.zoomLevel,
+    tileWidth: state.tileWidth,
+    tileHeight: state.tileHeight,
+    tilemapWidth: state.tilemapWidth,
+    tilemapHeight: state.tilemapHeight,
   })
 )
 
 export function CursorProvider({ children }: { children: React.ReactNode }) {
-  const { zoomLevel } = useAppSelector((state) =>
-    getState(state, state.editor.zoomLevel)
-  )
+  const { zoomLevel, tileWidth, tileHeight, tilemapWidth, tilemapHeight } =
+    useAppSelector((state) =>
+      getState(state, state.editor.zoomLevel, state.editor.selectedFileId)
+    )
   const toolType = useAppSelector((state) => state.cursor.toolType)
   const currentLayerType = useAppSelector(selectCurrentLayer)?.type
+  const currentLayerId = useAppSelector(selectCurrentLayer)?.id
   const objectToolMouseRef = useRef<{
     x: number
     y: number
@@ -80,6 +98,7 @@ export function CursorProvider({ children }: { children: React.ReactNode }) {
   const image = useAppSelector((state) => state.cursor.image)
   const x = useAppSelector((state) => state.cursor.x)
   const y = useAppSelector((state) => state.cursor.y)
+  const cursorMetadata = useAppSelector((state) => state.cursor.metadata)
   const editorDispatch = useAppDispatch()
 
   const [cursor, setCursor] = React.useState<HTMLDivElement | null>(null)
@@ -106,6 +125,55 @@ export function CursorProvider({ children }: { children: React.ReactNode }) {
 
     img.src = image ?? ''
   }, [image, cursor])
+
+  const handleTileMouseDown = useCallback(() => {
+    if (!isTileCursorMetadata(cursorMetadata)) return
+
+    if (x < 0 || y < 0) return
+    if (
+      x > (tilemapWidth - 1) * tileWidth ||
+      y > (tilemapHeight - 1) * tileHeight
+    )
+      return
+
+    if (toolType === 'add') {
+      editorDispatch(
+        updateTilemap({
+          layerId: currentLayerId ?? '',
+          tileX: x / tileWidth,
+          tileY: y / tileHeight,
+          tilesetX: cursorMetadata?.tilesetX ?? -1,
+          tilesetY: cursorMetadata?.tilesetY ?? -1,
+          tilesetName: cursorMetadata?.tilesetName ?? 'unknown',
+          tileData: image ?? '',
+        })
+      )
+    } else if (toolType === 'remove') {
+      editorDispatch(
+        updateTilemap({
+          layerId: currentLayerId ?? '',
+          tileX: x / tileWidth,
+          tileY: y / tileHeight,
+          tilesetX: -1,
+          tilesetY: -1,
+          tilesetName: '',
+          tileData: '',
+        })
+      )
+    }
+  }, [
+    currentLayerId,
+    cursorMetadata,
+    editorDispatch,
+    image,
+    x,
+    y,
+    tileWidth,
+    tileHeight,
+    tilemapWidth,
+    tilemapHeight,
+    toolType,
+  ])
 
   const handleObjectMouseDown = useCallback(
     (e: React.MouseEvent<HTMLElement, MouseEvent>, anchor: Anchor) => {
@@ -235,9 +303,11 @@ export function CursorProvider({ children }: { children: React.ReactNode }) {
     (e: React.MouseEvent<HTMLElement, MouseEvent>, anchor: Anchor) => {
       if (toolType === 'add' && currentLayerType === 'object') {
         handleObjectMouseDown(e, anchor)
+      } else if (currentLayerType === 'tile') {
+        handleTileMouseDown()
       }
     },
-    [toolType, handleObjectMouseDown, currentLayerType]
+    [toolType, handleObjectMouseDown, handleTileMouseDown, currentLayerType]
   )
 
   const handleMouseUp = useCallback(

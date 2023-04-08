@@ -5,20 +5,18 @@ import { clamp } from '../../utils/clamp'
 import { Tile } from './Tile'
 import { GridOverlay } from './GridOverlay'
 import { convertFileToImageData } from '../../utils/convertFileToImageData'
-import { addStructure, getCursorPosition, getTileImage } from '../../tools'
+import { addStructure } from '../../tools'
 import { Cursor } from './Cursor'
 import { Structure } from '../Structure/Structure'
 import { useAppDispatch, useAppSelector } from '../../hooks/redux'
 import {
   removeStructure,
-  updateTilemap,
   zoomIn,
   zoomOut,
 } from '../../features/editor/editorSlice'
 import { moveCursor } from '../../features/cursor/cursorSlice'
 import { CursorContext } from '../../contexts/CursorContext'
 import { calculateNewCursorPosition } from '../../features/cursor/calculateNewCursorPosition'
-import { isTileCursorMetadata } from '../../features/cursor/helpers'
 
 export function TilemapEditor() {
   const [cursor, { handleMouseDown, handleMouseUp, handleMouseMove }] =
@@ -42,8 +40,6 @@ export function TilemapEditor() {
       zoomLevel: state.editor.zoomLevel,
     }))
   const toolType = useAppSelector((state) => state.cursor.toolType)
-  const cursorMetadata = useAppSelector((state) => state.cursor.metadata)
-  const cursorImage = useAppSelector((state) => state.cursor.image)
   const [mouseState, setMouseState] = useState({
     leftMouseButtonIsDown: false,
     middleMouseButtonIsDown: false,
@@ -61,64 +57,6 @@ export function TilemapEditor() {
     height: 0,
     tileWidth: 0,
     tileHeight: 0,
-  }
-
-  function handleLeftMouseButtonWithDrag(
-    e:
-      | React.MouseEvent<HTMLDivElement, MouseEvent>
-      | React.MouseEvent<HTMLImageElement, MouseEvent>
-  ) {
-    if (!currentLayer || !cursor) return
-
-    const position = getCursorPosition({
-      cursor,
-      tileWidth,
-      tileHeight,
-      tilemapWidth: width,
-      tilemapHeight: height,
-    })
-
-    if (!position) return
-
-    if (toolType === 'add') {
-      if (currentLayer.type === 'tile') {
-        const image = getTileImage(e)
-        if (!isTileCursorMetadata(cursorMetadata)) return
-
-        if (!image) return
-        image.src = cursorImage ?? ''
-
-        dispatch(
-          updateTilemap({
-            layerId: currentLayer.id,
-            tileX: position.cursorX,
-            tileY: position.cursorY,
-            tilesetX: cursorMetadata.tilesetX ?? -1,
-            tilesetY: cursorMetadata.tilesetY ?? -1,
-            tilesetName: cursorMetadata.tilesetName ?? 'unknown',
-            tileData: image.src,
-          })
-        )
-      }
-    } else if (toolType === 'remove') {
-      if (currentLayer.type === 'tile') {
-        const image = getTileImage(e)
-        if (!image) return
-        image.src = ''
-
-        dispatch(
-          updateTilemap({
-            layerId: currentLayer.id,
-            tileX: position.cursorX,
-            tileY: position.cursorY,
-            tilesetX: -1,
-            tilesetY: -1,
-            tilesetName: '',
-            tileData: '',
-          })
-        )
-      }
-    }
   }
 
   return (
@@ -176,7 +114,7 @@ export function TilemapEditor() {
           mouseState.leftMouseButtonIsDown &&
           currentLayer.type !== 'object'
         ) {
-          handleLeftMouseButtonWithDrag(e)
+          handleMouseDown(e, gridRef)
         }
 
         handleMouseMove(e, gridRef)
@@ -189,7 +127,7 @@ export function TilemapEditor() {
             leftMouseButtonIsDown: true,
           }))
 
-          handleLeftMouseButtonWithDrag(e)
+          handleMouseDown(e, gridRef)
         } else if (e.button === 1) {
           setPreviousPosition({
             x: e.clientX ?? 0,
@@ -200,8 +138,6 @@ export function TilemapEditor() {
             middleMouseButtonIsDown: true,
           }))
         }
-
-        handleMouseDown(e, gridRef)
       }}
       onMouseUp={(e) => {
         if (e.button === 0) {
