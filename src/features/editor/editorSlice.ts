@@ -475,36 +475,12 @@ export const editorSlice = createSlice({
 
       if (!currentFile) return state
 
-      const layers = currentFile.layers.map((layer) => {
-        if (
-          layer.type === 'tile' &&
-          (currentFile.width !== width ||
-            currentFile.height !== height ||
-            currentFile.tileWidth !== tileWidth ||
-            currentFile.tileHeight !== tileHeight)
-        ) {
-          layer.data = generateMap(width, height)
-        }
-
-        return layer
-      })
-
-      return {
-        ...state,
-        files: [
-          ...state.files.filter((file) => file.id !== currentFile.id),
-          {
-            ...currentFile,
-            name,
-            layers,
-            width,
-            height,
-            tileWidth,
-            tileHeight,
-            isStructure,
-          },
-        ],
-      }
+      currentFile.height = height
+      currentFile.width = width
+      currentFile.tileHeight = tileHeight
+      currentFile.tileWidth = tileWidth
+      currentFile.name = name
+      currentFile.isStructure = isStructure
     },
     addStructure: (
       state,
