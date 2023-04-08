@@ -272,6 +272,7 @@ export function TilemapEditor() {
                             tileWidth={tileWidth}
                             tileHeight={tileHeight}
                             showGrid={showGrid}
+                            src={tile.tileData ?? ''}
                           />
                         )
                       })

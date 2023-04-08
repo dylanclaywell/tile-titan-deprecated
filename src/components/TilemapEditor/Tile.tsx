@@ -7,12 +7,14 @@ function BaseTile({
   showGrid,
   tileWidth,
   tileHeight,
+  src,
 }: {
   x: number
   y: number
   showGrid: boolean
   tileWidth: number
   tileHeight: number
+  src: string
 }) {
   return (
     <div
@@ -28,7 +30,10 @@ function BaseTile({
         height: tileHeight,
       }}
     >
-      <img className="pointer-events-none outline-none select-none tile" />
+      <img
+        className="pointer-events-none outline-none select-none tile"
+        src={src}
+      />
     </div>
   )
 }

@@ -5,6 +5,7 @@ import { ResourceListItem } from '../components/ResourceList/ResourceListItem'
 import { Properties } from '../components/File/Properties'
 import { useAppDispatch, useAppSelector } from '../hooks/redux'
 import { deleteFile, selectFile } from '../features/editor/editorSlice'
+import { setCursorMetadata, setCursorSrc } from '../features/cursor/cursorSlice'
 
 export function FileView() {
   const { files, selectedFileId } = useAppSelector((state) => ({
@@ -25,7 +26,11 @@ export function FileView() {
               id={file.id}
               draggedId={null}
               name={file.name}
-              onClick={() => dispatch(selectFile({ id: file.id }))}
+              onClick={() => {
+                dispatch(selectFile({ id: file.id }))
+                dispatch(setCursorSrc(''))
+                dispatch(setCursorMetadata(null))
+              }}
               onDragStart={() => undefined}
               onDragEnd={() => undefined}
               onDrop={() => undefined}

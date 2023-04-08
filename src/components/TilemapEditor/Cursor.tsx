@@ -1,4 +1,4 @@
-import React, { useContext, MutableRefObject, useMemo } from 'react'
+import React, { useContext, MutableRefObject } from 'react'
 import clsx from 'clsx'
 
 import { LayerType } from '../../types/layer'
@@ -35,16 +35,19 @@ export function Cursor() {
       })}
       ref={(el) => setCursor(el)}
       style={{
-        width: 32,
-        height: 32,
+        width,
+        height,
       }}
     >
       <img
-        className="absolute top-0 left-0 pointer-events-none"
+        className={clsx('absolute top-0 left-0 pointer-events-none', {
+          hidden: !cursorImage,
+          block: cursorImage,
+        })}
         src={cursorImage ?? ''}
         alt="cursor"
-        // width={width}
-        // height={height}
+        width={width}
+        height={height}
       />
     </div>
   )

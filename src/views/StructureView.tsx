@@ -6,6 +6,12 @@ import { FileType } from '../types/file'
 import { convertFileToImageData } from '../utils/convertFileToImageData'
 import { useAppDispatch, useAppSelector } from '../hooks/redux'
 import { CursorContext } from '../contexts/CursorContext'
+import {
+  changeToolType,
+  setCursorMetadata,
+  setCursorSize,
+  setCursorSrc,
+} from '../features/cursor/cursorSlice'
 
 export function StructureView() {
   const [cursorRef] = useContext(CursorContext)
@@ -37,15 +43,15 @@ export function StructureView() {
     const src = convertFileToImageData(structure)
     imageRef.src = src
 
-    // dispatch(
-    //   updateCanvas({
-    //     src,
-    //     fileId: structure.id,
-    //     width: structure.width * structure.tileWidth,
-    //     height: structure.height * structure.tileHeight,
-    //     toolType: 'structure',
-    //   })
-    // )
+    dispatch(changeToolType('add'))
+    dispatch(setCursorMetadata({ fileId: structure.id }))
+    dispatch(
+      setCursorSize({
+        width: structure.width * structure.tileWidth,
+        height: structure.height * structure.tileHeight,
+      })
+    )
+    dispatch(setCursorSrc(src))
     cursorRef.style.display = 'block'
     cursorRef.dataset.id = structure.id
   }

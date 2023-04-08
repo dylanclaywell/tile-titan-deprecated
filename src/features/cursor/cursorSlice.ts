@@ -8,7 +8,11 @@ export type TileCursorMetadata = {
   tilesetName: string
 }
 
-export type Metadata = TileCursorMetadata | null
+export type StructureCursorMetadata = {
+  fileId: string
+}
+
+export type Metadata = TileCursorMetadata | StructureCursorMetadata | null
 
 type State = {
   image: string | null
