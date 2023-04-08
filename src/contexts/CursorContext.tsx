@@ -127,6 +127,14 @@ export function CursorProvider({ children }: { children: React.ReactNode }) {
   const [cursor, setCursor] = React.useState<HTMLDivElement | null>(null)
 
   useEffect(() => {
+    if (currentLayerType !== 'object' && cursor) {
+      cursor.style.visibility = ''
+      cursor.style.height = ''
+      cursor.style.width = ''
+    }
+  }, [currentLayerId, currentLayerType, cursor])
+
+  useEffect(() => {
     if (!cursor) return
 
     cursor.style.left = `${x}px`
@@ -150,7 +158,7 @@ export function CursorProvider({ children }: { children: React.ReactNode }) {
   }, [image, cursor])
 
   const handleTileMouseDown = useCallback(() => {
-    if (!isTileCursorMetadata(cursorMetadata)) return
+    if (cursorMetadata && !isTileCursorMetadata(cursorMetadata)) return
 
     if (x < 0 || y < 0) return
     if (
