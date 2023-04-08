@@ -168,6 +168,7 @@ export function CursorProvider({ children }: { children: React.ReactNode }) {
           tilesetX: cursorMetadata?.tilesetX ?? -1,
           tilesetY: cursorMetadata?.tilesetY ?? -1,
           tilesetName: cursorMetadata?.tilesetName ?? 'unknown',
+          tilesetId: cursorMetadata?.tilesetId ?? 'unknown',
           tileData: image ?? '',
         })
       )
@@ -179,7 +180,8 @@ export function CursorProvider({ children }: { children: React.ReactNode }) {
           tileY: y / tileHeight,
           tilesetX: -1,
           tilesetY: -1,
-          tilesetName: '',
+          tilesetName: 'unknown',
+          tilesetId: 'unknown',
           tileData: '',
         })
       )

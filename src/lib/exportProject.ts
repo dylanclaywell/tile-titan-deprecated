@@ -20,8 +20,13 @@ export async function exportProject(files: FileType[]) {
       continue
     }
     const blob = await (await fetch(tileset.blob)).blob()
+    const tilesetFolder = tilesetFolders.folder(tileset.id)
 
-    tilesetFolders.file(`${tileset.name}.png`, blob, {
+    if (!tilesetFolder) {
+      continue
+    }
+
+    tilesetFolder.file(`${tileset.name}.png`, blob, {
       base64: true,
     })
   }
@@ -33,6 +38,7 @@ export async function exportProject(files: FileType[]) {
         layer.type === 'tile'
           ? layer.data.map((row) =>
               row.map((tile) => ({
+                tilesetId: tile.tilesetId,
                 // Specifically exclude tileData since it's not needed in the exported file
                 tilesetName: tile.tilesetName,
                 tilesetX: tile.tilesetX,

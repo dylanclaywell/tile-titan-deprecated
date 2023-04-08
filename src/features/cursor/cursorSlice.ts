@@ -6,6 +6,7 @@ export type TileCursorMetadata = {
   tilesetX: number
   tilesetY: number
   tilesetName: string
+  tilesetId: string
 }
 
 export type StructureCursorMetadata = {

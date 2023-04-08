@@ -34,6 +34,9 @@ export const editorSlice = createSlice({
   name: 'editor',
   initialState,
   reducers: {
+    setFiles: (state, action: PayloadAction<FileType[]>) => {
+      state.files = action.payload
+    },
     updateTilemap: (
       state,
       action: PayloadAction<{
@@ -43,6 +46,7 @@ export const editorSlice = createSlice({
         tilesetX: number
         tilesetY: number
         tilesetName: string
+        tilesetId: string
         tileData: string
       }>
     ) => {
@@ -54,6 +58,7 @@ export const editorSlice = createSlice({
         tilesetY,
         tilesetName,
         tileData,
+        tilesetId,
       } = action.payload
       const selectedFile = state.files.find(
         (file) => file.id === state.selectedFileId
@@ -74,6 +79,7 @@ export const editorSlice = createSlice({
         tilesetX,
         tilesetY,
         tileData,
+        tilesetId,
       }
     },
     updateLayerSettings: (
@@ -583,11 +589,7 @@ export const {
   zoomIn,
   zoomOut,
   updateTilemap,
+  setFiles,
 } = editorSlice.actions
-
-// The function below is called a selector and allows us to select a value from
-// the state. Selectors can also be defined inline where they're used instead of
-// in the slice file. For example: `useSelector((state) => state.editor.value)`
-// export const selectCount = (state) => state.editor.value
 
 export default editorSlice.reducer

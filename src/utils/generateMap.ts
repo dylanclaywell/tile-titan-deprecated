@@ -7,7 +7,8 @@ export function generateMap(width: number, height: number): TileDataType[][] {
   return rows.map(() =>
     columns.map(() => {
       return {
-        tilesetName: '',
+        tilesetId: 'unknown',
+        tilesetName: 'unknown',
         tilesetX: -1,
         tilesetY: -1,
       }

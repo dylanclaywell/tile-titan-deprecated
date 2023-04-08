@@ -2,6 +2,7 @@ import z from 'zod'
 
 export const TileData = z.object({
   tilesetName: z.string().min(1),
+  tilesetId: z.string(),
   tilesetX: z.number(),
   tilesetY: z.number(),
   tileData: z.string().optional(),

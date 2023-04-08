@@ -3,7 +3,7 @@ import React from 'react'
 import { Tools } from './Tools/Tools'
 import { ToolSection } from './Tools/ToolSection'
 import { Tool } from './Tool'
-import { addFile } from '../features/editor/editorSlice'
+import { addFile, setFiles } from '../features/editor/editorSlice'
 import { useAppDispatch, useAppSelector } from '../hooks/redux'
 import { FileUploader } from './FileUploader'
 import { exportProject } from '../lib/exportProject'
@@ -42,10 +42,9 @@ export function Toolbar() {
 
             if (!blob) return
 
-            await importProject(blob)
-            // const blob = await readImage(file)
-            // addTileset(blob)
-            // refreshTilesets()
+            const files = await importProject(blob)
+
+            dispatch(setFiles(files))
 
             event.target.value = ''
           }}

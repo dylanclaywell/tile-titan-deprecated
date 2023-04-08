@@ -19,7 +19,7 @@ export function TilesetUploader({ refreshTilesets, label }: Props) {
 
         if (!file) return
 
-        const blob = await readFile(file)
+        const blob = await readFile(file, 'dataURL')
         addTileset(blob)
         refreshTilesets()
       }}

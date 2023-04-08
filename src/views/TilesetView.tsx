@@ -86,6 +86,7 @@ function TilesetViewBase({ layerType }: { layerType: LayerType }) {
     const tilesetX = x1 / 32
     const tilesetY = y1 / 32
     const tilesetName = e.target?.dataset?.['tilesetName'] ?? 'unknown'
+    const tilesetId = e.target?.dataset?.['tilesetId'] ?? 'unknown'
 
     const width = x2 - x1
     const height = y2 - y1
@@ -98,6 +99,7 @@ function TilesetViewBase({ layerType }: { layerType: LayerType }) {
     dispatch(setCursorSrc(canvas.toDataURL()))
     dispatch(
       setCursorMetadata({
+        tilesetId,
         tilesetName,
         tilesetX,
         tilesetY,
@@ -175,6 +177,7 @@ function TilesetViewBase({ layerType }: { layerType: LayerType }) {
                     href="#"
                     alt="tile"
                     data-tileset-name={currentTileset.name}
+                    data-tileset-id={currentTileset.id}
                   />
                 </map>
               </div>
