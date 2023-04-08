@@ -2,20 +2,11 @@ import React from 'react'
 
 import { FileUploader } from './FileUploader'
 import { addTileset } from '../indexedDB/tileset'
+import { readFile } from '../lib/readFile'
 
 export interface Props {
   refreshTilesets: () => void
   label: string | React.ReactNode
-}
-
-async function readImage(file: File) {
-  return new Promise<string | ArrayBuffer | null | undefined>((resolve) => {
-    const reader = new FileReader()
-    reader.onload = (event) => {
-      resolve(event.target?.result)
-    }
-    reader.readAsDataURL(file)
-  })
 }
 
 export function TilesetUploader({ refreshTilesets, label }: Props) {
@@ -28,7 +19,7 @@ export function TilesetUploader({ refreshTilesets, label }: Props) {
 
         if (!file) return
 
-        const blob = await readImage(file)
+        const blob = await readFile(file)
         addTileset(blob)
         refreshTilesets()
       }}

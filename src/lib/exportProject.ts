@@ -4,7 +4,7 @@ import { saveAs } from 'file-saver'
 import { FileType } from '../types/file'
 import { getTilesets } from '../indexedDB/tileset'
 
-export async function saveFiles(files: FileType[]) {
+export async function exportProject(files: FileType[]) {
   const zip = new JSZip()
 
   const tilesetFolders = zip.folder('tilesets')

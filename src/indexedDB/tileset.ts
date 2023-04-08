@@ -33,14 +33,16 @@ export async function getTilesets() {
 }
 
 export async function addTileset(
-  blob: string | ArrayBuffer | null | undefined
+  blob: string | ArrayBuffer | null | undefined,
+  name?: string,
+  id?: string
 ) {
   const database = await openDatabase('tilesets', 'id')
 
   const newTileset = Tileset.parse({
-    name: 'New Tileset',
+    name: name ?? 'New Tileset',
     blob,
-    id: generateId(),
+    id: id ?? generateId(),
   })
 
   const tileset = database
@@ -60,4 +62,13 @@ export async function changeTilesetName(id: string, name: string) {
     existingTileset.name = name
     tileset.put(existingTileset)
   }
+}
+
+export async function deleteTilesets() {
+  const database = await openDatabase('tilesets', 'id')
+
+  const tilesets = database
+    .transaction('tilesets', 'readwrite')
+    .objectStore('tilesets')
+  tilesets.clear()
 }
