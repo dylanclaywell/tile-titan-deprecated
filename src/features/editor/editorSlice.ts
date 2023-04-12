@@ -68,6 +68,28 @@ export const editorSlice = createSlice({
         })
       })
     },
+    deleteTileset: (state, action: PayloadAction<{ id: string }>) => {
+      const { id } = action.payload
+      state.tilesets = state.tilesets.filter((tileset) => tileset.id !== id)
+
+      state.files.forEach((file) => {
+        file.layers.forEach((layer) => {
+          if (layer.type === 'tile') {
+            layer.data.forEach((row) => {
+              row.forEach((tile) => {
+                if (tile.tilesetId === id) {
+                  tile.tilesetName = 'unknown'
+                  tile.tilesetId = 'unknown'
+                  tile.tilesetX = -1
+                  tile.tilesetY = -1
+                  tile.tileData = ''
+                }
+              })
+            })
+          }
+        })
+      })
+    },
     updateTilemap: (
       state,
       action: PayloadAction<{
@@ -608,6 +630,7 @@ export const {
   setFiles,
   addTileset,
   renameTileset,
+  deleteTileset,
 } = editorSlice.actions
 
 export default editorSlice.reducer

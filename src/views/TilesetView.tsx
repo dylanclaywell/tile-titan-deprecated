@@ -14,7 +14,7 @@ import {
   setCursorSrc,
 } from '../features/cursor/cursorSlice'
 import { Type as LayerType } from '../types/layer'
-import { renameTileset } from '../features/editor/editorSlice'
+import { deleteTileset, renameTileset } from '../features/editor/editorSlice'
 
 function TilesetViewBase({ layerType }: { layerType: LayerType }) {
   const dispatch = useAppDispatch()
@@ -142,7 +142,9 @@ function TilesetViewBase({ layerType }: { layerType: LayerType }) {
           <Tool
             icon="trash-can"
             name="Delete tileset"
-            onClick={() => undefined}
+            onClick={() =>
+              dispatch(deleteTileset({ id: currentTileset?.id ?? '' }))
+            }
           />
           <Tool
             icon="gear"
