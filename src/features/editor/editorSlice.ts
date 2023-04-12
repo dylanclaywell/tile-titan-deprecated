@@ -90,6 +90,9 @@ export const editorSlice = createSlice({
         })
       })
     },
+    setTilesets: (state, action: PayloadAction<TilesetType[]>) => {
+      state.tilesets = action.payload
+    },
     updateTilemap: (
       state,
       action: PayloadAction<{
@@ -631,6 +634,7 @@ export const {
   addTileset,
   renameTileset,
   deleteTileset,
+  setTilesets,
 } = editorSlice.actions
 
 export default editorSlice.reducer

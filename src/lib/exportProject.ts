@@ -2,9 +2,12 @@ import JSZip from 'jszip'
 import { saveAs } from 'file-saver'
 
 import { FileType } from '../types/file'
-import { getTilesets } from '../indexedDB/tileset'
+import { TilesetType } from '../indexedDB/tileset'
 
-export async function exportProject(files: FileType[]) {
+export async function exportProject(
+  files: FileType[],
+  tilesets: TilesetType[]
+) {
   const zip = new JSZip()
 
   const tilesetFolders = zip.folder('tilesets')
@@ -12,8 +15,6 @@ export async function exportProject(files: FileType[]) {
   if (!tilesetFolders) {
     return
   }
-
-  const tilesets = await getTilesets()
 
   for (const tileset of tilesets) {
     if (!tileset.blob) {

@@ -86,8 +86,6 @@ export async function importProject(blob: string | ArrayBuffer) {
       id: tileset.id,
       image,
     })
-
-    await addTileset(tileset.blob, tileset.name, tileset.id)
   }
 
   await Promise.all(
@@ -193,5 +191,5 @@ export async function importProject(blob: string | ArrayBuffer) {
     })
   }
 
-  return files
+  return { files, tilesets }
 }

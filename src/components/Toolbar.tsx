@@ -3,7 +3,7 @@ import React from 'react'
 import { Tools } from './Tools/Tools'
 import { ToolSection } from './Tools/ToolSection'
 import { Tool } from './Tool'
-import { addFile, setFiles } from '../features/editor/editorSlice'
+import { addFile, setFiles, setTilesets } from '../features/editor/editorSlice'
 import { useAppDispatch, useAppSelector } from '../hooks/redux'
 import { FileUploader } from './FileUploader'
 import { exportProject } from '../lib/exportProject'
@@ -22,6 +22,7 @@ async function readZipFile(file: File) {
 export function Toolbar() {
   const dispatch = useAppDispatch()
   const files = useAppSelector((state) => state.editor.files)
+  const tilesets = useAppSelector((state) => state.editor.tilesets)
 
   return (
     <Tools classes="grow shrink-0 border-black">
@@ -42,9 +43,10 @@ export function Toolbar() {
 
             if (!blob) return
 
-            const files = await importProject(blob)
+            const { files, tilesets } = await importProject(blob)
 
             dispatch(setFiles(files))
+            dispatch(setTilesets(tilesets))
 
             event.target.value = ''
           }}
@@ -52,7 +54,7 @@ export function Toolbar() {
         <Tool
           name="Export Project"
           icon="download"
-          onClick={() => exportProject(files)}
+          onClick={() => exportProject(files, tilesets)}
         />
       </ToolSection>
       <ToolSection>
