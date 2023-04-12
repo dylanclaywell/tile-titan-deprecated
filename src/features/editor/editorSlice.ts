@@ -13,9 +13,11 @@ import { generateMap } from '../../utils/generateMap'
 import { ObjectType } from '../../types/object'
 import { StructureType } from '../../types/structure'
 import { FileType } from '../../types/file'
+import { TilesetType } from '../../indexedDB/tileset'
 
 type State = {
   files: FileType[]
+  tilesets: TilesetType[]
   zoomLevel: number
   showGrid: boolean
   selectedLayerId: string | null
@@ -24,6 +26,7 @@ type State = {
 
 const initialState: State = {
   files: [],
+  tilesets: [],
   zoomLevel: 1,
   showGrid: true,
   selectedFileId: null,
@@ -36,6 +39,34 @@ export const editorSlice = createSlice({
   reducers: {
     setFiles: (state, action: PayloadAction<FileType[]>) => {
       state.files = action.payload
+    },
+    addTileset: (state, action: PayloadAction<TilesetType>) => {
+      state.tilesets.push(action.payload)
+    },
+    renameTileset: (
+      state,
+      action: PayloadAction<{ id: string; name: string }>
+    ) => {
+      const { id, name } = action.payload
+      const tileset = state.tilesets.find((tileset) => tileset.id === id)
+
+      if (!tileset) return
+
+      tileset.name = name
+
+      state.files.forEach((file) => {
+        file.layers.forEach((layer) => {
+          if (layer.type === 'tile') {
+            layer.data.forEach((row) => {
+              row.forEach((tile) => {
+                if (tile.tilesetId === id) {
+                  tile.tilesetName = name
+                }
+              })
+            })
+          }
+        })
+      })
     },
     updateTilemap: (
       state,
@@ -89,34 +120,19 @@ export const editorSlice = createSlice({
         layer: Partial<Omit<LayerType, 'data' | 'type'>>
       }>
     ) => {
-      const { id, layer: layerType } = action.payload
       const selectedFile = state.files.find(
         (file) => file.id === state.selectedFileId
       )
 
-      if (!selectedFile) return state
+      if (!selectedFile) return
 
-      const selectedLayer = selectedFile.layers.find((layer) => layer.id === id)
-
-      if (!selectedLayer) return state
-
-      const newLayers = selectedFile.layers.map((layer) => {
-        return layer.id === selectedLayer.id
-          ? {
-              ...layer,
-              ...layerType,
-            }
-          : layer
-      })
-      return {
-        ...state,
-        files: [
-          ...state.files.filter((file) => file.id !== selectedFile.id),
-          {
-            ...selectedFile,
-            layers: newLayers,
-          },
-        ],
+      for (let i = 0; i < selectedFile.layers.length; i++) {
+        if (selectedFile.layers[i].id === action.payload.id) {
+          selectedFile.layers[i] = {
+            ...selectedFile.layers[i],
+            ...action.payload.layer,
+          }
+        }
       }
     },
     updateObjectSettings: (
@@ -590,6 +606,8 @@ export const {
   zoomOut,
   updateTilemap,
   setFiles,
+  addTileset,
+  renameTileset,
 } = editorSlice.actions
 
 export default editorSlice.reducer

@@ -1,11 +1,6 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 
 import { TilesetUploader } from '../components/TilesetUploader'
-import {
-  TilesetType,
-  changeTilesetName,
-  getTilesets,
-} from '../indexedDB/tileset'
 import { Tool } from '../components/Tool'
 import { SelectField } from '../components/SelectField'
 import { ToolSection } from '../components/Tools/ToolSection'
@@ -19,26 +14,28 @@ import {
   setCursorSrc,
 } from '../features/cursor/cursorSlice'
 import { Type as LayerType } from '../types/layer'
+import { renameTileset } from '../features/editor/editorSlice'
 
 function TilesetViewBase({ layerType }: { layerType: LayerType }) {
   const dispatch = useAppDispatch()
+  const tilesets = useAppSelector((state) => state.editor.tilesets)
   const [tilesetSettingsIsOpen, setTilesetSettingsIsOpen] = useState(false)
-  const [tilesets, setTilesets] = useState<TilesetType[]>([])
   const [cursorRef, setCursorRef] = useState<HTMLDivElement | null>(null)
   const [imageRef, setImageRef] = useState<HTMLImageElement | null>(null)
   const [selectedTilesetId, setSelectedTilesetId] = useState<string | null>(
     null
   )
 
-  async function refreshTilesets() {
-    const tilesets = await getTilesets()
-    setTilesets(tilesets)
+  const refreshTilesets = useCallback(() => {
     setSelectedTilesetId(tilesets[0]?.id ?? null)
-  }
+  }, [tilesets])
 
-  useEffect(function loadTilesets() {
-    refreshTilesets()
-  }, [])
+  useEffect(
+    function loadTilesets() {
+      refreshTilesets()
+    },
+    [refreshTilesets]
+  )
 
   useEffect(function registerEventListeners() {
     function handleMouseMove(event: MouseEvent) {
@@ -190,7 +187,9 @@ function TilesetViewBase({ layerType }: { layerType: LayerType }) {
         onSubmit={async (values) => {
           const tilesetId = currentTileset?.id ?? ''
 
-          await changeTilesetName(currentTileset?.id ?? '', values.name)
+          if (!tilesetId) return
+
+          dispatch(renameTileset({ id: tilesetId, name: values.name }))
           await refreshTilesets()
           setSelectedTilesetId(tilesetId)
         }}

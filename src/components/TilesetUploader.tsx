@@ -1,8 +1,10 @@
 import React from 'react'
+import { v4 as generateUuid } from 'uuid'
 
 import { FileUploader } from './FileUploader'
-import { addTileset } from '../indexedDB/tileset'
 import { readFile } from '../lib/readFile'
+import { useAppDispatch } from '../hooks/redux'
+import { addTileset } from '../features/editor/editorSlice'
 
 export interface Props {
   refreshTilesets: () => void
@@ -10,6 +12,8 @@ export interface Props {
 }
 
 export function TilesetUploader({ refreshTilesets, label }: Props) {
+  const dispatch = useAppDispatch()
+
   return (
     <FileUploader
       label={label}
@@ -20,7 +24,13 @@ export function TilesetUploader({ refreshTilesets, label }: Props) {
         if (!file) return
 
         const blob = await readFile(file, 'dataURL')
-        addTileset(blob)
+        dispatch(
+          addTileset({
+            id: generateUuid(),
+            name: file.name,
+            blob: blob?.toString(),
+          })
+        )
         refreshTilesets()
       }}
     />
