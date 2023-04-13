@@ -175,49 +175,19 @@ export const editorSlice = createSlice({
 
       if (!selectedFile) return state
 
-      const selectedLayer = ObjectLayer.safeParse(
-        selectedFile.layers.find((layer) => layer.id === layerId)
-      )
-
-      if (!selectedLayer.success) return state
-
-      const newLayers = selectedFile.layers.map((layer) => {
-        const verifiedLayer = ObjectLayer.safeParse(layer)
-        if (!verifiedLayer.success) return layer
-
-        if (verifiedLayer.data.id === selectedLayer.data.id) {
-          const existingObject = selectedLayer.data.data.find(
-            (object) => object.id === objectId
-          )
-
-          if (!existingObject) return verifiedLayer.data
-
-          const newObjects = selectedLayer.data.data.map((object) => {
-            return object.id === existingObject.id
-              ? {
-                  ...object,
-                  ...newObject,
-                }
-              : object
-          })
-
-          return {
-            ...verifiedLayer.data,
-            data: newObjects,
+      for (let i = 0; i < selectedFile.layers.length; i++) {
+        const layer = selectedFile.layers[i]
+        if (layer.id === layerId && layer.type === 'object') {
+          for (let j = 0; j < layer.data.length; j++) {
+            const object = layer.data[j]
+            if (object.id === objectId) {
+              selectedFile.layers[i].data[j] = {
+                ...selectedFile.layers[i].data[j],
+                ...newObject,
+              }
+            }
           }
         }
-
-        return layer
-      })
-      return {
-        ...state,
-        files: [
-          ...state.files.filter((file) => file.id !== selectedFile.id),
-          {
-            ...selectedFile,
-            layers: newLayers,
-          },
-        ],
       }
     },
     zoomIn: (state) => {

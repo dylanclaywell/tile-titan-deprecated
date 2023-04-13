@@ -21,7 +21,7 @@ export async function exportProject(
       continue
     }
     const blob = await (await fetch(tileset.blob)).blob()
-    const tilesetFolder = tilesetFolders.folder(tileset.id)
+    const tilesetFolder = tilesetFolders.folder(tileset.name)
 
     if (!tilesetFolder) {
       continue
@@ -30,6 +30,17 @@ export async function exportProject(
     tilesetFolder.file(`${tileset.name}.png`, blob, {
       base64: true,
     })
+    tilesetFolder.file(
+      'metadata.json',
+      JSON.stringify(
+        {
+          name: tileset.name,
+          id: tileset.id,
+        },
+        null,
+        2
+      )
+    )
   }
 
   for (const file of files) {

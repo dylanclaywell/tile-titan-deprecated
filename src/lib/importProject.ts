@@ -1,6 +1,7 @@
+import z from 'zod'
 import JSZip from 'jszip'
 
-import { addTileset, deleteTilesets, TilesetType } from '../indexedDB/tileset'
+import { deleteTilesets, TilesetType } from '../indexedDB/tileset'
 import { readFile } from './readFile'
 import { File, FileType } from '../types/file'
 
@@ -14,7 +15,12 @@ type TilemapFile = {
   data: FileType
 }
 
-type LoadedFile = ImageFile | TilemapFile
+type TilesetFile = {
+  name: string
+  data: TilesetType
+}
+
+type LoadedFile = ImageFile | TilemapFile | TilesetFile
 
 function isImageName(fileName: string) {
   return /(.+)\.png$/.test(fileName)
@@ -24,7 +30,17 @@ function isImageFile(file: LoadedFile): file is ImageFile {
   return isImageName(file.name)
 }
 
-async function parseFile(rawFile: JSZip.JSZipObject) {
+function isTilesetName(fileName: string) {
+  return /(.+)\/metadata\.json$/.test(fileName)
+}
+
+function isTilesetDirectory(file: LoadedFile): file is ImageFile | TilesetFile {
+  return /^.+\/(.+)\/(.+)\./.test(file.name)
+}
+
+async function parseFile(
+  rawFile: JSZip.JSZipObject
+): Promise<LoadedFile | undefined> {
   const file = await rawFile.async('blob')
 
   if (/__MACOSX|\.DS_Store/.test(rawFile.name)) {
@@ -46,11 +62,21 @@ async function parseFile(rawFile: JSZip.JSZipObject) {
 
   return {
     name: rawFile.name,
-    data: File.parse(JSON.parse(fileText.toString())),
+    data: isTilesetName(rawFile.name)
+      ? z
+          .object({
+            id: z.string(),
+            name: z.string(),
+          })
+          .parse(JSON.parse(fileText.toString()))
+      : File.parse(JSON.parse(fileText.toString())),
   }
 }
 
-export async function importProject(blob: string | ArrayBuffer) {
+export async function importProject(blob: string | ArrayBuffer): Promise<{
+  tilesets: TilesetType[]
+  files: FileType[]
+}> {
   const zip = new JSZip()
   const zipFile = await zip.loadAsync(blob)
 
@@ -58,20 +84,23 @@ export async function importProject(blob: string | ArrayBuffer) {
     await Promise.all(Object.values(zipFile.files).map(parseFile))
   ).filter((f): f is LoadedFile => Boolean(f))
 
-  const tilesets: TilesetType[] = []
+  const tilesets: {
+    [name: string]: TilesetFile
+  } = {}
   const unmodifedFiles: FileType[] = []
   const images: { id: string; image: HTMLImageElement }[] = []
 
   for (const file of loadedFiles) {
-    if (isImageFile(file)) {
-      const [tilesetId, tilesetName] = file.name
-        .replace(/^.+\/(.+)\/(.+)\.png$/, '$1,$2')
-        .split(',')
-      tilesets.push({
-        id: tilesetId,
+    if (isTilesetDirectory(file)) {
+      const tilesetName = file.name.replace(/^.+\/(.+)\/.+$/, '$1')
+      const existingData = tilesets[tilesetName]?.data
+      tilesets[tilesetName] = {
+        data: {
+          ...(existingData ?? {}),
+          ...(isImageFile(file) ? { blob: file.blob } : file.data),
+        },
         name: tilesetName,
-        blob: file.blob,
-      })
+      }
     } else {
       unmodifedFiles.push(file.data)
     }
@@ -79,11 +108,11 @@ export async function importProject(blob: string | ArrayBuffer) {
 
   await deleteTilesets()
 
-  for (const tileset of tilesets) {
+  for (const tileset of Object.values(tilesets)) {
     const image = new Image()
-    image.src = tileset.blob ?? ''
+    image.src = tileset.data.blob ?? ''
     images.push({
-      id: tileset.id,
+      id: tileset.data.id,
       image,
     })
   }
@@ -191,5 +220,5 @@ export async function importProject(blob: string | ArrayBuffer) {
     })
   }
 
-  return { files, tilesets }
+  return { files, tilesets: Object.values(tilesets).map((t) => t.data) }
 }
