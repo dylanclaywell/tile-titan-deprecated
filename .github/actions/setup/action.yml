@@ -1,0 +1,13 @@
+name: Setup
+description: Sets up project for CI jobs
+runs:
+  using: composite
+  steps:
+    - name: Setup Node
+      uses: actions/setup-node@v3
+      with:
+        cache: npm
+        node-version: 18
+    - name: Install modules
+      run: yarn
+      shell: sh
