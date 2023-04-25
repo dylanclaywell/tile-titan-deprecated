@@ -67,6 +67,21 @@ export async function exportProject(
     zip.file(`${file.name}.json`, JSON.stringify(modifiedFile, null, 2))
   }
 
+  zip.file(
+    'filemap.json',
+    JSON.stringify(
+      files.reduce(
+        (acc, file) => ({
+          ...acc,
+          [file.id]: file.name,
+        }),
+        {}
+      ),
+      null,
+      2
+    )
+  )
+
   const zipFile = await zip.generateAsync({ type: 'blob' })
 
   saveAs(zipFile, 'tilemaps.zip')

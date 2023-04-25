@@ -38,12 +38,22 @@ function isTilesetDirectory(file: LoadedFile): file is ImageFile | TilesetFile {
   return /^.+\/(.+)\/(.+)\./.test(file.name)
 }
 
+const ignoredFiles = ['filemap.json']
+
+function isIgnoredFile(fileName: string) {
+  return ignoredFiles.includes(fileName)
+}
+
 async function parseFile(
   rawFile: JSZip.JSZipObject
 ): Promise<LoadedFile | undefined> {
   const file = await rawFile.async('blob')
 
   if (/__MACOSX|\.DS_Store/.test(rawFile.name)) {
+    return
+  }
+
+  if (isIgnoredFile(rawFile.name)) {
     return
   }
 

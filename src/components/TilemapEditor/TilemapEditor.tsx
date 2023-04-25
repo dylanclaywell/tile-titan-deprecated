@@ -4,16 +4,10 @@ import clsx from 'clsx'
 import { clamp } from '../../utils/clamp'
 import { Tile } from './Tile'
 import { GridOverlay } from './GridOverlay'
-import { convertFileToImageData } from '../../utils/convertFileToImageData'
 import { addStructure } from '../../tools'
 import { Cursor } from './Cursor'
-import { Structure } from '../Structure/Structure'
 import { useAppDispatch, useAppSelector } from '../../hooks/redux'
-import {
-  removeStructure,
-  zoomIn,
-  zoomOut,
-} from '../../features/editor/editorSlice'
+import { zoomIn, zoomOut } from '../../features/editor/editorSlice'
 import { moveCursor } from '../../features/cursor/cursorSlice'
 import { CursorContext } from '../../contexts/CursorContext'
 import { calculateNewCursorPosition } from '../../features/cursor/calculateNewCursorPosition'
