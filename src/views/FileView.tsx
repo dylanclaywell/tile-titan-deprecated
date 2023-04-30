@@ -7,7 +7,6 @@ import { useAppDispatch, useAppSelector } from '../hooks/redux'
 import {
   deleteFile,
   selectFile,
-  updateFileSettings,
   updateFileSortOrder,
 } from '../features/editor/editorSlice'
 import { setCursorMetadata, setCursorSrc } from '../features/cursor/cursorSlice'
