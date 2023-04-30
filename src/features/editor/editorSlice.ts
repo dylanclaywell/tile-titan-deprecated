@@ -473,6 +473,18 @@ export const editorSlice = createSlice({
         selectedFileId: id,
       }
     },
+    updateFileSortOrder: (
+      state,
+      action: PayloadAction<{ id: string; sortOrder: number }>
+    ) => {
+      const { id, sortOrder } = action.payload
+
+      const file = state.files.find((file) => file.id === id)
+
+      if (!file) return
+
+      file.sortOrder = sortOrder
+    },
     updateFileSettings: (
       state,
       action: PayloadAction<{
@@ -595,6 +607,7 @@ export const {
   deleteFile,
   selectFile,
   updateFileSettings,
+  updateFileSortOrder,
   addStructure,
   removeStructure,
   zoomIn,
