@@ -15,7 +15,7 @@ export function FileView() {
   const dispatch = useAppDispatch()
 
   return (
-    <div className="p-2 basis-[20vw] border-black">
+    <div className="p-2 basis-[20vw] border-black overflow-y-auto">
       <h1 className="text-gray-400 text-xl">Files</h1>
       <ResourceList>
         {[...files]

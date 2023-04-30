@@ -72,69 +72,71 @@ export function LayerView() {
           />
         </ToolSection>
       </Tools>
-      <h1 className="m-2 mb-0 text-xl text-gray-400">Layers</h1>
-      <ResourceList>
-        {[...(currentFile?.layers ?? [])]
-          .sort((a, b) => (a.sortOrder > b.sortOrder ? -1 : 1))
-          .map((layer) => (
-            <ResourceListItem
-              key={`layer-${layer.id}`}
-              id={layer.id}
-              icon={getLayerIcon(layer.type)}
-              sortOrder={layer.sortOrder}
-              isSelected={layer.id === selectedLayerId}
-              isVisible={layer.isVisible}
-              name={layer.name}
-              onClick={() => {
-                if (layer.type !== currentLayer?.type) {
-                  dispatch(changeToolType('select'))
+      <div>
+        <h1 className="m-2 mb-0 text-xl text-gray-400">Layers</h1>
+        <ResourceList>
+          {[...(currentFile?.layers ?? [])]
+            .sort((a, b) => (a.sortOrder > b.sortOrder ? -1 : 1))
+            .map((layer) => (
+              <ResourceListItem
+                key={`layer-${layer.id}`}
+                id={layer.id}
+                icon={getLayerIcon(layer.type)}
+                sortOrder={layer.sortOrder}
+                isSelected={layer.id === selectedLayerId}
+                isVisible={layer.isVisible}
+                name={layer.name}
+                onClick={() => {
+                  if (layer.type !== currentLayer?.type) {
+                    dispatch(changeToolType('select'))
+                  }
+
+                  dispatch(setSelectedLayerId({ id: layer.id }))
+                }}
+                onRename={() => setRenamingLayerId(layer.id)}
+                onDragStart={() => {
+                  setDraggedLayer(layer)
+                }}
+                onDragEnd={() => {
+                  setDraggedLayer(null)
+                }}
+                onDrop={(event) => {
+                  event.preventDefault()
+
+                  if (!draggedLayer) return
+                  if (draggedLayer?.id === layer.id) return
+
+                  dispatch(
+                    updateLayerSettings({
+                      id: draggedLayer.id,
+                      layer: {
+                        sortOrder: layer.sortOrder,
+                      },
+                    })
+                  )
+                  dispatch(
+                    updateLayerSettings({
+                      id: layer.id,
+                      layer: {
+                        sortOrder: draggedLayer.sortOrder,
+                      },
+                    })
+                  )
+                }}
+                onHide={() =>
+                  dispatch(
+                    updateLayerSettings({
+                      id: layer.id,
+                      layer: { isVisible: !layer.isVisible },
+                    })
+                  )
                 }
-
-                dispatch(setSelectedLayerId({ id: layer.id }))
-              }}
-              onRename={() => setRenamingLayerId(layer.id)}
-              onDragStart={() => {
-                setDraggedLayer(layer)
-              }}
-              onDragEnd={() => {
-                setDraggedLayer(null)
-              }}
-              onDrop={(event) => {
-                event.preventDefault()
-
-                if (!draggedLayer) return
-                if (draggedLayer?.id === layer.id) return
-
-                dispatch(
-                  updateLayerSettings({
-                    id: draggedLayer.id,
-                    layer: {
-                      sortOrder: layer.sortOrder,
-                    },
-                  })
-                )
-                dispatch(
-                  updateLayerSettings({
-                    id: layer.id,
-                    layer: {
-                      sortOrder: draggedLayer.sortOrder,
-                    },
-                  })
-                )
-              }}
-              onHide={() =>
-                dispatch(
-                  updateLayerSettings({
-                    id: layer.id,
-                    layer: { isVisible: !layer.isVisible },
-                  })
-                )
-              }
-              onDelete={() => dispatch(removeLayer({ id: layer.id }))}
-              draggedId={draggedLayer?.id ?? null}
-            />
-          ))}
-      </ResourceList>
+                onDelete={() => dispatch(removeLayer({ id: layer.id }))}
+                draggedId={draggedLayer?.id ?? null}
+              />
+            ))}
+        </ResourceList>
+      </div>
       <RenameLayerModal
         isOpen={Boolean(renamingLayerId)}
         onClose={() => setRenamingLayerId(null)}
