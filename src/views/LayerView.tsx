@@ -49,7 +49,7 @@ export function LayerView() {
   )
 
   return (
-    <div>
+    <div className="overflow-hidden flex-1">
       <Tools>
         <ToolSection>
           <Tool
@@ -72,7 +72,7 @@ export function LayerView() {
           />
         </ToolSection>
       </Tools>
-      <div>
+      <div className="h-[calc(100%_-_3.563rem)] overflow-y-auto">
         <h1 className="m-2 mb-0 text-xl text-gray-400">Layers</h1>
         <ResourceList>
           {[...(currentFile?.layers ?? [])]

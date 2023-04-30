@@ -46,7 +46,7 @@ export function TextField({
         )}
         <input
           {...inputProps}
-          className={clsx('outline-none flex-grow', {
+          className={clsx('outline-none flex-grow w-full', {
             ['cursor-text']: !inputProps?.readOnly,
             ['cursor-default']: inputProps?.readOnly,
           })}
