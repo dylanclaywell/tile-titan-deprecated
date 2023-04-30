@@ -94,16 +94,18 @@ export function TilemapEditor() {
 
         if (!currentLayer) return
 
-        const position = calculateNewCursorPosition({
-          e,
-          anchor: gridRef,
-          cursor,
-          tileHeight,
-          tileWidth,
-          zoomLevel,
-        })
+        if (currentLayer.type !== 'object') {
+          const position = calculateNewCursorPosition({
+            e,
+            anchor: gridRef,
+            cursor,
+            tileHeight,
+            tileWidth,
+            zoomLevel,
+          })
 
-        dispatch(moveCursor({ x: position?.x ?? 0, y: position?.y ?? 0 }))
+          dispatch(moveCursor({ x: position?.x ?? 0, y: position?.y ?? 0 }))
+        }
 
         if (
           mouseState.leftMouseButtonIsDown &&

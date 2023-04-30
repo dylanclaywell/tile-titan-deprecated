@@ -43,6 +43,7 @@ export function Cursor() {
       style={{
         width,
         height,
+        visibility: layerType === 'object' ? 'hidden' : 'visible',
       }}
     >
       <img
