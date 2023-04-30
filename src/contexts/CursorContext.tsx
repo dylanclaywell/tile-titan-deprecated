@@ -231,6 +231,7 @@ export function CursorProvider({ children }: { children: React.ReactNode }) {
 
       if (cursor) {
         cursor.style.visibility = 'visible'
+        cursor.style.zIndex = '1000'
         cursor.style.top = `${y}px`
         cursor.style.left = `${x}px`
         cursor.style.width = '0px'
@@ -275,6 +276,7 @@ export function CursorProvider({ children }: { children: React.ReactNode }) {
       const height = Math.abs(y2 - y)
 
       if (cursor) {
+        cursor.style.zIndex = '0'
         cursor.style.visibility = 'hidden'
       }
 
