@@ -38,10 +38,12 @@ function isTilesetDirectory(file: LoadedFile): file is ImageFile | TilesetFile {
   return /^.+\/(.+)\/(.+)\./.test(file.name)
 }
 
-const ignoredFiles = ['filemap.json']
+const ignoredFiles: (RegExp | string)[] = [/filemap.json/]
 
 function isIgnoredFile(fileName: string) {
-  return ignoredFiles.includes(fileName)
+  return ignoredFiles.some((f) =>
+    f instanceof RegExp ? f.test(fileName) : f === fileName
+  )
 }
 
 async function parseFile(
