@@ -168,18 +168,29 @@ export function CursorProvider({ children }: { children: React.ReactNode }) {
       return
 
     if (toolType === 'add') {
-      editorDispatch(
-        updateTilemap({
-          layerId: currentLayerId ?? '',
-          tileX: x / tileWidth,
-          tileY: y / tileHeight,
-          tilesetX: cursorMetadata?.tilesetX ?? -1,
-          tilesetY: cursorMetadata?.tilesetY ?? -1,
-          tilesetName: cursorMetadata?.tilesetName ?? 'unknown',
-          tilesetId: cursorMetadata?.tilesetId ?? 'unknown',
-          tileData: image ?? '',
-        })
-      )
+      if (!cursorMetadata) return
+
+      for (const meta of cursorMetadata) {
+        const tileX = x / tileWidth + meta.offsetX
+        const tileY = y / tileHeight + meta.offsetY
+
+        // Don't allow tiles to be placed outside of the tilemap
+        if (tileX < 0 || tileY < 0) continue
+        if (tileX > tilemapWidth - 1 || tileY > tilemapHeight - 1) continue
+
+        editorDispatch(
+          updateTilemap({
+            layerId: currentLayerId ?? '',
+            tileX: x / tileWidth + meta.offsetX,
+            tileY: y / tileHeight + meta.offsetY,
+            tilesetX: meta.tilesetX,
+            tilesetY: meta.tilesetY,
+            tilesetName: meta.tilesetName,
+            tilesetId: meta.tilesetId,
+            tileData: meta.tileImageData ?? '',
+          })
+        )
+      }
     } else if (toolType === 'remove') {
       editorDispatch(
         updateTilemap({
@@ -198,7 +209,6 @@ export function CursorProvider({ children }: { children: React.ReactNode }) {
     currentLayerId,
     cursorMetadata,
     editorDispatch,
-    image,
     x,
     y,
     tileWidth,

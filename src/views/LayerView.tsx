@@ -88,7 +88,11 @@ export function LayerView() {
                 name={layer.name}
                 onClick={() => {
                   if (layer.type !== currentLayer?.type) {
-                    dispatch(changeToolType('select'))
+                    dispatch(
+                      changeToolType({
+                        toolType: 'select',
+                      })
+                    )
                   }
 
                   dispatch(setSelectedLayerId({ id: layer.id }))

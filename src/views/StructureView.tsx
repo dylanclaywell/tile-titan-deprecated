@@ -43,7 +43,7 @@ export function StructureView() {
     const src = (await convertFileToImageData(structure)) ?? ''
     imageRef.src = src
 
-    dispatch(changeToolType('add'))
+    dispatch(changeToolType({ toolType: 'add' }))
     dispatch(setCursorMetadata({ fileId: structure.id }))
     dispatch(
       setCursorSize({

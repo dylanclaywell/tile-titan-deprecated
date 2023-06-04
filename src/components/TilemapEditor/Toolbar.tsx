@@ -33,14 +33,23 @@ export function Toolbar() {
           <>
             <Tool
               name="Add Tile"
-              onClick={() => dispatch(changeToolType('add'))}
+              onClick={() => dispatch(changeToolType({ toolType: 'add' }))}
               isSelected={toolType === 'add'}
               icon="image"
               isDisabled={!currentLayer}
             />
             <Tool
               name="Erase"
-              onClick={() => dispatch(changeToolType('remove'))}
+              onClick={() =>
+                dispatch(
+                  changeToolType({
+                    toolType: 'remove',
+                    layerType,
+                    tileWidth: currentFile.tileWidth,
+                    tileHeight: currentFile.tileHeight,
+                  })
+                )
+              }
               isSelected={toolType === 'remove'}
               icon="eraser"
               isDisabled={!currentLayer}
@@ -52,14 +61,14 @@ export function Toolbar() {
           <>
             <Tool
               name="Add Object"
-              onClick={() => dispatch(changeToolType('add'))}
+              onClick={() => dispatch(changeToolType({ toolType: 'add' }))}
               isSelected={toolType === 'add'}
               icon="vector-square"
               isDisabled={!currentLayer}
             />
             <Tool
               name="Erase"
-              onClick={() => dispatch(changeToolType('remove'))}
+              onClick={() => dispatch(changeToolType({ toolType: 'remove' }))}
               isSelected={toolType === 'remove'}
               icon="eraser"
               isDisabled={!currentLayer}
@@ -71,21 +80,21 @@ export function Toolbar() {
           <>
             <Tool
               name="Select"
-              onClick={() => dispatch(changeToolType('select'))}
+              onClick={() => dispatch(changeToolType({ toolType: 'select' }))}
               isSelected={toolType === 'select'}
               icon="arrow-pointer"
               isDisabled={!currentLayer}
             />
             <Tool
               name="Add Structure"
-              onClick={() => dispatch(changeToolType('add'))}
+              onClick={() => dispatch(changeToolType({ toolType: 'add' }))}
               isSelected={toolType === 'add'}
               icon="cubes"
               isDisabled={!currentLayer}
             />
             <Tool
               name="Erase"
-              onClick={() => dispatch(changeToolType('remove'))}
+              onClick={() => dispatch(changeToolType({ toolType: 'remove' }))}
               isSelected={toolType === 'remove'}
               icon="eraser"
               isDisabled={!currentLayer}
