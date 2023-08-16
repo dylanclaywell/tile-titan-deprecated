@@ -11,7 +11,7 @@ export function TilemapEditorView() {
 
   return (
     <div
-      className={clsx('basis-[60vw] h-screen overflow-hidden border-black', {
+      className={clsx('basis-[60vw] h-screen overflow-hidden border-gray-300', {
         'cursor-crosshair': layer?.type === 'object',
       })}
     >

@@ -13,7 +13,7 @@ export interface Props {
   inputProps?: React.InputHTMLAttributes<HTMLInputElement>
 }
 
-function calculatePosition(anchor: HTMLDivElement | null) {
+function calculatePosition(anchor: HTMLDivElement | null): React.CSSProperties {
   if (!anchor) return {}
 
   const { top, left, width, height } = anchor.getBoundingClientRect()
@@ -23,6 +23,7 @@ function calculatePosition(anchor: HTMLDivElement | null) {
     top: `${top + height - 1}px`,
     left: `${left}px`,
     width: `${width}px`,
+    maxHeight: `calc(100vh - ${top + height}px - 1rem)`,
   }
 }
 
@@ -35,7 +36,7 @@ export function SelectField({ options, onChange, value, inputProps }: Props) {
       <TextField
         forwardRef={(el) => setAnchor(el)}
         classes={clsx(
-          '[&_i]:transition-all [&_i]:duration-300 [&_i]:ease-in-out',
+          '[&_i]:transition-all [&_i]:duration-300 [&_i]:ease-in-out min-w-[10rem]',
           {
             ['[&_i]:rotate-0']: !isOpen,
             ['[&_i]:-rotate-180']: isOpen,
@@ -55,7 +56,7 @@ export function SelectField({ options, onChange, value, inputProps }: Props) {
       />
       {isOpen && (
         <menu
-          className="absolute border-x border-b border-gray-400 rounded-b-md bg-white z-50 top-full w-full flex flex-col rotate"
+          className="absolute border-x border-b border-gray-400 rounded-b-md bg-white z-50 top-full w-full flex flex-col rotate overflow-y-auto"
           style={calculatePosition(anchor)}
         >
           {options.map((option) => (

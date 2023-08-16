@@ -37,7 +37,7 @@ export function MetadataView() {
   })()
 
   return (
-    <div className="overflow-hidden flex flex-col basis-[20vw] divide-y border-gray-600">
+    <div className="overflow-hidden flex flex-col basis-[20vw] divide-y border-gray-300">
       <LayerView />
       {meta}
     </div>

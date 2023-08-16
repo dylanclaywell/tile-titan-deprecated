@@ -21,7 +21,7 @@ export function FileView() {
   const dispatch = useAppDispatch()
 
   return (
-    <div className="p-2 basis-[20vw] border-black overflow-y-auto">
+    <div className="p-2 basis-[20vw] overflow-y-auto">
       <h1 className="text-gray-400 text-xl">Files</h1>
       <div className="flex flex-col">
         <div className="basis-1/2">

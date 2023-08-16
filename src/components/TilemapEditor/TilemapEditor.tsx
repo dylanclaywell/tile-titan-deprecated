@@ -216,17 +216,15 @@ export function TilemapEditor() {
                 return layer.data.map((object, j) => (
                   <div
                     key={`object-${layer.id}-${j}`}
-                    className={clsx(
-                      'absolute border border-black pointer-events-none',
-                      {
-                        hidden: !layer.isVisible,
-                      }
-                    )}
+                    className={clsx('absolute border pointer-events-none', {
+                      hidden: !layer.isVisible || !object.isVisible,
+                    })}
                     style={{
                       top: object.y2 > object.y ? object.y : object.y2,
                       left: object.x2 > object.x ? object.x : object.x2,
                       width: object.width,
                       height: object.height,
+                      borderColor: object.color ?? 'black',
                     }}
                   ></div>
                 ))

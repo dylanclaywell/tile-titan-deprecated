@@ -26,6 +26,7 @@ const Form = z.object({
   height: z.string().transform(zodStringToNumber),
   x: z.string().transform(zodStringToNumber),
   y: z.string().transform(zodStringToNumber),
+  color: z.string().regex(/^#[0-9a-f]{6}$/i),
 })
 
 type FormType = z.infer<typeof Form>
@@ -147,6 +148,16 @@ export function Properties({ object }: Props) {
           onBlur={onBlur}
           hasError={errors.y !== undefined}
           hintText={errors.y}
+        />
+        <TextField
+          label="Color"
+          inputProps={{
+            defaultValue: object.color ?? '#000000',
+            name: 'color',
+          }}
+          onBlur={onBlur}
+          hasError={errors.color !== undefined}
+          hintText={errors.color}
         />
       </form>
     </div>

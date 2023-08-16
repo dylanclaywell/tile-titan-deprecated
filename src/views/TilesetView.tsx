@@ -218,7 +218,7 @@ function TilesetViewBase({ layerType }: { layerType: LayerType }) {
   )
 
   return (
-    <div className="h-0 flex flex-col flex-1 border-gray-600">
+    <div className="h-0 flex flex-col flex-1 border-gray-300">
       <Tools>
         <ToolSection>
           <SelectField

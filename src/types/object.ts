@@ -11,5 +11,9 @@ export const Object = z.object({
   y2: z.number(),
   width: z.number(),
   height: z.number(),
+  color: z
+    .string()
+    .regex(/^#[0-9a-f]{6}$/i)
+    .optional(),
 })
 export type ObjectType = z.infer<typeof Object>

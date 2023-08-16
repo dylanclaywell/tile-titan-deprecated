@@ -49,7 +49,7 @@ export function LayerView() {
   )
 
   return (
-    <div className="overflow-hidden flex-1">
+    <div className="overflow-hidden basis-1/2">
       <Tools>
         <ToolSection>
           <Tool
