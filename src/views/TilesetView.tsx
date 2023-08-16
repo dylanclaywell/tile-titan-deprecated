@@ -8,13 +8,11 @@ import { Tools } from '../components/Tools/Tools'
 import { TilesetSettingsModal } from '../components/TilesetSettingsModal'
 import { useAppDispatch, useAppSelector } from '../hooks/redux'
 import {
-  addTileCursorMetadata,
   changeToolType,
   setCursorMetadata,
   setCursorSize,
   setCursorSrc,
 } from '../features/cursor/cursorSlice'
-import { Type as LayerType } from '../types/layer'
 import { deleteTileset, renameTileset } from '../features/editor/editorSlice'
 
 function TilesetViewBase({
@@ -327,16 +325,13 @@ function TilesetViewBase({
 const TilesetViewMemoized = React.memo(TilesetViewBase)
 
 export function TilesetView() {
-  const { selectedLayerId, selectedFileId, files } = useAppSelector(
-    (state) => ({
-      selectedLayerId: state.editor.selectedLayerId,
-      selectedFileId: state.editor.selectedFileId,
-      files: state.editor.files,
-    })
-  )
+  const { selectedFileId, files } = useAppSelector((state) => ({
+    selectedLayerId: state.editor.selectedLayerId,
+    selectedFileId: state.editor.selectedFileId,
+    files: state.editor.files,
+  }))
 
   const file = files.find((file) => file.id === selectedFileId)
-  const layer = file?.layers.find((layer) => layer.id === selectedLayerId)
 
   return (
     <TilesetViewMemoized

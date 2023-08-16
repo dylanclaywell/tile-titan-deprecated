@@ -1,6 +1,7 @@
 import z from 'zod'
 
 import { openDatabase } from './index'
+import { IDBEvent } from './utils'
 
 const FileImage = z.object({
   id: z.string(),
@@ -16,12 +17,12 @@ export async function getFileImage(id: string) {
     .transaction('fileImages', 'readonly')
     .objectStore('fileImages')
 
-  return new Promise<FileImageType | undefined>((resolve, reject) => {
+  return new Promise<FileImageType | undefined>((resolve) => {
     const request = fileImages.get(id)
 
     request.onsuccess = (event) => {
       try {
-        const result = FileImage.parse((event.target as any)?.result)
+        const result = FileImage.parse(IDBEvent.parse(event.target)?.result)
         resolve(result)
       } catch {
         resolve(undefined)

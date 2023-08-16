@@ -17,7 +17,7 @@ export function MetadataView() {
 
   const selectedFile = useMemo(
     () => files.find((file) => file.id === selectedFileId),
-    [selectedLayerId, selectedFileId]
+    [files, selectedFileId]
   )
   const selectedLayer = useMemo(() => {
     return selectedFile?.layers.find((layer) => layer.id === selectedLayerId)

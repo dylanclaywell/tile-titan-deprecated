@@ -2,6 +2,7 @@ import { v4 as generateId } from 'uuid'
 import z from 'zod'
 
 import { openDatabase } from './index'
+import { IDBEvent } from './utils'
 
 const Tileset = z.object({
   id: z.string(),
@@ -22,7 +23,7 @@ export async function getTilesets() {
     const request = tilesets.getAll()
 
     request.onsuccess = (event) => {
-      const result = Tileset.array().parse((event.target as any)?.result)
+      const result = Tileset.array().parse(IDBEvent.parse(event.target)?.result)
       resolve(result)
     }
 
@@ -58,7 +59,7 @@ export async function changeTilesetName(id: string, name: string) {
     .transaction('tilesets', 'readwrite')
     .objectStore('tilesets')
   tileset.get(id).onsuccess = (event) => {
-    const existingTileset = Tileset.parse((event.target as any)?.result)
+    const existingTileset = Tileset.parse(IDBEvent.parse(event.target)?.result)
     existingTileset.name = name
     tileset.put(existingTileset)
   }

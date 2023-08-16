@@ -22,7 +22,6 @@ export function ObjectView() {
   })
 
   const [draggedObject, setDraggedObject] = useState<ObjectType | null>(null)
-  const [renamingObjectId, setRenamingObjectId] = useState<string | null>(null)
 
   const currentFile = files.find((file) => file.id === selectedFileId)
   const currentLayer = currentFile?.layers.find(

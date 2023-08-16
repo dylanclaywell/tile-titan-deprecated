@@ -1,5 +1,4 @@
 import { PayloadAction, createSlice } from '@reduxjs/toolkit'
-import type { Type as LayerType } from '../../types/layer'
 
 export type ToolType = 'select' | 'add' | 'remove'
 

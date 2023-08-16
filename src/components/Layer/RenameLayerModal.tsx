@@ -25,7 +25,7 @@ export function RenameLayerModal({
 }: Props) {
   const close = useCallback(() => {
     onClose()
-  }, [])
+  }, [onClose])
 
   useKey('Escape', close)
 
