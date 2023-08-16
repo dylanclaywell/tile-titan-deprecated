@@ -23,50 +23,54 @@ export function FileView() {
   return (
     <div className="p-2 basis-[20vw] border-black overflow-y-auto">
       <h1 className="text-gray-400 text-xl">Files</h1>
-      <ResourceList>
-        {[...files]
-          .sort((a, b) => (a.sortOrder > b.sortOrder ? 1 : -1))
-          .map((file) => (
-            <ResourceListItem
-              key={file.id}
-              id={file.id}
-              draggedId={draggedFile?.id || null}
-              name={file.name}
-              onClick={() => {
-                dispatch(selectFile({ id: file.id }))
-                dispatch(setCursorSrc(''))
-                dispatch(setCursorMetadata(null))
-              }}
-              onDragStart={() => setDraggedFile(file)}
-              onDragEnd={() => setDraggedFile(null)}
-              onDrop={(event) => {
-                setDraggedFile(null)
+      <div className="flex flex-col">
+        <div className="basis-1/2">
+          <ResourceList>
+            {[...files]
+              .sort((a, b) => (a.sortOrder > b.sortOrder ? 1 : -1))
+              .map((file) => (
+                <ResourceListItem
+                  key={file.id}
+                  id={file.id}
+                  draggedId={draggedFile?.id || null}
+                  name={file.name}
+                  onClick={() => {
+                    dispatch(selectFile({ id: file.id }))
+                    dispatch(setCursorSrc(''))
+                    dispatch(setCursorMetadata(null))
+                  }}
+                  onDragStart={() => setDraggedFile(file)}
+                  onDragEnd={() => setDraggedFile(null)}
+                  onDrop={(event) => {
+                    setDraggedFile(null)
 
-                event.preventDefault()
+                    event.preventDefault()
 
-                if (!draggedFile) return
-                if (draggedFile?.id === file.id) return
+                    if (!draggedFile) return
+                    if (draggedFile?.id === file.id) return
 
-                dispatch(
-                  updateFileSortOrder({
-                    id: draggedFile.id,
-                    sortOrder: file.sortOrder,
-                  })
-                )
-                dispatch(
-                  updateFileSortOrder({
-                    id: file.id,
-                    sortOrder: draggedFile.sortOrder,
-                  })
-                )
-              }}
-              isSelected={selectedFileId === file.id}
-              onDelete={() => dispatch(deleteFile({ id: file.id }))}
-              sortOrder={file.sortOrder}
-            />
-          ))}
-      </ResourceList>
-      {selectedFileId && <Properties />}
+                    dispatch(
+                      updateFileSortOrder({
+                        id: draggedFile.id,
+                        sortOrder: file.sortOrder,
+                      })
+                    )
+                    dispatch(
+                      updateFileSortOrder({
+                        id: file.id,
+                        sortOrder: draggedFile.sortOrder,
+                      })
+                    )
+                  }}
+                  isSelected={selectedFileId === file.id}
+                  onDelete={() => dispatch(deleteFile({ id: file.id }))}
+                  sortOrder={file.sortOrder}
+                />
+              ))}
+          </ResourceList>
+        </div>
+        <div className="basis-1/2">{selectedFileId && <Properties />}</div>
+      </div>
     </div>
   )
 }
