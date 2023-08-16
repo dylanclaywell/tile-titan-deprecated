@@ -17,7 +17,13 @@ import {
 import { Type as LayerType } from '../types/layer'
 import { deleteTileset, renameTileset } from '../features/editor/editorSlice'
 
-function TilesetViewBase({ layerType }: { layerType: LayerType }) {
+function TilesetViewBase({
+  tileWidth,
+  tileHeight,
+}: {
+  tileWidth: number
+  tileHeight: number
+}) {
   const dispatch = useAppDispatch()
   const metadata = useAppSelector((state) => state.cursor.metadata)
   const tilesets = useAppSelector((state) => state.editor.tilesets)
@@ -53,13 +59,13 @@ function TilesetViewBase({ layerType }: { layerType: LayerType }) {
 
       if (!area) return
 
-      const x = Math.floor(event.offsetX / 32) * 32
-      const y = Math.floor(event.offsetY / 32) * 32
+      const x = Math.floor(event.offsetX / tileWidth) * tileWidth
+      const y = Math.floor(event.offsetY / tileHeight) * tileHeight
 
       cursorRef.style.top = `${y}px`
       cursorRef.style.left = `${x}px`
 
-      area.coords = `${x},${y},${x + 32},${y + 32}`
+      area.coords = `${x},${y},${x + tileWidth},${y + tileHeight}`
     }
 
     document.addEventListener('mousemove', handleMouseMove)
@@ -78,8 +84,8 @@ function TilesetViewBase({ layerType }: { layerType: LayerType }) {
 
     const coords = e.target.coords
     const [x1, y1, x2, y2] = coords.split(',').map((n) => parseInt(n))
-    const tilesetX = x1 / 32
-    const tilesetY = y1 / 32
+    const tilesetX = x1 / tileWidth
+    const tilesetY = y1 / tileHeight
     const tilesetName = e.target?.dataset?.['tilesetName'] ?? 'unknown'
     const tilesetId = e.target?.dataset?.['tilesetId'] ?? 'unknown'
 
@@ -274,7 +280,11 @@ function TilesetViewBase({ layerType }: { layerType: LayerType }) {
               />
               <div
                 ref={(el) => setCursorRef(el)}
-                className="absolute bg-blue-600 z-40 w-8 h-8 pointer-events-none opacity-50"
+                className="absolute bg-blue-600 z-40 pointer-events-none opacity-50"
+                style={{
+                  width: tileWidth,
+                  height: tileHeight,
+                }}
               >
                 <map name="tileset-map">
                   <area
@@ -328,5 +338,10 @@ export function TilesetView() {
   const file = files.find((file) => file.id === selectedFileId)
   const layer = file?.layers.find((layer) => layer.id === selectedLayerId)
 
-  return <TilesetViewMemoized layerType={layer?.type ?? 'tile'} />
+  return (
+    <TilesetViewMemoized
+      tileWidth={file?.tileWidth ?? 0}
+      tileHeight={file?.tileHeight ?? 0}
+    />
+  )
 }

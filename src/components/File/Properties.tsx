@@ -9,6 +9,11 @@ import {
 } from '../../utils/zodStringToNumber'
 import { updateFileSettings } from '../../features/editor/editorSlice'
 import { useAppDispatch, useAppSelector } from '../../hooks/redux'
+import {
+  setCursorMetadata,
+  setCursorSize,
+  setCursorSrc,
+} from '../../features/cursor/cursorSlice'
 
 function isPropertiesFormElement(
   element: HTMLElement | null | undefined
@@ -70,6 +75,14 @@ export function Properties() {
             setErrors({})
 
             dispatch(updateFileSettings(values))
+            dispatch(
+              setCursorSize({
+                width: values.tileWidth,
+                height: values.tileHeight,
+              })
+            )
+            dispatch(setCursorSrc(''))
+            dispatch(setCursorMetadata(null))
           } catch (error) {
             console.error(error)
 

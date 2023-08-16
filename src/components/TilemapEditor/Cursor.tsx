@@ -29,20 +29,20 @@ export function Cursor() {
   return (
     <div
       className={clsx('absolute', {
-        'bg-blue-600 p-4 pointer-events-none bg-opacity-75 opacity-75 z-50':
+        'bg-blue-600 pointer-events-none bg-opacity-75 opacity-75 z-50':
           (layerType === 'tile' && toolType === 'add') ||
           (layerType !== 'object' &&
             !(layerType === 'structure' && toolType === 'remove') &&
             !(layerType === 'tile' && toolType === 'remove')),
-        'bg-red-600 p-4 pointer-events-none bg-opacity-75 opacity-75 z-50':
+        'bg-red-600 pointer-events-none bg-opacity-75 opacity-75 z-50':
           layerType === 'tile' && toolType === 'remove',
         'bg-transparent pointer-events-none border border-black':
           layerType === 'object',
       })}
       ref={(el) => setCursor(el)}
       style={{
-        width,
-        height,
+        width: `${width}px`,
+        height: `${height}px`,
         visibility: layerType === 'object' ? 'hidden' : 'visible',
       }}
     >
