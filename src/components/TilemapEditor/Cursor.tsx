@@ -31,9 +31,7 @@ export function Cursor() {
       className={clsx('absolute', {
         'bg-blue-600 pointer-events-none bg-opacity-75 opacity-75 z-50':
           (layerType === 'tile' && toolType === 'add') ||
-          (layerType !== 'object' &&
-            !(layerType === 'structure' && toolType === 'remove') &&
-            !(layerType === 'tile' && toolType === 'remove')),
+          (layerType === 'structure' && toolType === 'add'),
         'bg-red-600 pointer-events-none bg-opacity-75 opacity-75 z-50':
           layerType === 'tile' && toolType === 'remove',
         'bg-transparent pointer-events-none border border-black':
@@ -50,7 +48,7 @@ export function Cursor() {
         className={clsx('absolute top-0 left-0 pointer-events-none', {
           hidden:
             !cursorImage ||
-            (layerType === 'structure' && toolType === 'remove') ||
+            (layerType === 'structure' && toolType !== 'add') ||
             (layerType === 'tile' && toolType === 'remove') ||
             (layerType === 'object' && toolType === 'add'),
           block: cursorImage || (layerType === 'tile' && toolType === 'add'),

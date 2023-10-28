@@ -470,6 +470,7 @@ export const editorSlice = createSlice({
       const { id } = action.payload
       return {
         ...state,
+        selectedLayerId: null,
         selectedFileId: id,
       }
     },

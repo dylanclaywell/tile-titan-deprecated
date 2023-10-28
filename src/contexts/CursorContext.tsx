@@ -127,7 +127,11 @@ export function CursorProvider({ children }: { children: React.ReactNode }) {
   const [cursor, setCursor] = React.useState<HTMLDivElement | null>(null)
 
   useEffect(() => {
-    if (currentLayerType !== 'object' && cursor) {
+    if (
+      currentLayerType !== 'object' &&
+      currentLayerType !== 'structure' &&
+      cursor
+    ) {
       cursor.style.visibility = ''
       cursor.style.height = ''
       cursor.style.width = ''
@@ -336,9 +340,6 @@ export function CursorProvider({ children }: { children: React.ReactNode }) {
         } else {
           cursor.style.left = `${x - width}px`
         }
-
-        cursor.style.width = `${width}px`
-        cursor.style.height = `${height}px`
       }
     },
     [zoomLevel, cursor]

@@ -1,5 +1,6 @@
 import React from 'react'
 import clsx from 'clsx'
+import { useAppSelector } from '../../hooks/redux'
 
 export interface Props {
   id: string
@@ -11,11 +12,15 @@ export interface Props {
 }
 
 function StructureBase({ id, isVisible, src, x, y, onClick }: Props) {
+  const toolType = useAppSelector((state) => state.cursor.toolType)
+
   return (
     <img
       key={`structure-${id}`}
-      className={clsx('absolute select-none hover:bg-blue-200', {
+      className={clsx('absolute select-none', {
         hidden: !isVisible,
+        'hover:bg-blue-200': toolType !== 'remove',
+        'hover:bg-red-200': toolType === 'remove',
       })}
       data-type="structure"
       data-id={id}
