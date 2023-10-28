@@ -12,6 +12,7 @@ import { moveCursor } from '../../features/cursor/cursorSlice'
 import { CursorContext } from '../../contexts/CursorContext'
 import { calculateNewCursorPosition } from '../../features/cursor/calculateNewCursorPosition'
 import { RenderedStructure } from '../Structure/RenderedStructure'
+import Object from '../Object/Object'
 
 export function TilemapEditor() {
   const [cursor, { handleMouseDown, handleMouseUp, handleMouseMove }] =
@@ -213,20 +214,12 @@ export function TilemapEditor() {
                   </div>
                 )
               case 'object':
-                return layer.data.map((object, j) => (
-                  <div
-                    key={`object-${layer.id}-${j}`}
-                    className={clsx('absolute border pointer-events-none', {
-                      hidden: !layer.isVisible || !object.isVisible,
-                    })}
-                    style={{
-                      top: object.y2 > object.y ? object.y : object.y2,
-                      left: object.x2 > object.x ? object.x : object.x2,
-                      width: object.width,
-                      height: object.height,
-                      borderColor: object.color ?? 'black',
-                    }}
-                  ></div>
+                return layer.data.map((object) => (
+                  <Object
+                    key={`object-${layer.id}-${object.id}`}
+                    object={object}
+                    layer={layer}
+                  />
                 ))
               case 'structure':
                 return layer.data.map((structure) => {
