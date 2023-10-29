@@ -36,7 +36,15 @@ export function Reshapable(props: Props) {
   const mouseOffset = useRef({
     originX: 0,
     originY: 0,
+    /**
+     * The relative position of the mouse to the left of the
+     * element being dragged.
+     */
     relativeX: 0,
+    /**
+     * The relative position of the mouse to the top of the
+     * element being dragged.
+     */
     relativeY: 0,
   })
 
@@ -63,15 +71,18 @@ export function Reshapable(props: Props) {
     event.preventDefault()
     if (!ref.current) return
 
-    const { left, top } = ref.current.getBoundingClientRect()
+    const left = ref.current.offsetLeft
+    const top = ref.current.offsetTop
 
-    const deltaX = event.clientX - left
-    const deltaY = event.clientY - top
+    const inverseScale = 1 / (props.scale ?? 1)
 
-    ref.current.style.left = `${
-      left + deltaX - mouseOffset.current.relativeX
-    }px`
-    ref.current.style.top = `${top + deltaY - mouseOffset.current.relativeY}px`
+    const deltaX =
+      event.clientX * inverseScale - left - mouseOffset.current.relativeX
+    const deltaY =
+      event.clientY * inverseScale - top - mouseOffset.current.relativeY
+
+    ref.current.style.left = `${left + deltaX}px`
+    ref.current.style.top = `${top + deltaY}px`
 
     props.onUpdate?.({
       box: ref.current.getBoundingClientRect(),
@@ -80,25 +91,30 @@ export function Reshapable(props: Props) {
     })
   }
 
+  function startDrag(event: React.DragEvent<HTMLDivElement>) {
+    if (!ref.current) return
+
+    const left = ref.current.offsetLeft
+    const top = ref.current.offsetTop
+
+    const inverseScale = 1 / (props.scale ?? 1)
+
+    mouseOffset.current = {
+      originX: left,
+      originY: top,
+      relativeX: event.clientX * inverseScale - left,
+      relativeY: event.clientY * inverseScale - top,
+    }
+
+    preventDragImage(event)
+  }
+
   return (
     <div
       {...props}
       ref={ref}
       draggable
-      onDragStart={(event) => {
-        if (!ref.current) return
-
-        const { left, top } = ref.current.getBoundingClientRect()
-
-        mouseOffset.current = {
-          originX: left,
-          originY: top,
-          relativeX: (event.clientX - left) * (props.scale ?? 1),
-          relativeY: (event.clientY - top) * (props.scale ?? 1),
-        }
-
-        preventDragImage(event)
-      }}
+      onDragStart={startDrag}
       onDrag={updatePosition}
       onDragEnd={updatePosition}
       className={clsx(props.className, 'absolute cursor-move select-none')}
@@ -106,16 +122,19 @@ export function Reshapable(props: Props) {
       {props.children}
       <div
         className="absolute cursor-n-resize bg-transparent w-full h-4 top-0 -translate-y-1/2"
-        onDragStart={(event) => {
-          preventDragImage(event)
-        }}
+        onDragStart={startDrag}
         draggable
         onDrag={(event) => {
           if (!ref.current) return
 
-          const { top, height } = ref.current.getBoundingClientRect()
+          const { height } = ref.current.getBoundingClientRect()
+          const top = ref.current.offsetTop
 
-          const deltaY = event.clientY - top
+          const inverseScale = 1 / (props.scale ?? 1)
+
+          const deltaY = event.clientY * inverseScale - top
+
+          console.log(deltaY)
 
           ref.current.style.top = `${top + deltaY}px`
           ref.current.style.height = `${height - deltaY}px`
@@ -136,16 +155,16 @@ export function Reshapable(props: Props) {
       />
       <div
         className="absolute cursor-s-resize bg-transparent w-full h-4 bottom-0 translate-y-1/2"
-        onDragStart={(event) => {
-          preventDragImage(event)
-        }}
+        onDragStart={startDrag}
         draggable
         onDrag={(event) => {
           if (!ref.current) return
 
           const { top, height } = ref.current.getBoundingClientRect()
 
-          const deltaY = event.clientY - top - height
+          const inverseScale = 1 / (props.scale ?? 1)
+
+          const deltaY = event.clientY * inverseScale - top - height
           ref.current.style.height = `${height + deltaY}px`
 
           props.onUpdate?.({
@@ -164,16 +183,17 @@ export function Reshapable(props: Props) {
       />
       <div
         className="absolute cursor-w-resize bg-transparent w-4 h-full left-0 -translate-x-1/2"
-        onDragStart={(event) => {
-          preventDragImage(event)
-        }}
+        onDragStart={startDrag}
         draggable
         onDrag={(event) => {
           if (!ref.current) return
 
-          const { left, width } = ref.current.getBoundingClientRect()
+          const { width } = ref.current.getBoundingClientRect()
+          const left = ref.current.offsetLeft
 
-          const deltaX = event.clientX - left
+          const inverseScale = 1 / (props.scale ?? 1)
+
+          const deltaX = event.clientX * inverseScale - left
           ref.current.style.left = `${left + deltaX}px`
           ref.current.style.width = `${width - deltaX}px`
 
@@ -193,16 +213,17 @@ export function Reshapable(props: Props) {
       />
       <div
         className="absolute cursor-e-resize bg-transparent w-4 h-full right-0 translate-x-1/2"
-        onDragStart={(event) => {
-          preventDragImage(event)
-        }}
+        onDragStart={startDrag}
         draggable
         onDrag={(event) => {
           if (!ref.current) return
 
-          const { left, width } = ref.current.getBoundingClientRect()
+          const { width } = ref.current.getBoundingClientRect()
+          const left = ref.current.offsetLeft
 
-          const deltaX = event.clientX - left - width
+          const inverseScale = 1 / (props.scale ?? 1)
+
+          const deltaX = event.clientX * inverseScale - left - width
           ref.current.style.width = `${width + deltaX}px`
 
           props.onUpdate?.({

@@ -25,9 +25,7 @@ export const Default: Story = {
 export const RelativeToContainer: Story = {
   render: () => (
     <div
-      className={
-        'border border-black relative w-96 h-96 flex justify-center items-center'
-      }
+      className={'border border-black relative w-96 h-96 p-4'}
       style={{
         zoom: 0.5,
       }}
