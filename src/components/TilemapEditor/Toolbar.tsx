@@ -60,6 +60,13 @@ export function Toolbar() {
         return (
           <>
             <Tool
+              name="Select"
+              onClick={() => dispatch(changeToolType({ toolType: 'select' }))}
+              isSelected={toolType === 'select'}
+              icon="arrow-pointer"
+              isDisabled={!currentLayer}
+            />
+            <Tool
               name="Add Object"
               onClick={() => dispatch(changeToolType({ toolType: 'add' }))}
               isSelected={toolType === 'add'}
