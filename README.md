@@ -5,6 +5,8 @@
 </p>
 <br/>
 
+> This project is no longer maintained. Please visit https://github.com/dylanclaywell/tile-titan for the latest version.
+
 # Tile Titan
 
 Tile Titan is a simple web app that allows you to create and export tilemaps for use in game development or other similar projects.
